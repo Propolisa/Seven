@@ -1,25 +1,13 @@
 {
-
   "name": "CLKBot",
-
   "description": "A Discord Bot for hackthebox.eu Users",
-
   "version": "0.1.0",
-
   "main": "bot.js",
-
   "scripts": {
-
     "start": "node bot.js"
-
   },
-
   "dependencies": {
-
     "discord.js": "11.1.0",
-
     "request": "2.81.0"
-
   }
-
 }
