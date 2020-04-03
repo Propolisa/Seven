@@ -9,10 +9,10 @@ client.on('message', message => {
       if (message.content === 'ping') {
         message.reply('pong');
       }
-      /*if (message.content.toLowerCase().contains("clkbot")) {
-        if (message.content.toLowerCase().contains("who did")) {
+      if (message.content.toLowerCase().contains('clkbot')) {
+        if (message.content.toLowerCase().contains('who did')) {
           message.reply('@Propolis did it!');
-        } else if (message.content.toLowerCase().contains("hi")) {
+        } /*else if (message.content.toLowerCase().contains("hi")) {
           message.reply('Hey there! ' + message.author.display_name + ' :)');
         }*/
       });
