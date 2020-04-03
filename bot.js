@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 
 const client = new Discord.Client();
 
- 
+
 
 client.on('ready', () => {
 
@@ -10,7 +10,7 @@ client.on('ready', () => {
 
 });
 
- 
+
 
 client.on('message', message => {
 
@@ -19,11 +19,14 @@ client.on('message', message => {
        message.reply('pong');
 
        }
-    if (message.content === 'Who did MultiMaster?') {
+    if (message.content.toLowerCase().contains("clkbot")) {
+       if (message.content.toLowerCase().contains("who did")) {
 
        message.reply('@Propolis did it!');
 
-       }
+     } elseif(message.content.toLowerCase().contains("hi")){
+       message.reply('Hey there! '+message.sender+' :)');
+     }
 
 });
 
