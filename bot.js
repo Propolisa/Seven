@@ -19,6 +19,11 @@ client.on('message', message => {
        message.reply('pong');
 
        }
+    if (message.content === 'Who did MultiMaster?') {
+
+       message.reply('@Propolis did it!');
+
+       }
 
 });
 
