@@ -24,7 +24,7 @@ client.on('message', message => {
 
        message.reply('@Propolis did it!');
 
-     } elseif(message.content.toLowerCase().contains("hi")){
+     } else if(message.content.toLowerCase().contains("hi")){
        message.reply('Hey there! '+message.sender+' :)');
      }
 
