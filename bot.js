@@ -18,12 +18,10 @@ client.on('message', message => {
 
        message.reply('pong');
 
-       }
-    if (message.content.toLowerCase().contains("clkbot")) {
+     } else if (message.content.toLowerCase().contains("clkbot")) {
        if (message.content.toLowerCase().contains("who did")) {
 
        message.reply('@Propolis did it!');
-
      } else if(message.content.toLowerCase().contains("hi")){
        message.reply('Hey there! '+message.sender+' :)');
      }
