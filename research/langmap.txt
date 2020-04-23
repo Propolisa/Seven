@@ -1,0 +1,48 @@
+adj = adjective
+n   = noun
+bcz = because
+s1  = someone
+sth = something
+rcp = recipient
+
+ast
+ast.is.adj.n
+ast.is.adj
+ast.is.n
+ast.has.[[attribute,sth],when]
+ast.does.[action, [on recipient,when]]
+ast.says.[sth, [abt,to,when]]
+ast.gets.[sth, [for,from,with,when]]
+ast.makes.[sth, [for,from,when]]
+ast.goes.[to, [with,when]]
+ast.knows.[who,from,because]
+ast.takes.[sth [from,to]]
+ast.sees.[sth/s1 [where][when]]
+ast.comes.[from,to,[when]]
+ast.thinks.[sth [abt,bcz]]
+ast.looks.[[adj], [at [sth,s1]], [forwardto[sth]]
+ast.wants.[[to do sth], sth, [from,for]]
+ast.gives.[sth,[to]]
+ast.uses.[[for, with], sth]
+ast.finds.[sth]
+ast.asks.[for sth, that sth]
+ast.works.[on sth,for s1, with s1]
+ast.seems.[adj]
+ast.feels.[[adj][sth]]
+ast.tries.[to do sth,[adj]]
+ast.leaves.[place,s1]
+ast.calls.[s1,s1 sth]
+
+/* Commands | Directives */
+cmd.look.
+cmd.be.
+cmd.do.
+cmd.say.
+cmd.get.
+cmd.make.
+cmd.go.
+cmd.know.
+cmd.know
+com.
+dcl
+exp 'I like you.'

@@ -1,0 +1,6 @@
+{
+    "host": "https://www.hackthebox.eu:443",
+    "loginFormId": "loginForm",
+    "tokenFieldName": "_token",
+    "loginPath": "/login"
+}
