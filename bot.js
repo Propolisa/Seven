@@ -16,7 +16,6 @@ if (process.env.HEROKU) {
   require('dotenv').config({ path: './config/.env' });
 }
 const nlp = require('./modules/nlp/typoify.js')
-const { Wit, log } = require('node-wit');
 const parseDate = require('date-fns/parse')
 const formatRelative = require('date-fns/formatRelative')
 const dialogflow = require('dialogflow');
@@ -40,14 +39,6 @@ const cn = {
 
 const db = pgp(cn);
 
-// const pgClient = new Client({
-//   connectionString: process.env.DATABASE_URL,
-//   ssl: {
-//     rejectUnauthorized: false
-//   }
-// });
-
-// pgClient.connect();
 async function importDbBackup() {
   try {
     rows = await db.any('SELECT json FROM cache', [true]);
