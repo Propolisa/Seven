@@ -1,31 +1,24 @@
-const Discord = require('discord.js')
-const client = new Discord.Client()
-const { JSDOM } = require("jsdom");
-const $q = require('q');
-var rp = require('request-promise');
-const axios = require('axios').default;
-var csrfLogin = require('./helpers/csrf-login/csrf-login-override.js');
-const fs = require('fs');
-var jp = require('jsonpath');
-var https = require('https');
-require('date-fns')
 if (process.env.HEROKU) {
   console.log("SEVEN-SERVER: Started at " + new Date().toLocaleTimeString() + " on Heroku. Using cloud-configured env vars")
 } else {
   console.log("SEVEN-SERVER: Started at " + new Date().toLocaleTimeString() + " on dev machine. Scanning ./config/env for vars")
   require('dotenv').config({ path: './config/.env' });
 }
+const Discord = require('discord.js')
+const client = new Discord.Client()
+const { JSDOM } = require("jsdom");
+var rp = require('request-promise');
+var csrfLogin = require('./helpers/csrf-login/csrf-login-override.js');
+// const fs = require('fs');
+var jp = require('jsonpath');
 const nlp = require('./modules/nlp/typoify.js')
 const parseDate = require('date-fns/parse')
 const formatRelative = require('date-fns/formatRelative')
 const dialogflow = require('dialogflow');
-const uuid = require('uuid');
-const sessionId = uuid.v4();
 const dflow = new dialogflow.SessionsClient({ credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS) });
 const dFlowEnt = require('./helpers/update.js')
 const strings = require('./static/strings.js')
 const safeEval = require('safe-eval')
-const { Client } = require('pg');
 const pgp = require('pg-promise')({
   capSQL: true // capitalize all generated SQL
 });
