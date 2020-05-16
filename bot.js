@@ -4,7 +4,7 @@ const { JSDOM } = require("jsdom");
 const $q = require('q');
 var rp = require('request-promise');
 const axios = require('axios').default;
-var csrfLogin = require('csrf-login');
+var csrfLogin = require('./helpers/csrf-login/csrf-login-override.js');
 const fs = require('fs');
 var jp = require('jsonpath');
 var https = require('https');
@@ -111,11 +111,6 @@ async function updateCache(fields = DB_FIELDNAMES) {
 
 
 setInterval(() => updateData(), 30 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 30 MINUTES
-
-const wit = new Wit({                              // Setup wit connection for mapping messages to intents
-  accessToken: process.env.WIT_TOKEN,
-  logger: new log.Logger(log.DEBUG)
-});
 
 async function wait(ms) {
   return new Promise(resolve => {
