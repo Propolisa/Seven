@@ -874,7 +874,7 @@ async function updateData() {
     SESSION = await getSession()
     console.log("Got a logged in session.")
     MACHINES_BUFFER = await getMachines()
-    // CHALLENGES = await getChallenges(SESSION)
+    CHALLENGES = await getChallenges(SESSION)
     TEAM_MEMBERS_TEMP = await getTeamData(SESSION)
     if (Object.keys(TEAM_MEMBERS_TEMP).length > Object.keys(TEAM_MEMBERS).length) {
       TEAM_MEMBERS = TEAM_MEMBERS_TEMP
