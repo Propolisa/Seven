@@ -33,6 +33,7 @@ const cn = {
 const db = pgp(cn);
 
 async function importDbBackup() {
+  return new Promise(async resolve => {
   try {
     rows = await db.any('SELECT json FROM cache', [true]);
     DB_FIELDNAMES = ["MACHINES", "CHALLENGES", "TEAM_MEMBERS", "TEAM_MEMBERS_IGNORED", "TEAM_STATS", "DISCORD_LINKS"]
@@ -43,12 +44,13 @@ async function importDbBackup() {
     TEAM_STATS = rows[4].json
     DISCORD_LINKS = rows[5].json
     console.log("IMPORT: Restored from DB backup.")
-    return true
+    resolve()
   }
   catch (e) {
     console.error(e)
-    return false
+    resolve()
   }
+})
 }
 
 // async function exportDbBackup() {
@@ -103,7 +105,7 @@ async function updateCache(fields = DB_FIELDNAMES) {
 }
 
 
-setInterval(() => updateData(), 30 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 30 MINUTES
+setInterval(() => updateData(), 5 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 5 MINUTES
 
 async function wait(ms) {
   return new Promise(resolve => {
@@ -267,7 +269,7 @@ function ignoreMember(uid) {
     console.log(TEAM_MEMBERS_IGNORED)
     TEAM_MEMBERS_IGNORED[uid] = TEAM_MEMBERS[uid]
     delete TEAM_MEMBERS[uid]
-    updateCache(["team_members","team_members_ignored"])
+    updateCache(["team_members", "team_members_ignored"])
     // exportData(TEAM_MEMBERS, "team_members.json");
     // exportData(TEAM_MEMBERS_IGNORED, "team_members_ignored.json")
     console.log(Object.keys(TEAM_MEMBERS).length)
@@ -285,7 +287,7 @@ function unignoreMember(uid) {
     console.log(TEAM_MEMBERS_IGNORED)
     TEAM_MEMBERS[uid] = TEAM_MEMBERS_IGNORED[uid]
     delete TEAM_MEMBERS_IGNORED[uid]
-    updateCache(["team_members","team_members_ignored"])
+    updateCache(["team_members", "team_members_ignored"])
     //exportData(TEAM_MEMBERS, "team_members.json");
     //exportData(TEAM_MEMBERS_IGNORED, "team_members_ignored.json")
     console.log(Object.keys(TEAM_MEMBERS).length)
@@ -490,7 +492,6 @@ function getOwnersByChallengeName(challengeName) {
 function getOwnersByMachineId(machineId) {
   console.log(machineId)
   if (machineId) {
-    console.log(Array(MACHINES["232"].rootOwners))
     return Array.from(MACHINES[machineId].rootOwners)
   } else {
     return null
@@ -700,11 +701,14 @@ async function getChallenges(session) {
 }
 
 function getTeamData(session) {
+  console.log(TEAM_MEMBERS_IGNORED)
   return new Promise(resolve => {
     session.request('/home/teams/profile/2102', function (error, response, body) {
+
       teamData = {}
       teamUsers = {}
       var $ = require('jquery')(new JSDOM(body).window);
+      //console.log("Team page body length:" + body)
       // Parse Team Stats
       try {
         var teamName = $('.row-selected').children()[1].innerHTML
@@ -722,10 +726,13 @@ function getTeamData(session) {
         TEAM_STATS.owns.users = totalUsers
 
       } catch (error) {
+        console.error(error)
         console.error('ERROR: Could not parse team Data. Failing gracefully...')
       }
 
       // Parse Team Members
+      try {
+        
       var jq = $($('#membersTable').children()[1]).children().each(function () {
         var stats = $(this).children()
         var siterank = 99999999;
@@ -738,11 +745,17 @@ function getTeamData(session) {
         var uName = userCol.innerHTML
         var uid = userCol.href.substring(45)
         user = new TeamMember(uName, uid, { 'user': Number(stats[4].innerHTML), "root": Number(stats[3].innerHTML) }, siterank, userpoints)
+        
         if (!(uid in TEAM_MEMBERS_IGNORED)) {
+          console.log("got here")
           teamUsers[uid] = user
         }
+        console.log(user)
         //console.log('username: ' + uName + ' uid: ' + uid + ' uOwns: ' + uOwns)
       })
+      } catch (error) {
+        console.error(error)
+      }
       console.log('SUCCESS: Got team members... ' + Object.keys(teamUsers).length)
       resolve(teamUsers)
     })
@@ -857,33 +870,37 @@ async function getUnreleasedMachine(session) {
   })
 }
 async function updateData() {
-  SESSION = await getSession()
-  console.log("Got a logged in session.")
-  MACHINES_BUFFER = await getMachines()
-  CHALLENGES = await getChallenges(SESSION)
-  TEAM_MEMBERS_TEMP = await getTeamData(SESSION)
-  if (Object.keys(TEAM_MEMBERS_TEMP).length > Object.keys(TEAM_MEMBERS).length) {
-    TEAM_MEMBERS = TEAM_MEMBERS_TEMP
-  }
-  urmachine = await getUnreleasedMachine(SESSION)
-  console.warn(urmachine ? "INFO: Got unreleased machine " + urmachine.mname + "..." : "INFO: There are currently no machines in unreleased section.")
-  if (urmachine) {
-    MACHINES[urmachine.mid.toString()] = urmachine
-    MACHINES_BUFFER[urmachine.mid.toString()] = urmachine
-  }
-  await getOwnageData(SESSION, TEAM_MEMBERS)
-  MACHINES = MACHINES_BUFFER
-  await removeDuplicates()
-  console.log("UPDATED DATA. Total machines: " + Object.values(MACHINES).length)
-  updateCacheSuccessful = await updateCache()
-  console.log(updateCacheSuccessful ? "All data backed up to the cloud for a rainy day..." : "Export failed...")
-  // exportData(MACHINES, "machines.json")
-  // exportData(CHALLENGES, "challenges.json")
-  // exportData(TEAM_MEMBERS, "team_members.json");
-  // exportData(TEAM_MEMBERS_IGNORED, "team_members_ignored.json")
-  // exportData(DISCORD_LINKS, "discord_links.json")
-  // exportData(TEAM_STATS, "team_stats.json")
-  LAST_UPDATE = new Date()
+  return new Promise(async resolve => {
+    SESSION = await getSession()
+    console.log("Got a logged in session.")
+    MACHINES_BUFFER = await getMachines()
+    // CHALLENGES = await getChallenges(SESSION)
+    TEAM_MEMBERS_TEMP = await getTeamData(SESSION)
+    if (Object.keys(TEAM_MEMBERS_TEMP).length > Object.keys(TEAM_MEMBERS).length) {
+      TEAM_MEMBERS = TEAM_MEMBERS_TEMP
+    }
+    urmachine = await getUnreleasedMachine(SESSION)
+    console.warn(urmachine ? "INFO: Got unreleased machine " + urmachine.mname + "..." : "INFO: There are currently no machines in unreleased section.")
+    if (urmachine) {
+      MACHINES[urmachine.mid.toString()] = urmachine
+      MACHINES_BUFFER[urmachine.mid.toString()] = urmachine
+    }
+    await getOwnageData(SESSION, TEAM_MEMBERS)
+    MACHINES = MACHINES_BUFFER
+    await removeDuplicates()
+    console.log("UPDATED DATA. Total machines : " + Object.values(MACHINES).length)
+    console.log("               Total members : " + Object.values(TEAM_MEMBERS).length)
+    updateCacheSuccessful = await updateCache()
+    console.log(updateCacheSuccessful ? "All data backed up to the cloud for a rainy day..." : "Export failed...")
+    // exportData(MACHINES, "machines.json")
+    // exportData(CHALLENGES, "challenges.json")
+    // exportData(TEAM_MEMBERS, "team_members.json");
+    // exportData(TEAM_MEMBERS_IGNORED, "team_members_ignored.json")
+    // exportData(DISCORD_LINKS, "discord_links.json")
+    // exportData(TEAM_STATS, "team_stats.json")
+    LAST_UPDATE = new Date()
+    resolve()
+  })
 }
 
 
@@ -1050,12 +1067,23 @@ function between(str, oTag, cTag) {
   );
 }
 
-importDbBackup()
-updateData();
-
-
-
-
+async function main(){
+  await importDbBackup()
+  // updateData();
+  client.login(process.env.BOT_TOKEN) // BOT_TOKEN is the Client Secret
+  client.on('ready', () => {
+    console.warn('INFO: Discord connection established...')
+    client.on('message', message => {
+      try {
+        handleMessage(message)
+      } catch (error) {
+        console.log(error)
+        message.channel.stopTyping()
+      }
+    })
+  })
+}
+main()
 
 
 function constructBoxOwnersMessage(message, machineName) {
@@ -1531,9 +1559,7 @@ function rankSymbol(rankText) {
 
 
 
-client.on('ready', () => {
-  console.warn('INFO: Discord connection established...')
-})
+
 
 
 
@@ -1768,6 +1794,16 @@ async function doFakeReboot(message, note) {
     .catch(console.error);
 }
 
+async function admin_forceUpdate(message) {
+  if (message.author.id == process.env.ADMIN_DISCORD_ID) {
+    humanSend(message, "You're the boss! Updating the database right away.", false)
+    await updateData()
+    humanSend(message, "hey I finished updating the DB! 😊", false)
+  } else {
+    humanSend(message, "You're not my boss! 🤔\nno can do.\nAsk __@Propolis__!")
+  }
+}
+
 const checkIsSevenMsg = /[\t ]?seven\W?/g;
 
 async function handleMessage(message) {
@@ -1787,6 +1823,7 @@ async function handleMessage(message) {
         message.channel.startTyping()
         switch (job) {
           // case "removeLastXMessages": break;
+          case "admin.forceUpdateData": try { admin_forceUpdate(message) } catch (e) { console.log(e) };; break;
           case "help": try { sendHelpMsg(message, result.fulfillmentText) } catch (e) { console.log(e) };; break;
           case "forgetMe.htbIgnore.getUserID": try { forgetHtbDataFlow(message, "htb", inf.uid.numberValue) } catch (e) { console.log(e) }; break;
           case "forgetMe.discordUnlink.getUserID": try { forgetHtbDataFlow(message, "discord", inf.uid.numberValue) } catch (e) { console.log(e) }; break;
@@ -1832,14 +1869,3 @@ async function handleMessage(message) {
   }
 }
 
-client.on('message', message => {
-  try {
-    handleMessage(message)
-  } catch (error) {
-    console.log(error)
-    message.channel.stopTyping()
-  }
-
-})
-
-client.login(process.env.BOT_TOKEN) // BOT_TOKEN is the Client Secret
