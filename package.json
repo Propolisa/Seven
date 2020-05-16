@@ -18,9 +18,12 @@
     "jsdom": "^16.2.2",
     "jsonpath": "^1.0.2",
     "node-wit": "^5.0.0",
+    "pg": "^8.2.0",
+    "pg-promise": "^10.5.5",
     "q": "^1.5.1",
     "request": "2.81.0",
-    "request-promise": "^4.2.5"
+    "request-promise": "^4.2.5",
+    "safe-eval": "^0.4.1"
   },
   "devDependencies": {
     "bufferutil": "^4.0.1",

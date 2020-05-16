@@ -1,31 +1,8 @@
-/**
- * Copyright 2017 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 'use strict';
 
 // Loads in our node.js client library which we will use to make API calls.
 const dialogflow = require('dialogflow');
-
-// Read in credentials from file. To get it, follow instructions here, but
-// chose 'API Admin' instead of 'API Client':
-// https://dialogflow.com/docs/reference/v2-auth-setup
-const credentials = require('../seven-huqece-6f3eb8d4773b.json');
-
-// Create a new EntityTypesClient, which communicates
-// with the EntityTypes API endpoints.
+const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS)
 const entitiesClient = new dialogflow.EntityTypesClient({
   credentials: credentials,
 });
@@ -57,17 +34,17 @@ entitiesClient
       throw new EntityNotFoundError();
     })
 // Update the city EntityType with a new list of Entities.
-    .then((city) => {
-      // console.log('Found city: ', JSON.stringify(city));
+    .then((entity) => {
+      //console.log('Found city: ', JSON.stringify(field));
       // These Entities are hardcoded, but we could easily query
       // this data from a database or API call.
-      var newMachine = {"value": newFieldName, "synonyms": [newFieldName]}
-      city.entities.push(newMachine)
+      var newField = {"value": newFieldName, "synonyms": [newFieldName]}
+      entity.entities.push(newField)
       // Replace the EntityType's existing Entities with our new list.
       //city.entities = updatedEntityList;
 
       const request = {
-        entityType: city,
+        entityType: entity,
         // Tell the API to only modify the 'entities' field, not any other
         // fields of the EntityType.
         updateMask: {
@@ -86,7 +63,7 @@ entitiesClient
     // If this is the error we throw earlier in the chain, log the
     // cause of the problem.
       if (err instanceof EntityNotFoundError) {
-        console.error('Could not find the entity named city.');
+        console.error('Could not find the entity named ' + displayName + '.');
         return;
       }
       console.error('Error updating entity type:', err);

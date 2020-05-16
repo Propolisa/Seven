@@ -1,11 +1,8 @@
 node_modules/
+cache/*
+config/*
 .env
-seven-huqece-6f3eb8d4773b.json
 package.json
 package-lock.json
 Procfile
 README.md
-team_members.json
-team_members.json.old
-machines.json
-machines.json.old
