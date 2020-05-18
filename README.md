@@ -24,7 +24,7 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  <details>
   <summary>*Screenshot*</summary>
 
-  ![View the Seven helpfile](/docs/img/get_help.png?raw=true)
+  ![View the Seven helpfile](/docs/img/get_help.png?raw=true =250x250)
 </details>
 
 ### Get info on who owned XYZ:
@@ -33,9 +33,9 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  <details>
   <summary>*Screenshots*</summary>
   
-  ![Get all box owners](/docs/img/get_box_owners_2.png?raw=true | width=856)
-  ![Get last box owner](/docs/img/get_last_box_owner.png?raw=true | width=856)
-  ![Get challenge owners](/docs/img/get_challenge_owners.png?raw=true | width=856)
+  ![Get all box owners](/docs/img/get_box_owners_2.png?raw=true =250x250)
+  ![Get last box owner](/docs/img/get_last_box_owner.png?raw=true =250x250)
+  ![Get challenge owners](/docs/img/get_challenge_owners.png?raw=true =250x250)
 </details>
 
 ### Get box / challenge info:
