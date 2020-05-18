@@ -23,8 +23,8 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  >  "help" / "what can you do" / "user manual"
  <details>
   <summary>*Screenshot*</summary>
-  
-  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+
+  ![View the Seven helpfile](/docs/img/get_help.png?raw=true)
 </details>
 
 ### Get info on who owned XYZ:
@@ -33,8 +33,9 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  <details>
   <summary>*Screenshots*</summary>
   
-  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
-  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+  ![Get all box owners](/docs/img/get_box_owners_2.png?raw=true)
+  ![Get last box owner](/docs/img/get_last_box_owner.png?raw=true)
+  ![Get challenge owners](/docs/img/get_challenge_owners.png?raw=true)
 </details>
 
 ### Get box / challenge info:
@@ -43,8 +44,10 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  <details>
   <summary>*Screenshots*</summary>
   
-  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
-  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+  ![Get box info](/docs/img/get_box_info.png?raw=true)
+  ![Get newest box info](/docs/img/get_newest_box.png?raw=true)
+  ![Get oldest box info](/docs/img/get_oldest_box.png?raw=true)
+  ![Get challenge info](/docs/img/get_challenge_info.png?raw=true)
 </details>
 
 ### See achievements / profile for a specific team member:
@@ -53,8 +56,9 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  <details>
   <summary>*Screenshots*</summary>
   
-  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
-  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+  ![Get challenge ownage for member](/docs/img/get_challenge_ownage_by_member.png?raw=true)
+  ![Get box ownage for member](/docs/img/get_box_ownage_by_member.png?raw=true)
+  ![Get member info](/docs/img/get_member_info.png?raw=true)
 </details>
 
 ### Get general info about team:
@@ -65,8 +69,9 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  <details>
   <summary>*Screenshots*</summary>
   
-  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
-  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+  ![Get team info](/docs/img/get_team_info.png?raw=true)
+  ![Get team founder info](/docs/img/get_team_founder_info.png?raw=true)
+  ![Get member leaderboard](/docs/img/get_team_leaderboard.png?raw=true)
 </details>
 
 ### Try your best to confuse / bond with / annoy Seven:
@@ -76,8 +81,10 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  <details>
   <summary>*Screenshots*</summary>
   
-  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
-  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+  ![0](/docs/img/small_talk_0.png?raw=true)
+  ![1](/docs/img/small_talk_1.png?raw=true)
+  ![2](/docs/img/small_talk_2.png?raw=true)
+  ![3](/docs/img/small_talk_3.png?raw=true)
 </details>
 
 ## Privacy
