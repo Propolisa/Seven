@@ -1,7 +1,7 @@
 
 # 💬 Seven
 #### An AI-powered Discord Bot for [Hack The Box](https://www.hackthebox.eu) teams. 
-![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_128.png)
+![Seven's visage](/branding/seven_thumb_128.png)
 
 ## 🍉 About 
 Seven is a semi-intelligent AI chatbot built with [DialogFlow](dialogflow.cloud.google.com/) and [Node.js](https://nodejs.org/), whose purpose is to make Hack The Box (hackthebox.eu/) achievement data accessible from Discord. 
