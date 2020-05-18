@@ -1,7 +1,7 @@
 
 # Seven
 #### An AI-powered Discord Bot for [Hack The Box](https://www.hackthebox.eu) teams. 
-![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_48.png)
 
 ## About 
 Seven is a semi-intelligent AI chatbot built with [DialogFlow](dialogflow.cloud.google.com/) and [Node.js](https://nodejs.org/), whose purpose is to make Hack The Box (hackthebox.eu/) achievement data accessible from Discord. 
@@ -33,9 +33,9 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  <details>
   <summary>*Screenshots*</summary>
   
-  ![Get all box owners](/docs/img/get_box_owners_2.png?raw=true)
-  ![Get last box owner](/docs/img/get_last_box_owner.png?raw=true)
-  ![Get challenge owners](/docs/img/get_challenge_owners.png?raw=true)
+  ![Get all box owners](/docs/img/get_box_owners_2.png?raw=true | width=856)
+  ![Get last box owner](/docs/img/get_last_box_owner.png?raw=true | width=856)
+  ![Get challenge owners](/docs/img/get_challenge_owners.png?raw=true | width=856)
 </details>
 
 ### Get box / challenge info:
