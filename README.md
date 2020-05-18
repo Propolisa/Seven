@@ -23,8 +23,10 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  >  "help" / "what can you do" / "user manual"
  <details>
   <summary>[screen]</summary>
+  
   ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
 </details>
+
 ### Get info on who owned XYZ:
 > "Who did [**boxname** | **challengename**]", "Who did mantis"
 > "who rooted **json** last", "who can help me with Forest challenge"
