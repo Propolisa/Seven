@@ -22,7 +22,7 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 ### Print a manpage:
  >  "help" / "what can you do" / "user manual"
  <details>
-  <summary>[screen]</summary>
+  <summary>*Screenshot*</summary>
   
   ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
 </details>
@@ -30,21 +30,55 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 ### Get info on who owned XYZ:
 > "Who did [**boxname** | **challengename**]", "Who did mantis"
 > "who rooted **json** last", "who can help me with Forest challenge"
+ <details>
+  <summary>*Screenshots*</summary>
+  
+  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+</details>
+
 ### Get box / challenge info:
 > "[**boxname** | **challengename**]", "[**boxname**] info" etc
 > "what's new", "what's fresh" /* unreleased / latest box */
+ <details>
+  <summary>*Screenshots*</summary>
+  
+  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+</details>
+
 ### See achievements / profile for a specific team member:
 > "what challenges did [**username**] do" / "which boxes has [**username**] owned?"
 > "who is [**username**]", "[**username**] info", "[**username**] ranking"
+ <details>
+  <summary>*Screenshots*</summary>
+  
+  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+</details>
+
 ### Get general info about team:
 > "team info", "who are [**teamname**]", "[**teamname**]"
 > "who is the team founder"
 > "team ranking", "how are we doing" `/* team global rank */`
 > "who's on top", "team leaders"` /* group members    */`
+ <details>
+  <summary>*Screenshots*</summary>
+  
+  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+</details>
+
 ### Try your best to confuse / bond with / annoy Seven:
 > "Where are you from?", "what rank are you", "what do you do for fun"
 > "What are you working on", "do you like water skiing", "what is 4+4"
 > "' UNION SELECT ..." ??? "sudo su", "can you help me hack the pentagon"
+ <details>
+  <summary>*Screenshots*</summary>
+  
+  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+  ![Seven's visage](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_s.png)
+</details>
 
 ## Privacy
 Seven cares about privacy and allows channel users to:
