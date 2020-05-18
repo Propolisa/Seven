@@ -31,7 +31,7 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 > "Who did [**boxname** | **challengename**]", "Who did mantis"
 > "who rooted **json** last", "who can help me with Forest challenge"
  <details>
-  <summary>*Screenshots*</summary>
+  <summary>demo</summary>
   
   <img src="/docs/img/get_box_owners_2.png?raw=true" width="642">
   <img src="/docs/img/get_last_box_owner.png?raw=true" width="642">
@@ -42,7 +42,7 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 > "[**boxname** | **challengename**]", "[**boxname**] info" etc
 > "what's new", "what's fresh" /* unreleased / latest box */
  <details>
-  <summary>*Screenshots*</summary>
+  <summary>demo</summary>
   
   <img src="/docs/img/get_box_info.png?raw=true" width="642">
   <img src="/docs/img/get_newest_box.png?raw=true" width="642">
@@ -54,7 +54,7 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 > "what challenges did [**username**] do" / "which boxes has [**username**] owned?"
 > "who is [**username**]", "[**username**] info", "[**username**] ranking"
  <details>
-  <summary>*Screenshots*</summary>
+  <summary>demo</summary>
   
   <img src="/docs/img/get_challenge_ownage_by_member.png?raw=true" width="642">
   <img src="/docs/img/get_box_ownage_by_member.png?raw=true" width="642">
@@ -67,7 +67,7 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 > "team ranking", "how are we doing" `/* team global rank */`
 > "who's on top", "team leaders"` /* group members    */`
  <details>
-  <summary>*Screenshots*</summary>
+  <summary>demo</summary>
   
   <img src="/docs/img/get_team_info.png?raw=true" width="642">
   <img src="/docs/img/get_team_founder_info.png?raw=true" width="642">
@@ -79,7 +79,7 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 > "What are you working on", "do you like water skiing", "what is 4+4"
 > "' UNION SELECT ..." ??? "sudo su", "can you help me hack the pentagon"
  <details>
-  <summary>*Screenshots*</summary>
+  <summary>demo</summary>
   
   <img src="/docs/img/small_talk_0.png?raw=true" width="642">
   <img src="/docs/img/small_talk_1.png?raw=true" width="642">
@@ -94,10 +94,10 @@ Seven cares about privacy and allows channel users to:
 ## 🛠️ Installation and Usage
 🚧 This section will be completed soon! A few things have to be finished before Seven can be easily adopted by any team. 
 ## 📜 Roadmap: 
-Some features that would make nice additions:
-  - Offer advice / memory jogs from [RTFM](https://doc.lagout.org/rtfm-red-team-field-manual.pdf) for users LIKE: "stuck on **[STAGE** [*privesc, recon, persistence ...*]**]** with **[TECHNOLOGY** [*linux, nodejs, sql server ...*]**]**
+Some features / nice-to-haves that are under consideration:
+ - Offer advice / memory jogs from [RTFM](https://doc.lagout.org/rtfm-red-team-field-manual.pdf) for users LIKE: "stuck on **[STAGE** [*privesc, recon, persistence ...*]**]** with **[TECHNOLOGY** [*linux, nodejs, sql server ...*]**]**
  - Answer questions invoking possibly long data (while respecting Discord embed limitations):
- - "[teamname] members" (get member list, there are like 75 atm)
- - "machine list" (around 250 results, will default offer 20, ask user to confirm for another 20)
- - "all challenges" (same, around 150)
- - Give info on self based on Discord association
+   - "[teamname] members" (get member list, can be up into the hundreds depending on team)
+   - "machine list" (this returns around 250 results at time of writing)
+   - "all challenges" (same, around 150)
+   - Give info on self based on Discord association
