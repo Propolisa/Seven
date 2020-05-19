@@ -4,7 +4,7 @@
 ![Seven's visage](/branding/seven_thumb_128.png)
 
 ## 🍉 About 
-Seven is a semi-intelligent AI chatbot built with [DialogFlow](dialogflow.cloud.google.com/) and [Node.js](https://nodejs.org/), whose purpose is to make Hack The Box (hackthebox.eu/) achievement data accessible from Discord. 
+Seven is a semi-intelligent AI chatbot built with [DialogFlow](dialogflow.cloud.google.com/) and [Node.js](https://nodejs.org/), whose purpose is to make Hack The Box (hackthebox.eu/) achievement data accessible and convenient within team Discord channels. 
 
 ## 🦾 Capabilities
 Seven can provide information about
@@ -17,7 +17,7 @@ Seven can provide information about
   - ownage (e.g. `who did [challenge name, machine name] [last?]`)
   - team global rank
   - team member leaderboard (top members)
-## 🃏 Examples:
+## 🃏 Talking to Seven:
 Seven is super flexible and doesn't rely on templates or specific wordings to understand what users are asking for. However, here are some example queries:
 ### 🔰 Print a manpage:
  >  "help" / "what can you do" / "user manual"
