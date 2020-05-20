@@ -1748,7 +1748,7 @@ async function sendIncompleteBoxesByMemberMsg(message, note, username) {
           footer: {
             text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
           },
-          description: ((twentyPlus ? ownedBoxList.join(', ') : (ownedBoxList.length < 10 ? andifyList(ownedBoxList.join('\n')) : andifyList(ownedBoxList.join(', ')))) + (twentyPlus ? ' […] 👑' : '')).substring(0, 2040)
+          description: ((twentyPlus ? ownedBoxList.join(', ') : (ownedBoxList.length < 10 ? andifyList(ownedBoxList.join('\n')) : andifyList(ownedBoxList.join(', ')))) + (twentyPlus ? ' […]' : '')).substring(0, 2040)
         }
       }
       )
@@ -1930,7 +1930,7 @@ async function sendIncompleteChallengesByMemberMsg(message, note, username) {
         // console.log(ownedChallengeLinks[challengeCategory])
         catFields.push(
           { name: challengeCategory, inline: true,
-            value: (ownedChallengeLinks[challengeCategory].length == 0 ? "👑 All done!": (categoryOverflows[challengeCategory] ? ownedChallengeLinks[challengeCategory].join(', ') : (ownedChallengeLinks[challengeCategory].length < 10 && ownedChallengeLinks[challengeCategory].length > 0 ? andifyList(ownedChallengeLinks[challengeCategory].join('\n')) : andifyList(ownedChallengeLinks[challengeCategory].join(', ')))) + (categoryOverflows[challengeCategory] ? ' […] 👑' : ''))
+            value: (ownedChallengeLinks[challengeCategory].length == 0 ? "👑 All done!": (categoryOverflows[challengeCategory] ? ownedChallengeLinks[challengeCategory].join(', ') : (ownedChallengeLinks[challengeCategory].length < 10 && ownedChallengeLinks[challengeCategory].length > 0 ? andifyList(ownedChallengeLinks[challengeCategory].join('\n')) : andifyList(ownedChallengeLinks[challengeCategory].join(', ')))) + (categoryOverflows[challengeCategory] ? ' […]' : ''))
           })
       })
       console.log(catFields)
