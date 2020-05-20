@@ -484,7 +484,21 @@ function getOwnersByMachineId(machineId) {
   }
 }
 
-
+function tryDiscordifyUid(uid){
+  if (uid in TEAM_MEMBERS) {
+    if (uid in DISCORD_LINKS){
+      if (DISCORD_LINKS[uid].username != TEAM_MEMBERS[uid].name){
+        return TEAM_MEMBERS[uid].name + " (🌀"+DISCORD_LINKS[uid].username+")"
+      } else {
+        return "🌀"+DISCORD_LINKS[uid].username
+      }
+    } else {
+      return TEAM_MEMBERS[uid].name
+    }
+  } else {
+    return "[Invalid ID]"
+  }
+}
 function getMdLinksForUids(memberIds) { // Get markdown link to a HTB user's profile, based on UID.
   //console.log(memberIds)
   if (memberIds) {
@@ -492,7 +506,7 @@ function getMdLinksForUids(memberIds) { // Get markdown link to a HTB user's pro
     memberIds.forEach(uid => {
       //console.log("UID: " + uid)
       if (uid in TEAM_MEMBERS) {
-        screenNames.push('[' + (uid in DISCORD_LINKS ? (DISCORD_LINKS[uid].username != TEAM_MEMBERS[uid].name ? TEAM_MEMBERS[uid].name + " (@" + DISCORD_LINKS[uid].username + ")" : TEAM_MEMBERS[uid].name) : TEAM_MEMBERS[uid].name) + ']' + '(' + 'https://www.hackthebox.eu/home/users/profile/' + uid + ' ' + "'HTB Profile for " + TEAM_MEMBERS[uid].name + (uid in DISCORD_LINKS ? " / @" + DISCORD_LINKS[uid].tag : "") + '\')')
+        screenNames.push('[' + tryDiscordifyUid(uid) + ']' + '(' + 'https://www.hackthebox.eu/home/users/profile/' + uid + ' ' + "'HTB Profile for " +  TEAM_MEMBERS[uid].name + (uid in DISCORD_LINKS ? " / @" + DISCORD_LINKS[uid].tag : "") + '\')')
       } else {
         console.log("UID opted out of data collection.")
         screenNames.push('[٩(͡๏̯͡๏)۶](https://www.hackthebox.eu/ \'This user has disabled data collection by Seven.\')')
@@ -552,16 +566,16 @@ function getMdLinksForChallengeCategoriesByChallengeNames(challengeNames) { // G
   }
 }
 
-function getMdLinksForMemberIds(memberIds) { // Get markdown link to a HTB user's profile, based on UID.
-  console.log(memberIds)
-  if (memberIds) {
+function getMdLinksForOwnList(memberOwnList) { // Get markdown link to a HTB user's profile, based on UID.
+  console.log(memberOwnList)
+  if (memberOwnList) {
     screenNames = []
-    memberIds.forEach(member => {
-      if (member.uid in TEAM_MEMBERS) {
-        if (member.uid in DISCORD_LINKS) {
-          console.log(JSON.stringify(DISCORD_LINKS[member.uid].username) + " " + TEAM_MEMBERS[member.uid].name)
+    memberOwnList.forEach(memberOwn => {
+      if (memberOwn.uid in TEAM_MEMBERS) {
+        if (memberOwn.uid in DISCORD_LINKS) {
+          console.log(JSON.stringify(DISCORD_LINKS[memberOwn.uid].username) + " " + TEAM_MEMBERS[memberOwn.uid].name)
         }
-        screenNames.push('[' + (member.uid in DISCORD_LINKS ? (DISCORD_LINKS[member.uid].username != TEAM_MEMBERS[member.uid].name ? TEAM_MEMBERS[member.uid].name + " **(@" + DISCORD_LINKS[member.uid].username + ")**" : "❄**" + TEAM_MEMBERS[member.uid].name + "**") : TEAM_MEMBERS[member.uid].name) + ']' + '(' + 'https://www.hackthebox.eu/home/users/profile/' + member.uid + ' ' + "'HTB Profile for " + TEAM_MEMBERS[member.uid].name + (member.uid in DISCORD_LINKS ? " / @" + DISCORD_LINKS[member.uid].tag : "") + '\')')
+        screenNames.push('[' + tryDiscordifyUid(memberOwn.uid)  + ']' + '(' + 'https://www.hackthebox.eu/home/users/profile/' + memberOwn.uid + ' ' + "'HTB Profile for " +  TEAM_MEMBERS[memberOwn.uid].name + (memberOwn.uid in DISCORD_LINKS ? " / @" + DISCORD_LINKS[memberOwn.uid].tag : "") + "')")
       } else {
         console.log("UID opted out of data collection.")
         screenNames.push('[٩(͡๏̯͡๏)۶](https://www.hackthebox.eu/ \'This user has disabled data collection by Seven.\')')
@@ -1121,7 +1135,7 @@ function sendBoxOwnersMsg(message, machineName) {
   } else { console.log("machinename: " + machineName) }
   twentyPlus = false
   console.log("Constructing a box info message for " + machineName + "...")
-  ownerList = getMdLinksForMemberIds(getOwnersByMachineId(getMachineIdFromName(machineName)))
+  ownerList = getMdLinksForOwnList(getOwnersByMachineId(getMachineIdFromName(machineName)))
   if (ownerList) {
     if (ownerList.length > 20) {
       ownerList = ownerList.slice(0, 20)
@@ -1170,7 +1184,7 @@ function sendLastBoxOwnerMsg(message, machineName) {
     machineName == ""
   } else { console.log("machinename: " + machineName) }
   console.log(machineName)
-  ownerList = getMdLinksForMemberIds(getOwnersByMachineId(getMachineIdFromName(machineName)))
+  ownerList = getMdLinksForOwnList(getOwnersByMachineId(getMachineIdFromName(machineName)))
   if (ownerList) {
     console.log(ownerList)
     lastOwner = ownerList[0]
@@ -1203,7 +1217,7 @@ function sendChallengeOwnersMsg(message, challengeName) {
   var twentyPlus = false
   var challenge = getChallengeByName(challengeName)
   console.log("Constructing a challenge owner info message for " + challengeName + "...")
-  var ownerList = getMdLinksForMemberIds(getOwnersByChallengeName(challengeName))
+  var ownerList = getMdLinksForOwnList(getOwnersByChallengeName(challengeName))
   if (ownerList) {
     if (ownerList.length > 20) {
       ownerList = ownerList.slice(0, 20)
@@ -1251,7 +1265,7 @@ function sendLastChallengeOwnerMsg(message, challengeName) {
     challengeName == ""
   } else { console.log("Challenge name: " + challengeName) }
   var challenge = getChallengeByName(challengeName)
-  var ownerList = getMdLinksForMemberIds(getOwnersByChallengeName(challengeName))
+  var ownerList = getMdLinksForOwnList(getOwnersByChallengeName(challengeName))
   if (ownerList) {
     console.log(ownerList)
     lastOwner = ownerList[0]
@@ -1447,7 +1461,7 @@ function sendMemberInfoMsg(message, memberName) {
       embed: {
         color: 3066993,
         author: {
-          name: member.name,
+          name: tryDiscordifyUid(member.id),
           icon_url: TEAM_STATS.imgUrl,
           url: 'https://www.hackthebox.eu/home/users/profile/' + member.id,
         },
@@ -1707,7 +1721,7 @@ async function sendOwnedBoxesByMemberMsg(message, note, username) {
   if (uid in TEAM_MEMBERS) {
     user = TEAM_MEMBERS[uid]
     console.log("Constructing owned boxes by member message... [","UID:", uid,"Username: ",username,"]")
-    Object.values(MACHINES).forEach(machine => {
+    Object.values(MACHINES).sort((a, b) => (a.id > b.id) ? 1 : -1).forEach(machine => {
       var match = machine.rootOwners.find(user => user.uid === uid);
       if (match) {
         // console.log(machine.mname + " completed by " + username + ": YES");
@@ -1730,19 +1744,19 @@ async function sendOwnedBoxesByMemberMsg(message, note, username) {
         embed: {
           color: "Teal",
           author: {
-            name: (uid in TEAM_MEMBERS ? 'Ownage for ' + user.name : '٩(͡๏̯͡๏)۶'),
-            icon_url: getMemberByName(uidToUname(uid)).imageUrl,
+            name: (uid in TEAM_MEMBERS ? 'Ownage for ' + tryDiscordifyUid(user.id) : '٩(͡๏̯͡๏)۶'),
+            icon_url: user.imageUrl,
             url: 'https://www.hackthebox.eu/home/users/profile/' + uid,
           },
           footer: {
             text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
           },
-          description: ('**' + user.name + "** system owns:\n" + (twentyPlus ? ownedBoxList.join(', ') : (ownedBoxList.length < 10 ? andifyList(ownedBoxList.join('\n')) : andifyList(ownedBoxList.join(', ')))) + (twentyPlus ? ' […] 👑' : '')).substring(0, 2040)
+          description: ('**' + tryDiscordifyUid(user.id) + "** system owns:\n" + (twentyPlus ? ownedBoxList.join(', ') : (ownedBoxList.length < 10 ? andifyList(ownedBoxList.join('\n')) : andifyList(ownedBoxList.join(', ')))) + (twentyPlus ? ' […] 👑' : '')).substring(0, 2040)
         }
       }
       )
     } else {
-      message.channel.send('Looks like ' + username + " hasn't completed any boxes yet.")
+      message.channel.send('Looks like ' + tryDiscordifyUid(user.id) + " hasn't completed any boxes yet.")
     }
 
   } else {
@@ -1762,7 +1776,7 @@ async function sendOwnedChallengesByMemberMsg(message, note, username) {
       challengecategory.forEach(challenge => {
         var match = challenge.owners.find(user => user.uid === uid);
         if (match) {
-          console.log(challenge.name + " completed by " + username + ": YES");
+          console.log(challenge.name + " completed by " + tryDiscordifyUid(user.id) + ": YES");
           challengeNames.push(challenge.name)
         } else {
           // console.error("User w/ ID of '" + uid + "' not found.")
@@ -1770,7 +1784,7 @@ async function sendOwnedChallengesByMemberMsg(message, note, username) {
       })
     });
     console.log
-    console.log("Constructing a box ownage tally message for " + username + "...")
+    console.log("Constructing a box ownage tally message for " + tryDiscordifyUid(user.id) + "...")
     var ownedChallengeLinks = getMdLinksForChallengeCategoriesByChallengeNames(challengeNames)
     if (ownedChallengeLinks) {
       categoryOverflows = {}
@@ -1803,8 +1817,8 @@ async function sendOwnedChallengesByMemberMsg(message, note, username) {
         embed: {
           color: "Teal",
           author: {
-            name: 'Challenge ownage for ' + user.name,
-            icon_url: getMemberByName(uidToUname(uid)).imageUrl,
+            name: 'Challenge ownage for ' + tryDiscordifyUid(user.id),
+            icon_url: user.imageUrl,
             url: 'https://www.hackthebox.eu/home/users/profile/' + uid,
           },
           footer: {
@@ -1816,7 +1830,7 @@ async function sendOwnedChallengesByMemberMsg(message, note, username) {
       }
       )
     } else {
-      message.channel.send('Looks like ' + username + " hasn't completed any challenges yet.")
+      message.channel.send('Looks like ' + tryDiscordifyUid(user.id) + " hasn't completed any challenges yet.")
     }
 
   } else {
