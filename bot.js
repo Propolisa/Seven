@@ -1741,7 +1741,7 @@ async function sendIncompleteBoxesByMemberMsg(message, note, username) {
         embed: {
           color: 15105570,
           author: {
-            name: (uid in TEAM_MEMBERS ? + tryDiscordifyUid(user.id) + ": Incomplete machines": '٩(͡๏̯͡๏)۶'),
+            name: (uid in TEAM_MEMBERS ? tryDiscordifyUid(user.id) + ": Incomplete machines": '٩(͡๏̯͡๏)۶'),
             icon_url: user.imageUrl,
             url: 'https://www.hackthebox.eu/home/users/profile/' + uid,
           },
