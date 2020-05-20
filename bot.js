@@ -506,7 +506,7 @@ function getMdLinksForUids(memberIds) { // Get markdown link to a HTB user's pro
     memberIds.forEach(uid => {
       //console.log("UID: " + uid)
       if (uid in TEAM_MEMBERS) {
-        screenNames.push('[' + tryDiscordifyUid(uid) + ']' + '(' + 'https://www.hackthebox.eu/home/users/profile/' + uid + ' ' + "'HTB Profile for " +  TEAM_MEMBERS[uid].name + (uid in DISCORD_LINKS ? " / @" + DISCORD_LINKS[uid].tag : "") + '\')')
+        screenNames.push('[' + tryDiscordifyUid(uid) + ']' + '(' + 'https://www.hackthebox.eu/home/users/profile/' + uid + ' ' + "'Goto HTB page for " +  TEAM_MEMBERS[uid].name + (uid in DISCORD_LINKS ? " / @" + DISCORD_LINKS[uid].tag : "") + '\')')
       } else {
         console.log("UID opted out of data collection.")
         screenNames.push('[٩(͡๏̯͡๏)۶](https://www.hackthebox.eu/ \'This user has disabled data collection by Seven.\')')
@@ -529,7 +529,7 @@ function getMdLinksForBoxIds(boxIds) { // Get markdown link to a HTB user's prof
     boxIds.forEach(boxId => {
       if (boxId in MACHINES) {
         var box = MACHINES[boxId]
-        boxLinks.push('**[' + box.mname + "](" + 'https://www.hackthebox.eu/home/machines/profile/' + box.mid + " '(deets on HTB)')**")
+        boxLinks.push('**[' + box.mname + "](" + 'https://www.hackthebox.eu/home/machines/profile/' + box.mid + " 'Goto HTB page')**")
       }
     });
     // console.log(boxLinks)
@@ -1714,6 +1714,52 @@ async function sendHelpMsg(message, note) {
   await message.channel.send(strings.manual)
 }
 
+async function sendIncompleteBoxesByMemberMsg(message, note, username) {
+  boxIds = []
+  uid = unameToUid(username)
+  if (uid in TEAM_MEMBERS) {
+    user = TEAM_MEMBERS[uid]
+    console.log("Constructing incomplete boxes by member message... [","UID:", uid,"Username: ",username,"]")
+    Object.values(MACHINES).sort((a, b) => (a.id > b.id) ? 1 : -1).forEach(machine => {
+      var match = machine.rootOwners.find(user => user.uid === uid);
+      if (!match) {
+        // console.log(machine.mname + " not completed by " + username + ": YES");
+        boxIds.push(machine.mid)
+      }
+    });
+    console.log
+
+    twentyPlus = false
+    console.log("Constructing an incomplete box tally message for " + username + "...")
+    var ownedBoxList = getMdLinksForBoxIds(boxIds)
+    if (ownedBoxList) {
+      if (ownedBoxList.length > 20) {
+        ownedBoxList = ownedBoxList.slice(0, 20)
+        twentyPlus = true
+      }
+      message.channel.send({
+        embed: {
+          color: 15105570,
+          author: {
+            name: (uid in TEAM_MEMBERS ? + tryDiscordifyUid(user.id) + ": Incomplete machines": '٩(͡๏̯͡๏)۶'),
+            icon_url: user.imageUrl,
+            url: 'https://www.hackthebox.eu/home/users/profile/' + uid,
+          },
+          footer: {
+            text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
+          },
+          description: ((twentyPlus ? ownedBoxList.join(', ') : (ownedBoxList.length < 10 ? andifyList(ownedBoxList.join('\n')) : andifyList(ownedBoxList.join(', ')))) + (twentyPlus ? ' […] 👑' : '')).substring(0, 2040)
+        }
+      }
+      )
+    } else {
+      message.channel.send('Looks like ' + tryDiscordifyUid(user.id) + " has done them all!!! 👑\n(Is that even possible???)")
+    }
+
+  } else {
+    message.channel.send("Sorry, I don't know a '" + username + "'. 🤔")
+  }
+}
 
 async function sendOwnedBoxesByMemberMsg(message, note, username) {
   boxIds = []
@@ -1744,14 +1790,14 @@ async function sendOwnedBoxesByMemberMsg(message, note, username) {
         embed: {
           color: "Teal",
           author: {
-            name: (uid in TEAM_MEMBERS ? 'Ownage for ' + tryDiscordifyUid(user.id) : '٩(͡๏̯͡๏)۶'),
+            name: (uid in TEAM_MEMBERS ? 'Root ownage for ' + tryDiscordifyUid(user.id) : '٩(͡๏̯͡๏)۶'),
             icon_url: user.imageUrl,
             url: 'https://www.hackthebox.eu/home/users/profile/' + uid,
           },
           footer: {
             text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
           },
-          description: ('**' + tryDiscordifyUid(user.id) + "** system owns:\n" + (twentyPlus ? ownedBoxList.join(', ') : (ownedBoxList.length < 10 ? andifyList(ownedBoxList.join('\n')) : andifyList(ownedBoxList.join(', ')))) + (twentyPlus ? ' […] 👑' : '')).substring(0, 2040)
+          description: ( (twentyPlus ? ownedBoxList.join(', ') : (ownedBoxList.length < 10 ? andifyList(ownedBoxList.join('\n')) : andifyList(ownedBoxList.join(', ')))) + (twentyPlus ? ' […] 👑' : '')).substring(0, 2040)
         }
       }
       )
@@ -1831,6 +1877,81 @@ async function sendOwnedChallengesByMemberMsg(message, note, username) {
       )
     } else {
       message.channel.send('Looks like ' + tryDiscordifyUid(user.id) + " hasn't completed any challenges yet.")
+    }
+
+  } else {
+    message.channel.send("Sorry, I don't know a '" + username + "'. 🤔")
+  }
+}
+
+
+async function sendIncompleteChallengesByMemberMsg(message, note, username) {
+  console.log(username)
+  var challengeNames = []
+  uid = unameToUid(username)
+  console.log(uid)
+  if (uid in TEAM_MEMBERS) {
+    user = TEAM_MEMBERS[uid]
+    console.log("UID: ", uid)
+    Object.values(CHALLENGES).forEach(challengecategory => {
+      challengecategory.forEach(challenge => {
+        var match = challenge.owners.find(user => user.uid === uid);
+        if (!match) {
+          console.log(challenge.name + " not completed by " + tryDiscordifyUid(user.id) + ": TRUE");
+          challengeNames.push(challenge.name)
+        } else {
+          // console.error("User w/ ID of '" + uid + "' not found.")
+        }
+      })
+    });
+    console.log
+    console.log("Constructing an incomplete challenge tally message for " + tryDiscordifyUid(user.id) + "...")
+    var ownedChallengeLinks = getMdLinksForChallengeCategoriesByChallengeNames(challengeNames)
+    if (ownedChallengeLinks) {
+      categoryOverflows = {}
+      Object.keys(CHALLENGES).forEach(challengeCategoryName => {
+        categoryOverflows[challengeCategoryName] = false
+      })
+      
+
+      for (let i = 0; i < Object.keys(ownedChallengeLinks).length; i++) {
+        const catKey = Object.keys(ownedChallengeLinks)[i];
+        const catList = ownedChallengeLinks[catKey];
+        
+        if (catList.length > 20) {
+          categoryOverflows[catKey] = true
+          ownedChallengeLinks[catKey]=ownedChallengeLinks[catKey].slice(0, 20)
+        }
+      }
+      
+      catFields = []
+
+      Object.keys(ownedChallengeLinks).forEach(challengeCategory => {
+        // console.log(ownedChallengeLinks[challengeCategory])
+        catFields.push(
+          { name: challengeCategory, inline: true,
+            value: (ownedChallengeLinks[challengeCategory].length == 0 ? "👑 All done!": (categoryOverflows[challengeCategory] ? ownedChallengeLinks[challengeCategory].join(', ') : (ownedChallengeLinks[challengeCategory].length < 10 && ownedChallengeLinks[challengeCategory].length > 0 ? andifyList(ownedChallengeLinks[challengeCategory].join('\n')) : andifyList(ownedChallengeLinks[challengeCategory].join(', ')))) + (categoryOverflows[challengeCategory] ? ' […] 👑' : ''))
+          })
+      })
+      console.log(catFields)
+      message.channel.send({
+        embed: {
+          color: "Red",
+          author: {
+            name: tryDiscordifyUid(user.id) + ": Incomplete challenges",
+            icon_url: user.imageUrl,
+            url: 'https://www.hackthebox.eu/home/users/profile/' + uid,
+          },
+          footer: {
+            text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
+          },
+          description: ('**Challenges, incomplete, by category:**'),
+          fields: catFields
+        }
+      }
+      )
+    } else {
+      message.channel.send('Looks like ' + tryDiscordifyUid(user.id) + " has done them all!!! 👑\n(Is that even possible???)")
     }
 
   } else {
@@ -1994,7 +2115,9 @@ async function handleMessage(message) {
           case "getBoxInfo": try { sendBoxInfoMsg(message, inf.machines.stringValue) } catch (e) { console.log(e) }; break;
           case "getBoxOwners": try { sendBoxOwnersMsg(message, inf.machines.stringValue) } catch (e) { console.log(e) }; break;
           case "getOwnedBoxesByMember": try { sendOwnedBoxesByMemberMsg(message, result.fulfillmentText, inf.username.stringValue) } catch (e) { console.log(e) }; break;
+          case "getIncompleteBoxesByMember": try { sendIncompleteBoxesByMemberMsg(message, result.fulfillmentText, inf.username.stringValue) } catch (e) { console.log(e) }; break;
           case "getOwnedChallengesByMember": try { sendOwnedChallengesByMemberMsg(message, result.fulfillmentText, inf.username.stringValue) } catch (e) { console.log(e) }; break;
+          case "getIncompleteChallengesByMember": try { sendIncompleteChallengesByMemberMsg(message, result.fulfillmentText, inf.username.stringValue) } catch (e) { console.log(e) }; break;
           case "getLastBoxOwner": try { sendLastBoxOwnerMsg(message, inf.machines.stringValue) } catch (e) { console.log(e) }; break;
           case "getBoxLaunchDate": try { sendBoxInfoMsg(message, inf.machines.stringValue) } catch (e) { console.log(e) }; break;
           case "getBoxRetireDate": try { sendBoxInfoMsg(message, inf.machines.stringValue) } catch (e) { console.log(e) }; break;
