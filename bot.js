@@ -1422,7 +1422,7 @@ function sendBoxInfoMsg(message, machineName) {
           + box.maker.id.toString()
           + ')'
           + (box.maker2 ? '** & **[' + box.maker2.name + '](https://www.hackthebox.eu/home/users/profile/' + box.maker2.id.toString() + ')' : '')
-          + '**.',
+          + '**.\n**IP:** '+(box.ip ? '['+box.ip+'](http://'+box.ip+'/)' : "Unknown"),
         thumbnail: {
           url: getMachineByName(machineName).thumb.replace('_thumb', ''),
         },
