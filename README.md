@@ -22,13 +22,13 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 ### 🔰 Print a manpage:
  >  "help" / "what can you do" / "user manual"
  <details>
-  <summary>*Screenshot*</summary>
+  <summary>demo</summary>
   
   <img src="/docs/img/get_help.png?raw=true" width="642">
 </details>
 
 ### 🔮 Get info on who owned XYZ:
-> "Who did [**boxname** | **challengename**]", "Who did mantis"
+> "Who did [**boxname** | **challengename**]", "Who did mantis"\
 > "who rooted **json** last", "who can help me with Forest challenge"
  <details>
   <summary>demo</summary>
@@ -39,7 +39,7 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 </details>
 
 ### 🐉 Get box / challenge info:
-> "[**boxname** | **challengename**]", "[**boxname**] info" etc
+> "[**boxname** | **challengename**]", "[**boxname**] info" etc\
 > "what's new", "what's fresh" /* unreleased / latest box */
  <details>
   <summary>demo</summary>
@@ -51,8 +51,9 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 </details>
 
 ### 🧙 See achievements / profile for a specific team member:
-> "what challenges did [**username**] do" / "which boxes has [**username**] owned?"
-> "who is [**username**]", "[**username**] info", "[**username**] ranking"
+> "what challenges did [**username**] do" / "which boxes has [**username**] owned?"\
+> "who is [**username**]", "[**username**] info", "[**username**] ranking"\
+> "has [**username**] rooted multimaster yet?", "Did [**username**] solve fuzzy"\
  <details>
   <summary>demo</summary>
   
@@ -62,9 +63,9 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 </details>
 
 ### 🏅 Get team rank and information:
-> "team info", "who are [**teamname**]", "[**teamname**]"
-> "who is the team founder"
-> "team ranking", "how are we doing" `/* team global rank */`
+> "team info", "who are [**teamname**]", "[**teamname**]"\
+> "who is the team founder"\
+> "team ranking", "how are we doing" `/* team global rank */`\
 > "who's on top", "team leaders"` /* group members    */`
  <details>
   <summary>demo</summary>
@@ -75,8 +76,8 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 </details>
 
 ### 💚🐒 Try your best to confuse / bond with / annoy Seven:
-> "Where are you from?", "what rank are you", "what do you do for fun"
-> "What are you working on", "do you like water skiing", "what is 4+4"
+> "Where are you from?", "what rank are you", "what do you do for fun"\
+> "What are you working on", "do you like water skiing", "what is 4+4"\
 > "' UNION SELECT ..." ??? "sudo su", "can you help me hack the pentagon"
  <details>
   <summary>demo</summary>
