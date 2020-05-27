@@ -1559,13 +1559,10 @@ async function sendCheckMemberOwnedChallengeMsg(message, challengename, username
 
 function tryGetValidMember(username, discordName) {
   var member = getMemberByName(username)
-  if (!member) {
+  if (!member && checkSelfName(username)) {
     member = getMemberByName(discordName)
-    if (!member) {
-      return null
-    }
   }
-  return member
+  return (member ? member : null)
 }
 
 async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
