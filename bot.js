@@ -1151,7 +1151,7 @@ async function setStatus(client, statusType, activityVerb, activityName) {
   await client.user.setPresence({ activity: { name: activityName, type: activityVerb}, status: statusType })
     .then(console.log)
     .catch(console.error);
-  await client.user.setStatus('idle')
+  await client.user.setStatus(statusType)
     .then(console.log)
     .catch(console.error);
 }
