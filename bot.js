@@ -4,6 +4,8 @@ if (process.env.HEROKU) {
   console.log("SEVEN-SERVER: Started at " + new Date().toLocaleTimeString() + " on dev machine. Scanning ./config/env for vars")
   require('dotenv').config({ path: './config/.env' });
 }
+
+
 const Discord = require('discord.js')
 const client = new Discord.Client()
 const { JSDOM } = require("jsdom");
@@ -100,6 +102,8 @@ async function updateCache(fields = DB_FIELDNAMES_AUTO) {
     });
 }
 
+
+const genRanHex = size => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
 
 function any() {
   return arguments[arguments.length * Math.random() | 0]
@@ -256,7 +260,11 @@ function ratingString(rating) { // CONVERTS A NUMERIC RATING (0.0 - 5.0) TO UNIC
   }
 }
 
+function isAdmin(author){
+  return author.id == process.env.ADMIN_DISCORD_ID
+}
 
+const HTBROOT = "https://www.hackthebox.eu/"
 var LAST_UPDATE = new Date()
 var MACHINES = {}
 var MACHINES_BUFFER
@@ -598,7 +606,7 @@ function getMdLinksForChallengeCategoriesByChallengeNames(challengeNames) { // G
 }
 
 function getMdLinksForOwnList(memberOwnList) { // Get markdown link to a HTB user's profile, based on UID.
-  console.log(memberOwnList)
+  // console.log(memberOwnList)
   if (memberOwnList) {
     screenNames = []
     memberOwnList.forEach(memberOwn => {
@@ -1130,6 +1138,15 @@ function between(str, oTag, cTag) {
   );
 }
 
+function sendFileMsg(){
+  try {
+    contents = JSON.parse(fs.readFileSync('config/sendable.json', 'utf8'));
+    client.channels.cache.get(contents.channel.toString()).send(contents.message)
+  } catch (error) {
+    console.error(error)
+  }
+}
+
 async function main() {
   await importDbBackup()
   setInterval(() => updateData(), 5 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 5 MINUTES
@@ -1144,8 +1161,12 @@ async function main() {
           console.log(error)
           message.channel.stopTyping()
         }
-      } else if (message.author.id == process.env.ADMIN_DISCORD_ID) {
+      } else if (isAdmin(message.author)) {
         console.log("Message is from dev admin, responding...")
+        if (message.content.includes("📤")){
+          console.log("Sending file msg...")
+          sendFileMsg()
+        }
         try {
           handleMessage(message)
         } catch (error) {
@@ -1268,9 +1289,9 @@ function sendLastBoxOwnerMsg(message, machineName) {
   console.log(machineName)
   ownerList = getMdLinksForOwnList(getOwnersByMachineId(getMachineIdFromName(machineName)))
   if (ownerList) {
-    console.log(ownerList)
+    // console.log(ownerList)
     lastOwner = ownerList[0]
-    console.log(lastOwner)
+    // console.log(lastOwner)
     message.channel.send({
       embed: {
         color: 16580705,
@@ -2404,6 +2425,7 @@ async function handleMessage(message) {
         var job = result.intent.displayName
         var inf = result.parameters.fields
         console.log('jobinf: ' + job + ' | ' + JSON.stringify(inf))
+        console.log(message.channel)
         message.channel.startTyping()
         switch (job) {
           // case "removeLastXMessages": break;
@@ -2414,6 +2436,7 @@ async function handleMessage(message) {
           case "forgetMe.all.getUserID": try { forgetHtbDataFlow(message, "all", inf.uid.numberValue) } catch (e) { console.log(e) }; break;
           case "linkDiscord": try { linkDiscord(message, ("numberValue" in Object.keys(inf.uid) ? "uid" : "uname"), ("numberValue" in Object.keys(inf.uid) ? inf.uid.numberValue : inf.username.stringValue)) } catch (e) { console.log(e) }; break;
           case "unforgetMe": try { unignoreMember(inf.uid.numberValue); humanSend(message, result.fulfillmentText, true) } catch (e) { console.log(e) }; break;
+          case "getTeamBadge": try {humanSend(message,HTBROOT+'badge/team/image/2102?nonce='+genRanHex(4)+'\n'+result.fulfillmentText, true)} catch (e) { console.log(e) }; break;
           case "getTeamInfo": try { sendTeamInfoMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "getTeamLeaders": try { sendTeamLeadersMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "getTeamLeader": try { sendTeamLeaderMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
