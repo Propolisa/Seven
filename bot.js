@@ -9,7 +9,7 @@ const client = new Discord.Client()
 const { JSDOM } = require("jsdom");
 var rp = require('request-promise');
 var csrfLogin = require('./helpers/csrf-login/csrf-login-override.js');
-// const fs = require('fs');
+const fs = require('fs');
 var jp = require('jsonpath');
 const nlp = require('./modules/nlp/typoify.js')
 const parseDate = require('date-fns/parse')
@@ -23,6 +23,19 @@ const pgp = require('pg-promise')({
   capSQL: true
 });
 
+/* CHECK IF DEVELOPER INSTANCE */
+var DEV_MODE_ON = false;
+try {
+  if (fs.existsSync('./config/development')) {
+    DEV_MODE_ON = true;
+    console.error("DEVELOPMENT MODE ON.\n  Only queries by the developer will be responded to by this instance.\n  (Avoids conflicts/ duplicate responses in production use)")
+  }
+} catch (err) {
+  console.error(err)
+}
+
+
+/* SETUP DB IMPORT TO RESTORE LAST GOOD STATE */
 const cn = {
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -30,10 +43,10 @@ const cn = {
   }
 };
 
-
 const DB_FIELDNAMES_AUTO = ["MACHINES", "CHALLENGES", "TEAM_MEMBERS", "TEAM_STATS"]
 const db = pgp(cn);
 
+// IMPORT DB backup with this function
 async function importDbBackup() {
   return new Promise(async resolve => {
     try {
@@ -58,7 +71,7 @@ async function importDbBackup() {
   })
 }
 
-
+// UPDATE DB backup with this function
 async function updateCache(fields = DB_FIELDNAMES_AUTO) {
   var fieldData = []
   for (let i = 0; i < fields.length; i++) {
@@ -88,8 +101,6 @@ async function updateCache(fields = DB_FIELDNAMES_AUTO) {
 }
 
 
-setInterval(() => updateData(), 5 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 5 MINUTES
-
 function any() {
   return arguments[arguments.length * Math.random() | 0]
 }
@@ -114,6 +125,11 @@ function realMax(a1, a2) {
       return 0
     }
   }
+}
+
+function maybe(likelihood) {
+  if (Math.random() < likelihood) return true;
+  else return false;
 }
 
 function nth(n) { return ["st", "nd", "rd"][((n + 90) % 100 - 10) % 10 - 1] || "th" }
@@ -321,10 +337,8 @@ function mdItemizeList(arr) {
 async function updateTeamStats() {
   var teamMembersAll = { ...TEAM_MEMBERS, ...TEAM_MEMBERS_IGNORED }
   sortedByTPoints = Object.keys(teamMembersAll).sort(function (a, b) { return teamMembersAll[b].points - teamMembersAll[a].points })
-  top25 = sortedByTPoints.slice(0, 25)
-  TEAM_STATS.topMembers = top25
+  TEAM_STATS.topMembers = sortedByTPoints
 }
-
 
 function isEmpty(obj) {
   for (var key in obj) {
@@ -451,19 +465,30 @@ function getChallengeByName(name) { // Return machine object with name matching 
   return null
 }
 
-function getMemberByName(name) { // Return machine object with name matching parameter string
+function getMemberTeamRankById(id) {
+  try {
+    return TEAM_STATS.topMembers.indexOf(id) + 1
+  } catch (error) {
+    console.log(error)
+    return ("Unknown")
+  }
+}
+
+function checkSelfName(name) {
+  return ((["i", "me", "my", "mine", "i'm", "i've", "myself"].includes(name.toLowerCase())) ? true : false)
+}
+
+function getMemberByName(name) { // Return member object with name matching parameter string
   //console.log(name)
   if (name) {
-    var memberArray = Object.values(TEAM_MEMBERS)
-    for (let i = 0; i < memberArray.length; i++) {
-      // console.log(machineArray[i] + JSON.stringify(machineArray[i]))
-      if (memberArray[i].name.toLowerCase() == name.toLowerCase()) {
-        console.log('Username ' + name + ' matched validated name ' + memberArray[i].name)
-        return memberArray[i]
-      }
+    var match = (Object.values(TEAM_MEMBERS).find(member => member.name.toLowerCase() == name.toLowerCase()))
+    if (match) {
+      return match
+    } else {
+      match = getIdFromDiscordName(name)
+      return (TEAM_MEMBERS[match] ? TEAM_MEMBERS[match] : null)
     }
   }
-  return null
 }
 
 function getOwnersByChallengeName(challengeName) {
@@ -483,6 +508,11 @@ function getOwnersByMachineId(machineId) {
   } else {
     return null
   }
+}
+
+function getIdFromDiscordName(username) {
+  var id = Object.keys(DISCORD_LINKS).find(link => DISCORD_LINKS[link].username.toLowerCase() == username.toLowerCase())
+  return (id ? id : null)
 }
 
 function tryDiscordifyUid(uid) {
@@ -935,13 +965,13 @@ async function updateData() {
     console.log("               Total members : " + Object.values(TEAM_MEMBERS).length)
     updateCacheSuccessful = await updateCache()
     console.log(updateCacheSuccessful ? "All data backed up to the cloud for a rainy day..." : "Export failed...")
-    // To do this the old-fashioned/file-based way (No DB)
-    // exportData(MACHINES, "machines.json")
-    // exportData(CHALLENGES, "challenges.json")
-    // exportData(TEAM_MEMBERS, "team_members.json");
-    // exportData(TEAM_MEMBERS_IGNORED, "team_members_ignored.json")
-    // exportData(DISCORD_LINKS, "discord_links.json")
-    // exportData(TEAM_STATS, "team_stats.json")
+    /* TO HANDLE EXPORTS WITHOUT DB (USING LOCAL JSON FILES ( useful for dev )):::
+    |  exportData(MACHINES, "machines.json")
+    |  exportData(CHALLENGES, "challenges.json")
+    |  exportData(TEAM_MEMBERS, "team_members.json");
+    |  exportData(TEAM_MEMBERS_IGNORED, "team_members_ignored.json")
+    |  exportData(DISCORD_LINKS, "discord_links.json")
+    \  exportData(TEAM_STATS, "team_stats.json")  */
     LAST_UPDATE = new Date()
     resolve()
   })
@@ -970,56 +1000,45 @@ async function parseUserOwns(body, id) {
         charts = $('script:contains("var globalOptions = {")').html()
         var chartData = safeEval(charts.substring(charts.indexOf("var lineData = ") + 15, charts.indexOf(";", charts.indexOf("var lineData = ")))).datasets
         var chart = { users: 0, roots: 0, challenges: 0, respects: 0, bloods: 0 }
-        chart.users = realMax(chartData[0].data.slice(-1)[0], 0) // user owns
-        chart.roots = realMax(chartData[1].data.slice(-1)[0], 0)// root owns
-        chart.challenges = realMax(chartData[2].data.slice(-1)[0], 0)// challenge owns
-        chart.respects = realMax(chartData[3].data.slice(-1)[0], 0)// respects
-        chart.bloods = realMax(chartData[4].data.slice(-1)[0], 0)// bloods
+        chart.users = realMax(chartData[0].data.slice(-1)[0], 0)      // user owns
+        chart.roots = realMax(chartData[1].data.slice(-1)[0], 0)      // root owns
+        chart.challenges = realMax(chartData[2].data.slice(-1)[0], 0) // challenge owns
+        chart.respects = realMax(chartData[3].data.slice(-1)[0], 0)   // respects
+        chart.bloods = realMax(chartData[4].data.slice(-1)[0], 0)     // bloods
         if (chart.users || chart.roots || chart.challenges || chart.respects || chart.bloods) {
           TEAM_MEMBERS[id].stats = chart
         } else {
           TEAM_MEMBERS[id].stats = { users: 0, roots: 0, challenges: 0, respects: 0, bloods: 0 }
         }
         console.log("Parsing owns for " + TEAM_MEMBERS[id].name + "...")
-        // console.log(TEAM_MEMBERS[id].stats)
-
       } catch (error) {
+        // There was a problem getting stats for the user based on profile timechart
         console.log(error)
       }
 
-      $('.p-xs').each(function () {
-        // console.log('jquery')
+      $('.p-xs').each(function () { // Go through the user profile ownage rows (on right of page)
         var t = $($(this).children()[1]).text().trim().split(/\s+/);
         var parsedTime = $($(this).children('span.pull-right')[0]).attr('title')
         var timestamp = parseDate(parsedTime, 'MMMM do, yyyy h:mm a', new Date()).getTime() / 1000
         var machineId = ''
-        // console.log($(this).children('[href*="/machines/"]'))
         var machineLitmus = $(this).find('[href*="/machines/"]')
         if (machineLitmus.length > 0) { machineId = machineLitmus[0].href.substring(48) }
-        //console.log('T[]: '+ t)
         if (t[2].includes('user')) {
-          // console.log('USER MACHINE:' + t[2] + '@' + t[3])
+          // It is a machine user own
           MACHINES_BUFFER[machineId].userOwners.push({ "uid": id, "timestamp": timestamp })
+        } else if (t[2].includes('root')) {
+          // It is a machine root own
+          MACHINES_BUFFER[machineId].rootOwners.push({ "uid": id, "timestamp": timestamp })
         } else if (t[2].includes('challenge')) {
           if ($(this).find('i.far.fa-cog.text-warning').length) {
+            // It is a valid challenge
             var challengeName = $(this).find('i.far.fa-cog.text-warning')[0].nextSibling.data.trim()
-            //console.log("Challenge: ",challengeName)
-            //console.log(getChallengeByName(challengeName).owners)
             getChallengeByName(challengeName).owners.push({ "uid": id, "timestamp": timestamp })
-            //console.log(getChallengeByName(challengeName).owners)
-
           } else {
-            //console.log("not a challenge...")
+            // It is not a challenge
           }
-          // console.log($($(this).children()[1]).text().trim())
-        } else if (t[2].includes('root')) {
-          //console.log('ROOT MACHINE:' + t[6] + '@' + t[3])
-          //console.log(MACHINES[machineId].rootOwners)
-          MACHINES_BUFFER[machineId].rootOwners.push({ "uid": id, "timestamp": timestamp })
-          //console.log(MACHINES[machineId].rootOwners)
-
-          //MACHINES.add
-        } else { /*console.log('Challenge, not parsing...')*/ }
+        }
+        else { /*console.log('Something unparsable (e.g. special challenge, fortress OR a site update has screwed our parsing (FML, please give us an API))...')*/ }
       })
     } catch (error) {
       //console.log(error + " - Could not parse page. (Likely user has no rank / XP)")
@@ -1113,18 +1132,32 @@ function between(str, oTag, cTag) {
 
 async function main() {
   await importDbBackup()
-  client.login(process.env.BOT_TOKEN) // BOT_TOKEN is the Client Secret
+  setInterval(() => updateData(), 5 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 5 MINUTES
+  client.login(process.env.BOT_TOKEN)               // BOT_TOKEN is the Discord client secret
   client.on('ready', () => {
     console.warn('INFO: Discord connection established...')
     client.on('message', message => {
-      try {
-        handleMessage(message)
-      } catch (error) {
-        console.log(error)
-        message.channel.stopTyping()
+      if (!DEV_MODE_ON) {
+        try {
+          handleMessage(message)
+        } catch (error) {
+          console.log(error)
+          message.channel.stopTyping()
+        }
+      } else if (message.author.id == process.env.ADMIN_DISCORD_ID) {
+        console.log("Message is from dev admin, responding...")
+        try {
+          handleMessage(message)
+        } catch (error) {
+          console.log(error)
+          message.channel.stopTyping()
+        }
+      } else if (!message.author.bot) {
+        console.log("Dev mode enabled but received message not from admin. Not responding from this instance...")
       }
     })
   })
+
 }
 main()
 
@@ -1178,6 +1211,55 @@ function sendBoxOwnersMsg(message, machineName) {
   }
 }
 
+
+function sendUserOwnersMsg(message, machineName) {
+  if (!machineName) {
+    machineName == ""
+  } else { console.log("machinename: " + machineName) }
+  twentyPlus = false
+  console.log("Constructing a user owner info message for " + machineName + "...")
+  ownerList = getMdLinksForOwnList(getOwnersByMachineId(getMachineIdFromName(machineName)))
+  if (ownerList) {
+    if (ownerList.length > 20) {
+      ownerList = ownerList.slice(0, 20)
+      twentyPlus = true
+    }
+    if (ownerList.length == 1) {
+      message.channel.send({
+        embed: {
+          color: 3447003,
+          author: {
+            name: getMachineByName(machineName).title,
+            icon_url: getMachineByName(machineName).thumb,
+            url: 'https://www.hackthebox.eu/home/machines/profile/' + getMachineByName(machineName).id,
+          },
+          footer: {
+            text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
+          },
+          description: ('**Owned by** ' + andifyList(ownerList.join(', ')) + (twentyPlus ? ' […]' : '') + ' :woman_detective:').substring(0, 2040)
+        }
+      }
+      )
+    } else {
+      message.channel.send({
+        embed: {
+          color: 3447003,
+          author: {
+            name: getMachineByName(machineName).title,
+            icon_url: getMachineByName(machineName).thumb,
+            url: 'https://www.hackthebox.eu/home/machines/profile/' + getMachineByName(machineName).id,
+          },
+          footer: {
+            text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
+          },
+          description: ('**Most recent team owns:** ' + andifyList(ownerList.join(', ')) + (twentyPlus ? ' […]' : '') + ' :woman_detective:').substring(0, 2040)
+        }
+      })
+    }
+  } else {
+    message.channel.send((getMachineByName(machineName) ? 'Looks like nobody in the team has done this box yet :tired_face:' : 'That isn\'t even a box!! Trying to trick me … silly Hu-man. :wheelchair:\nAccording to Wikipedia, u can\'t fool me... :woman_mage: '))
+  }
+}
 
 function sendLastBoxOwnerMsg(message, machineName) {
   if (!machineName) {
@@ -1316,12 +1398,87 @@ async function sendTeamRankingMsg(message, note) {
 
 }
 
+async function sendTeamLeaderMsg(message, note) {
+  member = TEAM_MEMBERS[TEAM_STATS.topMembers[0]]
+  await message.channel.send({
+    embed: {
+      title: tryDiscordifyUid(member.id),
+      color: "GREEN",
+      author: {
+        name: "💯⠀Team Leader",
+        icon_url: TEAM_STATS.thumb,
+        url: 'https://www.hackthebox.eu/home/teams/profile/2102',
+      },
+      thumbnail: {
+        url: member.thumb,
+      },
+      footer: {
+        text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
+      },
+      description: "Global Rank: **[# " + member.siterank + "](http://0)**\nTeam Rank:  **[# " + getMemberTeamRankById(member.id) + "](http://0)**"
+    }
+  })
+  if (maybe(0.6)) await humanSend(message, "Let's give a round of applause!", true)
+  if (maybe(0.4)) await humanSend(message, "Pain is the heart of success. No one knows that like " + member.name + "! 🎉", true)
+}
+
+async function sendMemberRankMsg(message, username) {
+  if (!username) {
+    username == ""
+  } else { console.log("challengeName: " + username) }
+  var member = tryGetValidMember(username, message.author.username)
+
+  if (checkSelfName(username) && !member) {
+    humanSend(message, (maybe(0.4) ? "" : "Hmm... ") + "I don't know who you are yet! Try saying `I am (username) on HTB` to associate your HTB account with your Discord username.\n(You can find my man page with the `help` command anytime.)")
+    return
+  }
+
+  if (member) {
+    message.channel.send({
+      embed: {
+        title: "🦸⠀" + tryDiscordifyUid(member.id) + " Rank",
+        color: 3447003,
+        author: {
+          icon_url: TEAM_STATS.thumb,
+          url: 'https://www.hackthebox.eu/home/teams/profile/2102',
+        },
+        thumbnail: {
+          url: member.thumb,
+        },
+        footer: {
+          text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
+        },
+        description: "Global Rank: **[# " + member.siterank + "](http://0)**\nTeam Rank:  **[# " + getMemberTeamRankById(member.id) + "](http://0)**"
+      }
+    })
+  } else {
+    message.channel.send({
+      embed: {
+        title: "🦸⠀Member Rank",
+        color: 3447003,
+        author: {
+          name: "Unrecognized User",
+          icon_url: 'https://raw.githubusercontent.com/encharm/Font-Awesome-SVG-PNG/master/white/png/32/question.png',
+          url: ""
+        },
+        description: "Member not found."
+      }
+    })
+  }
+}
+
 async function sendCheckMemberOwnedChallengeMsg(message, challengename, username) {
   var challenge = getChallengeByName(challengename)
-  var user = getMemberByName(username)
-  console.log(challenge, user)
-  if (user && challenge) {
-    var own = (challenge.owners.find(own => own.uid == user.id))
+  var member = tryGetValidMember(username, message.author.username)
+
+  if (checkSelfName(username) && !member) {
+    humanSend(message, (maybe(0.4) ? "" : "Hmm... ") + "I don't know who you are yet! Try saying `I am (username) on HTB` to associate your HTB account with your Discord username.\n(You can find my man page with the `help` command anytime.)")
+    return
+  }
+
+  console.log(challenge, member)
+  if (member && challenge) {
+    var own = (challenge.owners.find(own => own.uid == member.id))
     if (own) {
       await message.channel.send({
         embed: {
@@ -1332,12 +1489,12 @@ async function sendCheckMemberOwnedChallengeMsg(message, challengename, username
             url: 'https://www.hackthebox.eu/home/challenges/' + challenge.category,
           },
           thumbnail: {
-            url: user.thumb,
+            url: member.thumb,
           },
           footer: {
             text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
           },
-          description: "🥳 W00t! " + getMdLinksForUids([user.id]) + " completed challenge **[" + challenge.name + "](https://www.hackthebox.eu/home/challenges/" + challenge.category + ")** (" + timeSince(new Date(own.timestamp * 1000)) + ")."
+          description: "🥳 W00t! " + (checkSelfName(username) ? " **[You](https://www.hackthebox.eu/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + " completed challenge **[" + challenge.name + "](https://www.hackthebox.eu/home/challenges/" + challenge.category + ")** (" + timeSince(new Date(own.timestamp * 1000)) + ")."
         }
       })
     } else {
@@ -1350,12 +1507,12 @@ async function sendCheckMemberOwnedChallengeMsg(message, challengename, username
             url: 'https://www.hackthebox.eu/home/challenges/' + challenge.category,
           },
           thumbnail: {
-            url: user.thumb,
+            url: member.thumb,
           },
           footer: {
             text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
           },
-          description: "Looks like " + getMdLinksForUids([user.id]) + " hasn't owned challenge **[" + challenge.name + "](https://www.hackthebox.eu/home/challenges/" + challenge.category + ")** yet. 🐳"
+          description: "Looks like " + getMdLinksForUids([member.id]) + " hasn't owned challenge **[" + challenge.name + "](https://www.hackthebox.eu/home/challenges/" + challenge.category + ")** yet. 🐳"
         }
       })
     }
@@ -1364,18 +1521,33 @@ async function sendCheckMemberOwnedChallengeMsg(message, challengename, username
   }
 }
 
+function tryGetValidMember(username, discordName) {
+  var member = getMemberByName(username)
+  if (!member) {
+    member = getMemberByName(discordName)
+    if (!member) {
+      return null
+    }
+  }
+  return member
+}
 
 async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
   var machine = getMachineByName(boxname)
-  var user = getMemberByName(username)
-  console.log(machine, user)
-  if (user && machine) {
+  var member = tryGetValidMember(username, message.author.username)
+
+  if (checkSelfName(username) && !member) {
+    humanSend(message, (maybe(0.4) ? "" : "Hmm... ") + "I don't know who you are yet! Try saying `I am (username) on HTB` to associate your HTB account with your Discord username.\n(You can find my man page with the `help` command anytime.)")
+    return
+  }
+
+  if (member && machine) {
     var own = {}
-    if (machine.rootOwners.some(own => own.uid == user.id)) {
-      own = machine.rootOwners.find(own => own.uid == user.id)
+    if (machine.rootOwners.some(own => own.uid == member.id)) {
+      own = machine.rootOwners.find(own => own.uid == member.id)
     }
-    else if (machine.userOwners.some(own => own.uid == user.id)) {
-      own = machine.userOwners.find(own => own.uid == user.id)
+    else if (machine.userOwners.some(own => own.uid == member.id)) {
+      own = machine.userOwners.find(own => own.uid == member.id)
       own['userOnly'] = true
     } else {
       own['userOnly'] = false
@@ -1390,12 +1562,12 @@ async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
             url: 'https://www.hackthebox.eu/home/machines/profile/' + machine.id,
           },
           thumbnail: {
-            url: user.thumb,
+            url: member.thumb,
           },
           footer: {
             text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
           },
-          description: (own.userOnly == true ? "🥳 Looks like " : "👑 W00t! ") + getMdLinksForUids([user.id]) + (own.userOnly == true ? " got " : " owned ") + (own.userOnly == true ? "user" : "root") + " on " + getMdLinksForBoxIds([machine.id]) + (own.userOnly == true ? " (" : " ") + timeSince(new Date(own.timestamp * 1000)) + (own.userOnly == true ? ")." : ".")
+          description: (own.userOnly == true ? "🥳 Looks like " : "👑 W00t! ") + (checkSelfName(username) ? " **[You](https://www.hackthebox.eu/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + (own.userOnly == true ? " got " : " owned ") + (own.userOnly == true ? "user" : "root") + " on " + getMdLinksForBoxIds([machine.id]) + (own.userOnly == true ? " (" : " ") + timeSince(new Date(own.timestamp * 1000)) + (own.userOnly == true ? ")." : ".")
         }
       })
     } else {
@@ -1408,12 +1580,12 @@ async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
             url: 'https://www.hackthebox.eu/home/machines/profile/' + machine.id,
           },
           thumbnail: {
-            url: user.thumb,
+            url: member.thumb,
           },
           footer: {
             text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
           },
-          description: "Looks like " + getMdLinksForUids([user.id]) + " hasn't got user or root on " + getMdLinksForBoxIds([machine.id]) + " yet. 🍔🍟"
+          description: "Looks like " + getMdLinksForUids([member.id]) + " hasn't got user or root on " + getMdLinksForBoxIds([machine.id]) + " yet. 🍔🍟"
         }
       })
     }
@@ -1557,17 +1729,23 @@ function sendBoxInfoMsg(message, machineName) {
   }
 }
 
-function sendMemberInfoMsg(message, memberName) {
-  if (!memberName) {
-    memberName == ""
-  } else { console.log("challengeName: " + memberName) }
-  var member = getMemberByName(memberName)
+function sendMemberInfoMsg(message, username) {
+  if (!username) {
+    username == ""
+  } else { console.log("memberName: " + username) }
+  var member = tryGetValidMember(username, message.author.username)
+
+  if (checkSelfName(username) && !member) {
+    humanSend(message, (maybe(0.4) ? "" : "Hmm... ") + "I don't know who you are yet! Try saying `I am (username) on HTB` to associate your HTB account with your Discord username.\n(You can find my man page with the `help` command anytime.)")
+    return
+  }
+
   if (member) {
     message.channel.send({
       embed: {
         color: 3066993,
         author: {
-          name: tryDiscordifyUid(member.id),
+          name: tryDiscordifyUid(member.id) + (checkSelfName(username) ? "  [You]" : ""),
           icon_url: TEAM_STATS.thumb,
           url: 'https://www.hackthebox.eu/home/users/profile/' + member.id,
         },
@@ -1595,7 +1773,7 @@ function sendMemberInfoMsg(message, memberName) {
     }
     )
   } else {
-    message.reply("Sorry, I don't know a '" + memberName + "'. 🤔")
+    message.reply("Sorry, I don't know a '" + username + "'. 🤔")
   }
 }
 
@@ -1742,10 +1920,9 @@ async function asyncForEach(array, callback) {
 var KEYSTROKE = 7
 async function humanSend(message, msg, noMention) {
   return new Promise(async resolve => {
-    if (!msg || msg.length == 0) {
-      msg == " "
+    if (!msg || msg.length == 0 || msg == undefined) {
+      msg = " "
     }
-    console.log(msg)
     var msgLines = msg.split('\\n')
     if (noMention) {
       var firstline = false
@@ -1822,9 +1999,13 @@ async function sendHelpMsg(message, note) {
 
 async function sendIncompleteBoxesByMemberMsg(message, note, username) {
   boxIds = []
-  uid = unameToUid(username)
-  if (uid in TEAM_MEMBERS) {
-    user = TEAM_MEMBERS[uid]
+  var member = tryGetValidMember(username, message.author.username)
+  if (checkSelfName(username) && !member) {
+    humanSend(message, (maybe(0.4) ? "" : "Hmm... ") + "I don't know who you are yet! Try saying `I am (username) on HTB` to associate your HTB account with your Discord username.\n(You can find my man page with the `help` command anytime.)")
+    return
+  }
+  if (member) {
+    uid = member.id
     console.log("Constructing incomplete boxes by member message... [", "UID:", uid, "Username: ", username, "]")
     Object.values(MACHINES).sort((a, b) => (a.id > b.id) ? 1 : -1).forEach(machine => {
       var match = machine.rootOwners.find(user => user.uid === uid);
@@ -1847,8 +2028,8 @@ async function sendIncompleteBoxesByMemberMsg(message, note, username) {
         embed: {
           color: 15105570,
           author: {
-            name: (uid in TEAM_MEMBERS ? tryDiscordifyUid(user.id) + ": Incomplete machines" : '٩(͡๏̯͡๏)۶'),
-            icon_url: user.thumb,
+            name: (uid in TEAM_MEMBERS ? tryDiscordifyUid(member.id) + ": Incomplete machines" : '٩(͡๏̯͡๏)۶'),
+            icon_url: member.thumb,
             url: 'https://www.hackthebox.eu/home/users/profile/' + uid,
           },
           footer: {
@@ -1859,7 +2040,7 @@ async function sendIncompleteBoxesByMemberMsg(message, note, username) {
       }
       )
     } else {
-      message.channel.send('Looks like ' + tryDiscordifyUid(user.id) + " has done them all!!! 👑\n(Is that even possible???)")
+      message.channel.send('Looks like ' + tryDiscordifyUid(member.id) + " has done them all!!! 👑\n(Is that even possible???)")
     }
 
   } else {
@@ -1869,9 +2050,15 @@ async function sendIncompleteBoxesByMemberMsg(message, note, username) {
 
 async function sendOwnedBoxesByMemberMsg(message, note, username) {
   boxIds = []
-  uid = unameToUid(username)
-  if (uid in TEAM_MEMBERS) {
-    user = TEAM_MEMBERS[uid]
+  var member = tryGetValidMember(username, message.author.username)
+
+  if (checkSelfName(username) && !member) {
+    humanSend(message, (maybe(0.4) ? "" : "Hmm... ") + "I don't know who you are yet! Try saying `I am (username) on HTB` to associate your HTB account with your Discord username.\n(You can find my man page with the `help` command anytime.)")
+    return
+  }
+  
+  if (member) {
+    var uid = member.id
     console.log("Constructing owned boxes by member message... [", "UID:", uid, "Username: ", username, "]")
     Object.values(MACHINES).sort((a, b) => (a.id > b.id) ? 1 : -1).forEach(machine => {
       var match = machine.rootOwners.find(user => user.uid === uid);
@@ -1896,8 +2083,8 @@ async function sendOwnedBoxesByMemberMsg(message, note, username) {
         embed: {
           color: "AQUA",
           author: {
-            name: (uid in TEAM_MEMBERS ? 'Root ownage for ' + tryDiscordifyUid(user.id) : '٩(͡๏̯͡๏)۶'),
-            icon_url: user.thumb,
+            name: (uid in TEAM_MEMBERS ? 'Root ownage for ' + tryDiscordifyUid(member.id) : '٩(͡๏̯͡๏)۶'),
+            icon_url: member.thumb,
             url: 'https://www.hackthebox.eu/home/users/profile/' + uid,
           },
           footer: {
@@ -1908,7 +2095,7 @@ async function sendOwnedBoxesByMemberMsg(message, note, username) {
       }
       )
     } else {
-      message.channel.send('Looks like ' + tryDiscordifyUid(user.id) + " hasn't completed any boxes yet.")
+      message.channel.send('Looks like ' + tryDiscordifyUid(member.id) + " hasn't completed any boxes yet.")
     }
 
   } else {
@@ -1919,16 +2106,21 @@ async function sendOwnedBoxesByMemberMsg(message, note, username) {
 async function sendOwnedChallengesByMemberMsg(message, note, username) {
   console.log(username)
   var challengeNames = []
-  uid = unameToUid(username)
-  console.log(uid)
-  if (uid in TEAM_MEMBERS) {
-    user = TEAM_MEMBERS[uid]
+  var member = tryGetValidMember(username, message.author.username)
+
+  if (checkSelfName(username) && !member) {
+    humanSend(message, (maybe(0.4) ? "" : "Hmm... ") + "I don't know who you are yet! Try saying `I am (username) on HTB` to associate your HTB account with your Discord username.\n(You can find my man page with the `help` command anytime.)")
+    return
+  }
+  
+  if (member) {
+    uid = member.id
     console.log("UID: ", uid)
     Object.values(CHALLENGES).forEach(challengecategory => {
       challengecategory.forEach(challenge => {
         var match = challenge.owners.find(user => user.uid === uid);
         if (match) {
-          console.log(challenge.name + " completed by " + tryDiscordifyUid(user.id) + ": YES");
+          console.log(challenge.name + " completed by " + tryDiscordifyUid(member.id) + ": YES");
           challengeNames.push(challenge.name)
         } else {
           // console.error("User w/ ID of '" + uid + "' not found.")
@@ -1936,7 +2128,7 @@ async function sendOwnedChallengesByMemberMsg(message, note, username) {
       })
     });
     console.log
-    console.log("Constructing a box ownage tally message for " + tryDiscordifyUid(user.id) + "...")
+    console.log("Constructing a box ownage tally message for " + tryDiscordifyUid(member.id) + "...")
     var ownedChallengeLinks = getMdLinksForChallengeCategoriesByChallengeNames(challengeNames)
     if (ownedChallengeLinks) {
       categoryOverflows = {}
@@ -1970,8 +2162,8 @@ async function sendOwnedChallengesByMemberMsg(message, note, username) {
         embed: {
           color: "AQUA",
           author: {
-            name: 'Challenge ownage for ' + tryDiscordifyUid(user.id),
-            icon_url: user.thumb,
+            name: 'Challenge ownage for ' + tryDiscordifyUid(member.id),
+            icon_url: member.thumb,
             url: 'https://www.hackthebox.eu/home/users/profile/' + uid,
           },
           footer: {
@@ -1983,7 +2175,7 @@ async function sendOwnedChallengesByMemberMsg(message, note, username) {
       }
       )
     } else {
-      message.channel.send('Looks like ' + tryDiscordifyUid(user.id) + " hasn't completed any challenges yet.")
+      message.channel.send('Looks like ' + tryDiscordifyUid(member.id) + " hasn't completed any challenges yet.")
     }
 
   } else {
@@ -1995,16 +2187,21 @@ async function sendOwnedChallengesByMemberMsg(message, note, username) {
 async function sendIncompleteChallengesByMemberMsg(message, note, username) {
   console.log(username)
   var challengeNames = []
-  uid = unameToUid(username)
-  console.log(uid)
-  if (uid in TEAM_MEMBERS) {
-    user = TEAM_MEMBERS[uid]
+  var member = tryGetValidMember(username, message.author.username)
+
+  if (checkSelfName(username) && !member) {
+    humanSend(message, (maybe(0.4) ? "" : "Hmm... ") + "I don't know who you are yet! Try saying `I am (username) on HTB` to associate your HTB account with your Discord username.\n(You can find my man page with the `help` command anytime.)")
+    return
+  }
+  
+  if (member) {
+    var uid = member.id
     console.log("UID: ", uid)
     Object.values(CHALLENGES).forEach(challengecategory => {
       challengecategory.forEach(challenge => {
         var match = challenge.owners.find(user => user.uid === uid);
         if (!match) {
-          console.log(challenge.name + " not completed by " + tryDiscordifyUid(user.id) + ": TRUE");
+          console.log(challenge.name + " not completed by " + tryDiscordifyUid(member.id) + ": TRUE");
           challengeNames.push(challenge.name)
         } else {
           // console.error("User w/ ID of '" + uid + "' not found.")
@@ -2012,7 +2209,7 @@ async function sendIncompleteChallengesByMemberMsg(message, note, username) {
       })
     });
     console.log
-    console.log("Constructing an incomplete challenge tally message for " + tryDiscordifyUid(user.id) + "...")
+    console.log("Constructing an incomplete challenge tally message for " + tryDiscordifyUid(member.id) + "...")
     var ownedChallengeLinks = getMdLinksForChallengeCategoriesByChallengeNames(challengeNames)
     if (ownedChallengeLinks) {
       categoryOverflows = {}
@@ -2046,8 +2243,8 @@ async function sendIncompleteChallengesByMemberMsg(message, note, username) {
         embed: {
           color: 16737095,
           author: {
-            name: tryDiscordifyUid(user.id) + ": Incomplete challenges",
-            icon_url: user.thumb,
+            name: tryDiscordifyUid(member.id) + ": Incomplete challenges",
+            icon_url: member.thumb,
             url: 'https://www.hackthebox.eu/home/users/profile/' + uid,
           },
           footer: {
@@ -2059,7 +2256,7 @@ async function sendIncompleteChallengesByMemberMsg(message, note, username) {
       }
       )
     } else {
-      message.channel.send('Looks like ' + tryDiscordifyUid(user.id) + " has done them all!!! 👑\n(Is that even possible???)")
+      message.channel.send('Looks like ' + tryDiscordifyUid(member.id) + " has done them all!!! 👑\n(Is that even possible???)")
     }
 
   } else {
@@ -2219,6 +2416,7 @@ async function handleMessage(message) {
           case "unforgetMe": try { unignoreMember(inf.uid.numberValue); humanSend(message, result.fulfillmentText, true) } catch (e) { console.log(e) }; break;
           case "getTeamInfo": try { sendTeamInfoMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "getTeamLeaders": try { sendTeamLeadersMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
+          case "getTeamLeader": try { sendTeamLeaderMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "getTeamRanking": try { sendTeamRankingMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "getBoxInfo": try { sendBoxInfoMsg(message, inf.machines.stringValue) } catch (e) { console.log(e) }; break;
           case "getBoxOwners": try { sendBoxOwnersMsg(message, inf.machines.stringValue) } catch (e) { console.log(e) }; break;
@@ -2241,6 +2439,7 @@ async function handleMessage(message) {
           case "getChallengeOwners": try { sendChallengeOwnersMsg(message, inf.challengeName.stringValue); } catch (e) { console.log(e) }; break;
           case "getLastChallengeOwner": try { sendLastChallengeOwnerMsg(message, inf.challengeName.stringValue) } catch (e) { console.log(e) }; break;
           case "getMemberInfo": try { sendMemberInfoMsg(message, inf.username.stringValue); } catch (e) { message.channel.stopTyping(true); console.log(e) }; break;
+          case "getMemberRank": try { sendMemberRankMsg(message, inf.username.stringValue); } catch (e) { message.channel.stopTyping(true); console.log(e) }; break;
           default:
             message.channel.stopTyping(true)
             if (result.fulfillmentText) {
