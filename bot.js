@@ -260,7 +260,7 @@ function ratingString(rating) { // CONVERTS A NUMERIC RATING (0.0 - 5.0) TO UNIC
   }
 }
 
-function isAdmin(author){
+function isAdmin(author) {
   return author.id == process.env.ADMIN_DISCORD_ID
 }
 
@@ -1138,7 +1138,7 @@ function between(str, oTag, cTag) {
   );
 }
 
-function sendFileMsg(){
+function sendFileMsg() {
   try {
     contents = JSON.parse(fs.readFileSync('config/sendable.json', 'utf8'));
     client.channels.cache.get(contents.channel.toString()).send(contents.message)
@@ -1146,6 +1146,16 @@ function sendFileMsg(){
     console.error(error)
   }
 }
+
+async function setStatus(client, statusType, activityVerb, activityName) {
+  await client.user.setPresence({ activity: { name: activityName, type: activityVerb}, status: statusType })
+    .then(console.log)
+    .catch(console.error);
+  await client.user.setStatus('idle')
+    .then(console.log)
+    .catch(console.error);
+}
+
 
 async function main() {
   await importDbBackup()
@@ -1163,15 +1173,16 @@ async function main() {
         }
       } else if (isAdmin(message.author)) {
         console.log("Message is from dev admin, responding...")
-        if (message.content.includes("📤")){
+        if (message.content.includes("📤")) {
           console.log("Sending file msg...")
           sendFileMsg()
-        }
-        try {
-          handleMessage(message)
-        } catch (error) {
-          console.log(error)
-          message.channel.stopTyping()
+        } else {
+          try {
+            handleMessage(message)
+          } catch (error) {
+            console.log(error)
+            message.channel.stopTyping()
+          }
         }
       } else if (!message.author.bot) {
         console.log("Dev mode enabled but received message not from admin. Not responding from this instance...")
@@ -1181,6 +1192,10 @@ async function main() {
 
 }
 main()
+
+
+
+
 
 
 function sendBoxOwnersMsg(message, machineName) {
@@ -2077,7 +2092,7 @@ async function sendOwnedBoxesByMemberMsg(message, note, username) {
     humanSend(message, (maybe(0.4) ? "" : "Hmm... ") + "I don't know who you are yet! Try saying `I am (username) on HTB` to associate your HTB account with your Discord username.\n(You can find my man page with the `help` command anytime.)")
     return
   }
-  
+
   if (member) {
     var uid = member.id
     console.log("Constructing owned boxes by member message... [", "UID:", uid, "Username: ", username, "]")
@@ -2133,7 +2148,7 @@ async function sendOwnedChallengesByMemberMsg(message, note, username) {
     humanSend(message, (maybe(0.4) ? "" : "Hmm... ") + "I don't know who you are yet! Try saying `I am (username) on HTB` to associate your HTB account with your Discord username.\n(You can find my man page with the `help` command anytime.)")
     return
   }
-  
+
   if (member) {
     uid = member.id
     console.log("UID: ", uid)
@@ -2214,7 +2229,7 @@ async function sendIncompleteChallengesByMemberMsg(message, note, username) {
     humanSend(message, (maybe(0.4) ? "" : "Hmm... ") + "I don't know who you are yet! Try saying `I am (username) on HTB` to associate your HTB account with your Discord username.\n(You can find my man page with the `help` command anytime.)")
     return
   }
-  
+
   if (member) {
     var uid = member.id
     console.log("UID: ", uid)
@@ -2391,6 +2406,23 @@ async function doFakeReboot(message, note) {
     .catch(console.error);
 }
 
+async function admin_setStatus(message, params) {
+  if (message.author.id == process.env.ADMIN_DISCORD_ID) {
+    status = params.discordStatusType.stringValue
+    activity = params.discordStatusActivity.stringValue
+    actverb = params.discordStatusVerb.stringValue
+    humanSend(message, any("You're the boss!\nsetting the status 😊",
+      "Ok " + message.author.username + ", you got it!",
+      "you got it, " + message.author.username + " 😁",
+      "no prob, i'm on it 🍉",
+      "ok, on it! 🍉"), false)
+    await setStatus(message.client, (status ? status : "online"), (actverb ? actverb : ""), (activity ? activity : ""))
+  } else {
+    humanSend(message, "You're not the boss. 👔\nTry asking __@Propolis__!")
+  }
+}
+
+
 async function admin_forceUpdate(message) {
   if (message.author.id == process.env.ADMIN_DISCORD_ID) {
     humanSend(message, any("You're the boss!\nupdating the DB 😊",
@@ -2429,14 +2461,15 @@ async function handleMessage(message) {
         message.channel.startTyping()
         switch (job) {
           // case "removeLastXMessages": break;
-          case "admin.forceUpdateData": try { admin_forceUpdate(message) } catch (e) { console.log(e) };; break;
-          case "help": try { sendHelpMsg(message, result.fulfillmentText) } catch (e) { console.log(e) };; break;
+          case "admin.forceUpdateData": try { admin_forceUpdate(message) } catch (e) { console.log(e) }; break;
+          case "admin.setStatus": try { admin_setStatus(message,inf) } catch (e) { console.log(e) }; break;
+          case "help": try { sendHelpMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "forgetMe.htbIgnore.getUserID": try { forgetHtbDataFlow(message, "htb", inf.uid.numberValue) } catch (e) { console.log(e) }; break;
           case "forgetMe.discordUnlink.getUserID": try { forgetHtbDataFlow(message, "discord", inf.uid.numberValue) } catch (e) { console.log(e) }; break;
           case "forgetMe.all.getUserID": try { forgetHtbDataFlow(message, "all", inf.uid.numberValue) } catch (e) { console.log(e) }; break;
           case "linkDiscord": try { linkDiscord(message, ("numberValue" in Object.keys(inf.uid) ? "uid" : "uname"), ("numberValue" in Object.keys(inf.uid) ? inf.uid.numberValue : inf.username.stringValue)) } catch (e) { console.log(e) }; break;
           case "unforgetMe": try { unignoreMember(inf.uid.numberValue); humanSend(message, result.fulfillmentText, true) } catch (e) { console.log(e) }; break;
-          case "getTeamBadge": try {humanSend(message,HTBROOT+'badge/team/image/2102?nonce='+genRanHex(4)+'\n'+result.fulfillmentText, true)} catch (e) { console.log(e) }; break;
+          case "getTeamBadge": try { humanSend(message, HTBROOT + 'badge/team/image/2102?nonce=' + genRanHex(4) + '\n' + result.fulfillmentText, true) } catch (e) { console.log(e) }; break;
           case "getTeamInfo": try { sendTeamInfoMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "getTeamLeaders": try { sendTeamLeadersMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "getTeamLeader": try { sendTeamLeaderMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
