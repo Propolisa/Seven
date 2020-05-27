@@ -2007,7 +2007,7 @@ async function sendIncompleteBoxesByMemberMsg(message, note, username) {
   if (member) {
     uid = member.id
     console.log("Constructing incomplete boxes by member message... [", "UID:", uid, "Username: ", username, "]")
-    Object.values(MACHINES).sort((a, b) => (a.id > b.id) ? 1 : -1).forEach(machine => {
+    Object.values(MACHINES).sort((a, b) => (Number(a.id) < Number(b.id)) ? 1 : -1).forEach(machine => {
       var match = machine.rootOwners.find(user => user.uid === uid);
       if (!match) {
         // console.log(machine.title + " not completed by " + username + ": YES");
@@ -2060,7 +2060,7 @@ async function sendOwnedBoxesByMemberMsg(message, note, username) {
   if (member) {
     var uid = member.id
     console.log("Constructing owned boxes by member message... [", "UID:", uid, "Username: ", username, "]")
-    Object.values(MACHINES).sort((a, b) => (a.id > b.id) ? 1 : -1).forEach(machine => {
+    Object.values(MACHINES).sort((a, b) => (Number(a.id) < Number(b.id)) ? 1 : -1).forEach(machine => {
       var match = machine.rootOwners.find(user => user.uid === uid);
       if (match) {
         // console.log(machine.title + " completed by " + username + ": YES");
