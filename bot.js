@@ -526,10 +526,11 @@ function getIdFromDiscordName(username) {
 function tryDiscordifyUid(uid) {
   if (uid in TEAM_MEMBERS) {
     if (uid in DISCORD_LINKS) {
-      if (DISCORD_LINKS[uid].username != TEAM_MEMBERS[uid].name) {
-        return TEAM_MEMBERS[uid].name + " (🌀" + FMT(DISCORD_LINKS[uid].username, "bs") + ")"
+      discordName = DISCORD_LINKS[uid].username
+      if (discordName != TEAM_MEMBERS[uid].name) {
+        return TEAM_MEMBERS[uid].name + " (🌀" + FMT(discordName, "bs") + ")"
       } else {
-        return "🌀" + FMT(DISCORD_LINKS[uid].username, "bs")
+        return "🌀" + FMT(discordName, "bs")
       }
     } else {
       return TEAM_MEMBERS[uid].name
@@ -950,8 +951,9 @@ async function getUnreleasedMachine(session) {
     }
   })
 }
-async function updateData() {
+async function updateData(client) {
   return new Promise(async resolve => {
+    await updateDiscordIds(client,"655499722454335488")
     SESSION = await getSession()
     console.log("Got a logged in session.")
     MACHINES_BUFFER = await getMachines()
@@ -1156,12 +1158,37 @@ async function setStatus(client, statusType, activityVerb, activityName) {
     .catch(console.error);
 }
 
+async function setStatus(client, statusType, activityVerb, activityName) {
+  await client.user.setPresence({ activity: { name: activityName, type: activityVerb}, status: statusType })
+    .then(console.log)
+    .catch(console.error);
+  await client.user.setStatus(statusType)
+    .then(console.log)
+    .catch(console.error);
+}
+
+async function updateDiscordIds(client, guildIdString){
+  keys = Object.keys(DISCORD_LINKS)
+  guild = await client.guilds.resolve(guildIdString)
+  
+  for (let i = 0; i < keys.length; i++) {
+    var link = DISCORD_LINKS[keys[i]];
+    guildMember = await guild.members.resolve(link.id) ;
+    member = guildMember.user
+    console.log(DISCORD_LINKS[keys[i]],member)
+    DISCORD_LINKS[keys[i]] = member || DISCORD_LINKS[i]
+  }
+  updateCache(['DISCORD_LINKS'])
+}
+
+
 
 async function main() {
   await importDbBackup()
-  setInterval(() => updateData(), 5 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 5 MINUTES
   client.login(process.env.BOT_TOKEN)               // BOT_TOKEN is the Discord client secret
-  client.on('ready', () => {
+  client.on('ready', async () => {
+    setInterval(() => updateData(client), 5 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 5 MINUTES
+    console.log("Updated Discord User Objects...")
     console.warn('INFO: Discord connection established...')
     client.on('message', message => {
       if (!DEV_MODE_ON) {
@@ -1618,7 +1645,7 @@ async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
           footer: {
             text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
           },
-          description: "Looks like " + getMdLinksForUids([member.id]) + " hasn't got user or root on " + getMdLinksForBoxIds([machine.id]) + " yet. 🍔🍟"
+          description: "Looks like " + getMdLinksForUids([member.id]) + " hasn't got user or root on " + getMdLinksForBoxIds([machine.id]) + " yet. 🍟"
         }
       })
     }
@@ -1672,7 +1699,7 @@ async function sendTeamInfoMsg(message, note) {
       },
       description: (":flag_nl:⠀Hacking for the fun of it! Learning it as a bonus").substring(0, 2040),
       image: {
-        url: 'https://www.hackthebox.eu/badge/team/image/2102',
+        url: genBadgeUrl(),
       },
       fields: [
         {
@@ -2391,6 +2418,11 @@ async function forgetHtbDataFlow(message, identifier, uid) {
 
 }
 
+function genBadgeUrl(){
+  return (HTBROOT + 'badge/team/image/2102?nonce=' + genRanHex(4))
+}
+
+
 
 async function doFakeReboot(message, note) {
   await humanSend(message, note, true)
@@ -2427,7 +2459,7 @@ async function admin_forceUpdate(message) {
       "you got it, boss! 😁",
       "no prob, i'm on it 🍉",
       "ok, on it! 🍉"), false)
-    await updateData()
+    await updateData(message.client)
     humanSend(message, any("hey I finished updating the DB! 😊",
       "Heyo, the DB update is finished!",
       "The data has been updated!",
@@ -2466,7 +2498,7 @@ async function handleMessage(message) {
           case "forgetMe.all.getUserID": try { forgetHtbDataFlow(message, "all", inf.uid.numberValue) } catch (e) { console.log(e) }; break;
           case "linkDiscord": try { linkDiscord(message, ("numberValue" in Object.keys(inf.uid) ? "uid" : "uname"), ("numberValue" in Object.keys(inf.uid) ? inf.uid.numberValue : inf.username.stringValue)) } catch (e) { console.log(e) }; break;
           case "unforgetMe": try { unignoreMember(inf.uid.numberValue); humanSend(message, result.fulfillmentText, true) } catch (e) { console.log(e) }; break;
-          case "getTeamBadge": try { humanSend(message, HTBROOT + 'badge/team/image/2102?nonce=' + genRanHex(4) + '\n' + result.fulfillmentText, true) } catch (e) { console.log(e) }; break;
+          case "getTeamBadge": try {humanSend(message, genBadgeUrl() + '\n' + result.fulfillmentText, true) } catch (e) { console.log(e) }; break;
           case "getTeamInfo": try { sendTeamInfoMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "getTeamLeaders": try { sendTeamLeadersMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "getTeamLeader": try { sendTeamLeaderMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
