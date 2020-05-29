@@ -6,6 +6,7 @@ if (process.env.HEROKU) {
 }
 
 
+const flagEmoji = require('country-flag-emoji')
 const Discord = require('discord.js')
 const client = new Discord.Client()
 const { JSDOM } = require("jsdom");
@@ -340,6 +341,9 @@ function mdItemizeList(arr) {
   return out
 }
 
+function getFlag(countryCode){
+  return flagEmoji.data[countryCode].emoji || "🏴‍☠️"
+}
 
 
 async function updateTeamStats() {
@@ -922,7 +926,7 @@ async function getUnreleasedMachine(session) {
       try {
         maker2 = { "id": makers[1].innerHTML, "name": makers[1].href.substring(45) }
       } catch (error) {
-        console.log(error + '\nNo 2nd maker ...')
+        console.log('\nNo 2nd maker ...')
       }
       response = await session.requestAsync('/home/machines/profile/' + urmid)
       var $ = require('jquery')(new JSDOM(response.body).window);
@@ -993,16 +997,20 @@ async function parseUserOwns(body, id) {
     //console.log("Parsing owns for uid: " + uid)
     try {
       var $ = require('jquery')(new JSDOM(body).window);
-      var thumb = $($('.header-icon').find('.image-lg')[0]).attr('data-cfsrc')
-      rank = $($('.header-title')[0]).find('.c-white').text()
-      joinDate = parseSingleDate($('div[title^="Joined on"]').attr("title").substring(10))
+      var thumb = $($('.header-icon').find('.image-lg')[0]).attr('data-cfsrc') || "https://www.hackthebox.eu/images/favicon.png"
+      rank = $($('.header-title')[0]).find('.c-white').text() || "Noob"
+      joinDate = parseSingleDate($('div[title^="Joined on"]').attr("title").substring(10)) || 0
+      countryName = $('.flag')[0].parentNode.attributes['title'].value || "Pangea"
+      countryCode = $('.flag').attr("class").split(/\s+/)[1].split('-')[1].toUpperCase() || ""
       //console.log($('div[title^="Joined on"]').attr("title").substring(10))
       //console.log(joinDate)
       try {
         TEAM_MEMBERS[id].thumb = thumb
+        TEAM_MEMBERS[id].countryName = countryName
+        TEAM_MEMBERS[id].countryCode = countryCode
         TEAM_MEMBERS[id].rank = rank
         TEAM_MEMBERS[id].joinDate = joinDate
-        // console.log(TEAM_MEMBERS[uid])
+        console.log(TEAM_MEMBERS[id])
       } catch (error) {
         console.error(error)
       }
@@ -1085,6 +1093,8 @@ class TeamMember {
     this.totalOwns = owns
     this.thumb = false
     this.rank = "Noob"
+    this.countryName = "Pangea"
+    this.countryCode = ""
     this.joinDate = 0
     this.stats = { users: 0, roots: 0, challenges: 0, respects: 0, bloods: 0 }
   }
@@ -1468,7 +1478,7 @@ async function sendTeamLeaderMsg(message, note) {
       title: tryDiscordifyUid(member.id),
       color: "GREEN",
       author: {
-        name: "💯⠀Team Leader",
+        name: any("💯","🏆","🎖️","🔮","💠","💎","👑")+" Team Leader",
         icon_url: TEAM_STATS.thumb,
         url: 'https://www.hackthebox.eu/home/teams/profile/2102',
       },
@@ -1497,11 +1507,17 @@ async function sendMemberRankMsg(message, username) {
   }
 
   if (member) {
+    teamRank = getMemberTeamRankById(member.id)
+    if (teamRank == 1){
+      sendTeamLeaderMsg(message)
+      return
+    }
     message.channel.send({
       embed: {
-        title: "🦸⠀" + tryDiscordifyUid(member.id) + " Rank",
+        title: tryDiscordifyUid(member.id),
         color: 3447003,
         author: {
+          name:"Member Rank",
           icon_url: TEAM_STATS.thumb,
           url: 'https://www.hackthebox.eu/home/teams/profile/2102',
         },
@@ -1511,13 +1527,12 @@ async function sendMemberRankMsg(message, username) {
         footer: {
           text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
         },
-        description: "Global Rank: **[# " + member.siterank + "](http://0)**\nTeam Rank:  **[# " + getMemberTeamRankById(member.id) + "](http://0)**"
+        description: "Global Rank: **[# " + member.siterank + "](http://0)**\nTeam Rank:  **[# " + teamRank + "](http://0)**"
       }
     })
   } else {
     message.channel.send({
       embed: {
-        title: "🦸⠀Member Rank",
         color: 3447003,
         author: {
           name: "Unrecognized User",
@@ -1809,7 +1824,7 @@ function sendMemberInfoMsg(message, username) {
           icon_url: TEAM_STATS.thumb,
           url: 'https://www.hackthebox.eu/home/users/profile/' + member.id,
         },
-        description: "**[" + member.rank + "](http://0)** | Member of Hack The Box since __" + formatRelative(new Date(member.joinDate), new Date()) + "__.",
+        description: getFlag(member.countryCode)+"⠀**[" + member.rank + ".](http://0)** | HTB member since **" + formatRelative(new Date(member.joinDate), new Date()) + "**",
         thumbnail: {
           url: member.thumb,
         },
@@ -1821,8 +1836,8 @@ function sendMemberInfoMsg(message, username) {
             name: '` ' + FMT(rankSymbol(member.rank) + ' Site Rank : ', 's') + FMT((member.siterank == 99999999 ? "Unranked" : member.siterank + nth(member.siterank)), 'bs') + '     `', inline: false,
             value: '```diff\n'
               + '+ 🧡 𝖱𝖾𝗌𝗉𝖾𝖼𝗍    : ' + member.stats.respects + '\n'
-              + '+ 👨‍💻 𝖱𝗈𝗈𝗍𝗌      : ' + member.stats.roots + '\n'
-              + '  💻 𝖴𝗌𝖾𝗋𝗌      : ' + member.stats.users + '\n'
+              + '+ 👨‍💻 𝖱𝗈𝗈𝗍𝗌      : ' + member.totalOwns.root + '\n'
+              + '  💻 𝖴𝗌𝖾𝗋𝗌      : ' + member.totalOwns.user + '\n'
               + '  ⚙️ 𝖢𝗁𝖺𝗅𝗅𝖾𝗇𝗀𝖾𝗌  : ' + member.stats.challenges + '\n'
               + '- 🔴 𝟣𝗌𝗍 𝖡𝗅𝗈𝗈𝖽𝗌  : ' + member.stats.bloods + '\n'
               // + (challenge.unreleased ? FMT('- Replaces : ') + challenge.unreleased.replaces : '')

@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
+    "country-flag-emoji": "^1.0.3",
     "cryptiles": "^4.1.3",
     "csrf-login": "^1.17.2",
     "date-fns": "^2.13.0",
