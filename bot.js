@@ -161,6 +161,9 @@ function getOsImage(osName) {
 function timeSince(date) {
   var seconds = Math.floor((new Date() - date) / 1000);
   var interval = Math.floor(seconds / 31536000);
+  if (interval <= 1){
+    return "just now"
+  }
   if (interval > 1) {
     return interval + " years ago";
   }
@@ -342,7 +345,13 @@ function mdItemizeList(arr) {
 }
 
 function getFlag(countryCode){
-  return flagEmoji.data[countryCode].emoji || "🏴‍☠️"
+  flag = "🏴‍☠️"
+  try {
+    flag = flagEmoji.data[countryCode].emoji
+  } catch (error) {
+    // console.error(error)
+  }
+  return flag
 }
 
 
@@ -1471,6 +1480,52 @@ async function sendTeamRankingMsg(message, note) {
 
 }
 
+
+function sp(size, arr){ //size - child_array.length
+  var out = [],i = 0, n= Math.ceil((arr.length)/size); 
+  while(i < n) { out.push(arr.splice(0, (i==n-1) && size < arr.length ? arr.length: size));  i++;} 
+  return out;
+}
+
+async function sendFlagboardMsg(message) {
+  // var flags = []
+  flags = Object.values(TEAM_MEMBERS).map(member => getFlag(member.countryCode));
+  flagsSorted = flags.slice().sort();
+  var flagString = ""
+  var sortedFlagString = ""
+  // TEAM_STATS.topMembers.forEach(memberId => {
+  //   member = TEAM_MEMBERS[memberId]
+  //   var flagLink = "["+getFlag(member.countryCode)+"](http://" + member.id + ")"
+  //   flags.push(flagLink)
+  // });
+  sortSpliced = sp(9,flagsSorted)
+  spliced = sp(9,flags)
+  spliced.forEach(flagRow => {
+    flagString += "\n" + flagRow.join(" ")
+  });
+  sortSpliced.forEach(flagRow => {
+    sortedFlagString += "\n" + flagRow.join(" ")
+  });
+
+  await message.channel.send({
+    embed: {
+      color: "LUMINOUS_VIVID_PINK",
+      author: {
+        name: any("🗺️","🌎","🌏","🌍","🌐","🚩","⛳","🛂","🛫","✈️","🛩️")+" Team Locales",
+        url: 'https://www.hackthebox.eu/home/teams/profile/2102',
+      },
+      thumbnail: {
+        url: TEAM_STATS.thumb,
+      },
+      footer: {
+        text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
+      },
+      description: any(sortedFlagString,flagString)
+    }
+  })
+  if (maybe(0.20)) await humanSend(message, any("Globalization is a form of artificial intelligence. 🍉", "Teamwork makes the dream work 👑"), true)
+}
+
 async function sendTeamLeaderMsg(message, note) {
   member = TEAM_MEMBERS[TEAM_STATS.topMembers[0]]
   await message.channel.send({
@@ -1572,7 +1627,7 @@ async function sendCheckMemberOwnedChallengeMsg(message, challengename, username
           footer: {
             text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
           },
-          description: "🥳 W00t! " + (checkSelfName(username) ? " **[You](https://www.hackthebox.eu/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + " completed challenge **[" + challenge.name + "](https://www.hackthebox.eu/home/challenges/" + challenge.category + ")** (" + timeSince(new Date(own.timestamp * 1000)) + ")."
+          description: "🥳 W00t! " + (checkSelfName(username) ? " **[You](https://www.hackthebox.eu/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + " completed challenge **[" + challenge.name + "](https://www.hackthebox.eu/home/challenges/" + challenge.category + ") " + timeSince(new Date(own.timestamp * 1000)) + "**."
         }
       })
     } else {
@@ -1642,7 +1697,7 @@ async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
           footer: {
             text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
           },
-          description: (own.userOnly == true ? "🥳 Looks like " : "👑 W00t! ") + (checkSelfName(username) ? " **[You](https://www.hackthebox.eu/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + (own.userOnly == true ? " got " : " owned ") + (own.userOnly == true ? "user" : "root") + " on " + getMdLinksForBoxIds([machine.id]) + (own.userOnly == true ? " (" : " ") + timeSince(new Date(own.timestamp * 1000)) + (own.userOnly == true ? ")." : ".")
+          description: (own.userOnly == true ? "🥳 Looks like " : "👑 W00t! ") + (checkSelfName(username) ? " **[You](https://www.hackthebox.eu/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + (own.userOnly == true ? " got " : " owned ") + (own.userOnly == true ? "user" : "root") + " on " + getMdLinksForBoxIds([machine.id]) + (own.userOnly == true ? " **" : " ") + timeSince(new Date(own.timestamp * 1000)) + (own.userOnly == true ? "**." : ".")
         }
       })
     } else {
@@ -2518,6 +2573,7 @@ async function handleMessage(message) {
           case "getTeamLeaders": try { sendTeamLeadersMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "getTeamLeader": try { sendTeamLeaderMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "getTeamRanking": try { sendTeamRankingMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
+          case "getFlagboard": try { sendFlagboardMsg(message) } catch (e) { console.log(e) }; break;
           case "getBoxInfo": try { sendBoxInfoMsg(message, inf.machines.stringValue) } catch (e) { console.log(e) }; break;
           case "getBoxOwners": try { sendBoxOwnersMsg(message, inf.machines.stringValue) } catch (e) { console.log(e) }; break;
           case "getOwnedBoxesByMember": try { sendOwnedBoxesByMemberMsg(message, result.fulfillmentText, inf.username.stringValue) } catch (e) { console.log(e) }; break;
