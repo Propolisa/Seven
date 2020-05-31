@@ -24,7 +24,7 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  <details>
   <summary>demo</summary>
   
-  <img src="/docs/img/get_help.png?raw=true" width="642">
+  <img src="docs/img/get_help.png?raw=true" width="642">
 </details>
 
 ### 🔮 Get info on who owned XYZ:
@@ -33,9 +33,9 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  <details>
   <summary>demo</summary>
   
-  <img src="/docs/img/get_box_owners_2.png?raw=true" width="642">
-  <img src="/docs/img/get_last_box_owner.png?raw=true" width="642">
-  <img src="/docs/img/get_challenge_owners.png?raw=true" width="642">
+  <img src="docs/img/get_box_owners_2.png?raw=true" width="642">
+  <img src="docs/img/get_last_box_owner.png?raw=true" width="642">
+  <img src="docs/img/get_challenge_owners.png?raw=true" width="642">
 </details>
 
 ### 🐉 Get box / challenge info:
@@ -44,10 +44,10 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  <details>
   <summary>demo</summary>
   
-  <img src="/docs/img/get_box_info.png?raw=true" width="642">
-  <img src="/docs/img/get_newest_box.png?raw=true" width="642">
-  <img src="/docs/img/get_oldest_box.png?raw=true" width="642">
-  <img src="/docs/img/get_challenge_info.png?raw=true" width="642">
+  <img src="docs/img/get_box_info.png?raw=true" width="642">
+  <img src="docs/img/get_newest_box.png?raw=true" width="642">
+  <img src="docs/img/get_oldest_box.png?raw=true" width="642">
+  <img src="docs/img/get_challenge_info.png?raw=true" width="642">
 </details>
 
 ### 🧙 See achievements / profile for a specific team member:
@@ -57,9 +57,9 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  <details>
   <summary>demo</summary>
   
-  <img src="/docs/img/get_challenge_ownage_by_member.png?raw=true" width="642">
-  <img src="/docs/img/get_box_ownage_by_member.png?raw=true" width="642">
-  <img src="/docs/img/get_member_info.png?raw=true" width="642">
+  <img src="docs/img/get_challenge_ownage_by_member.png?raw=true" width="642">
+  <img src="docs/img/get_box_ownage_by_member.png?raw=true" width="642">
+  <img src="docs/img/get_member_info.png?raw=true" width="642">
 </details>
 
 ### 🏅 Get team rank and information:
@@ -70,9 +70,9 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  <details>
   <summary>demo</summary>
   
-  <img src="/docs/img/get_team_info.png?raw=true" width="642">
-  <img src="/docs/img/get_team_founder_info.png?raw=true" width="642">
-  <img src="/docs/img/get_team_leaderboard.png?raw=true" width="642">
+  <img src="docs/img/get_team_info.png?raw=true" width="642">
+  <img src="docs/img/get_team_founder_info.png?raw=true" width="642">
+  <img src="docs/img/get_team_leaderboard.png?raw=true" width="642">
 </details>
 
 ### 💚🐒 Try your best to confuse / bond with / annoy Seven:
@@ -82,10 +82,10 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
  <details>
   <summary>demo</summary>
   
-  <img src="/docs/img/small_talk_0.png?raw=true" width="642">
-  <img src="/docs/img/small_talk_1.png?raw=true" width="642">
-  <img src="/docs/img/small_talk_2.png?raw=true" width="642">
-  <img src="/docs/img/small_talk_3.png?raw=true" width="642">
+  <img src="docs/img/small_talk_0.png?raw=true" width="642">
+  <img src="docs/img/small_talk_1.png?raw=true" width="642">
+  <img src="docs/img/small_talk_2.png?raw=true" width="642">
+  <img src="docs/img/small_talk_3.png?raw=true" width="642">
 </details>
 
 ## 👥 Privacy
