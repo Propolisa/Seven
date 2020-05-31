@@ -22,7 +22,7 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 ### 🔰 Print a manpage:
  >  "help" / "what can you do" / "user manual"
  <details>
-  <summary>demo</summary>
+  <summary>📸</summary>
   
   <img src="docs/img/get_help.png?raw=true" width="642">
 </details>
