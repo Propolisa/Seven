@@ -373,7 +373,8 @@ function parsePusherOwn(data, channel = false) {
   // console.log(JSON.stringify(msg.childNodes[1]))
   var lemmas = msg.childNodes[1].rawText.trim().split(" ")
   verb = lemmas[0]
-  if (unameToUid(username))
+  if (unameToUid(username)) {
+
     // This relates to a member on our team.
     if (verb == "solved") {
       // This is a challenge own.
@@ -392,47 +393,49 @@ function parsePusherOwn(data, channel = false) {
             thumbnail: {
               url: "https://raw.githubusercontent.com/encharm/Font-Awesome-SVG-PNG/master/white/png/24/cogs.png"
             },
-            description: "**[" + tryDiscordifyUid(unameToUid(username)) + "](http://0)**" + " owned " + type + " [" + targetName + "](http://0)"
+            description: "**[" + tryDiscordifyUid(unameToUid(username)) + "](http://0)**" + " owned **" + type + "** [" + targetName + "](http://0)" + "!"
           }
         })
-      } else {
-        // This is (probably) a box own.
-        target = lemmas[1]
-        switch (target) {
-          case "root": case "system": type = "root"; break;
-          case "user": type = "user"; break;
-          default: break;
-        }
       }
-      targetName = msg.childNodes[2].structuredText.trim()
-      if (channel) {
-        console.log(targetName)
-        console.log(getMachineByName(targetName))
-        channel.send({
-          embed: {
-            color: 3447003,
-            author: {
-              name: "HTB Machine Own Event",
-              // icon_url: TEAM_STATS.thumb,
-              url: '',
-            },
-            thumbnail: {
-              url: getMachineByName(targetName).thumb.replace('_thumb', ''),
-            },
-            description: "**[" + username + "](http://0)**" + " owned " + type + " on " + getMdLinksForBoxIds([getMachineByName(targetName).id])
-          }
-        })
+    } else {
+      // This is (probably) a box own.
+      target = lemmas[1]
+      switch (target) {
+        case "root": case "system": type = "root"; break;
+        case "user": type = "user"; break;
+        default: break;
       }
     }
-  if (type == "unknown") {
-    // console.log(full)
-    return full
+    targetName = msg.childNodes[2].structuredText.trim()
+    if (channel) {
+      console.log(targetName)
+      console.log(getMachineByName(targetName))
+      channel.send({
+        embed: {
+          color: 3447003,
+          author: {
+            name: "HTB Machine Own Event",
+            // icon_url: TEAM_STATS.thumb,
+            url: '',
+          },
+          thumbnail: {
+            url: getMachineByName(targetName).thumb.replace('_thumb', ''),
+          },
+          description: "**[" + username + "](http://0)**" + " owned **" + type + "** on " + getMdLinksForBoxIds([getMachineByName(targetName).id]) + "!"
+        }
+      })
+    }
+    if (type == "unknown") {
+      console.log(full)
+      return full
+    } else {
+      logtext = (full + " (" + username + " owned " + type + " [" + targetName + "])")
+      console.log(logtext)
+      return logtext
+    }
   } else {
-    logtext = (full + " (" + username + " owned " + type + " [" + targetName + "])")
-    console.log(logtext)
-    return logtext
+    console.log("Received pusher own not related to our team...")
   }
-
 }
 
 function updateMachineStats() {
@@ -902,7 +905,7 @@ async function getChallenges(session) {
         var ratePro = Number($(spans[2]).text())
         var rateSucks = Number($(spans[3]).text())
         // console.log("GOT CHALLENGE. Datestring:", dateString, "|", "title:", title, "| maker:", maker.name, "| maker2:", (maker2 ? maker2.name : "None"), "| points:", points, "| active:", isActive, "| solvercount:", solverCount, "| ratings:", ratePro, rateSucks * -1)
-        console.log("Got challenge", title + " ...")
+        // console.log("Got challenge", title + " ...")
         var thisChallenge = new HtbChallenge(title, category, releaseDate, description, isActive, points, maker, maker2, solverCount, ratePro, rateSucks)
         thisCategoryChallenges.push(thisChallenge)
         if (!getChallengeByName(thisChallenge.name)) {
@@ -978,9 +981,9 @@ function getTeamData(session) {
 
 function getSession() {
   return csrfLogin({
-      username: process.env.HTB_EMAIL,
-      password: process.env.HTB_PASS
-    })
+    username: process.env.HTB_EMAIL,
+    password: process.env.HTB_PASS
+  })
 }
 
 function getUserProfile(id, session) {
@@ -1028,7 +1031,7 @@ function unameToUid(username) {
       id = member.id
     }
   });
-  return false
+  return id
 }
 
 async function getUnreleasedMachine(session) {
@@ -1090,7 +1093,7 @@ async function updateData(client) {
       var SESH = await getSession()
       LATEST_CSRF_TOKEN = SESH.jar._jar.store.idx['www.hackthebox.eu']['/']['csrftoken'].value || ""
       console.log("Got CSRF TOKEN:", LATEST_CSRF_TOKEN)
-      updatePusherAuth({"X-CSRF-Token": LATEST_CSRF_TOKEN})
+      updatePusherAuth({ "X-CSRF-Token": LATEST_CSRF_TOKEN })
       console.log("Got a logged in session.")
       MACHINES_BUFFER = await getMachines()
       CHALLENGES = await getChallenges(SESH)
@@ -1320,8 +1323,8 @@ async function updateDiscordIds(client, guildIdString) {
   updateCache(['DISCORD_LINKS'])
 }
 
-function updatePusherAuth(authObj){
-  if (PUSHER_CLIENT){
+function updatePusherAuth(authObj) {
+  if (PUSHER_CLIENT) {
     PUSHER_CLIENT.auth = authObj
     console.log("Updated Pusher Auth..")
   }
