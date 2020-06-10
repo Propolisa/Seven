@@ -43,7 +43,8 @@ function getCsrfInput (conf, body) {
 function csrfLogin (options) {
   options = options || {}
 
-  var conf = require('./config')(options)
+  var conf = require('./config.js')(options)
+  delete conf.stores.env // security measure
   var host = conf.get('host')
   la(check.unemptyString(host), 'missing host', host)
 

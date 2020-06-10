@@ -29,6 +29,7 @@ const Pusher = require('pusher-client');
 const HTMLParser = require('node-html-parser');
 console.log(new HtbMachine())
 var UPDATE_LOCK = false
+var LATEST_CSRF_TOKEN = "jFwVXa2rD5xbU48swIufAdjQkQPCRWrM7eYoEEPG"
 
 var DISCORD_ANNOUNCE_CHAN = false
 var PUSHER_CLIENT = false
@@ -44,6 +45,7 @@ async function setupPusherClient(csrfToken) {
     cluster: 'eu',
     encrypted: true
   });
+
   PUSHER_OWNS_CHANNEL = PUSHER_CLIENT.subscribe('owns-channel');
 
   PUSHER_OWNS_CHANNEL.bind('display-info',
@@ -372,6 +374,7 @@ function parsePusherOwn(data, channel = false) {
   var lemmas = msg.childNodes[1].rawText.trim().split(" ")
   verb = lemmas[0]
   if (unameToUid(username))
+    // This relates to a member on our team.
     if (verb == "solved") {
       // This is a challenge own.
       type = "challenge"
@@ -422,7 +425,7 @@ function parsePusherOwn(data, channel = false) {
       }
     }
   if (type == "unknown") {
-    console.log(full)
+    // console.log(full)
     return full
   } else {
     logtext = (full + " (" + username + " owned " + type + " [" + targetName + "])")
@@ -914,7 +917,9 @@ async function getChallenges(session) {
 
 function getTeamData(session) {
   return new Promise(resolve => {
+    console.log("Starting team data collection...")
     session.request('/home/teams/profile/2102', function (error, response, body) {
+
       teamData = {}
       teamUsers = {}
       var $ = require('jquery')(new JSDOM(body).window);
@@ -972,12 +977,10 @@ function getTeamData(session) {
 }
 
 function getSession() {
-  return new Promise(resolve => {
-    var promOne = csrfLogin({
+  return csrfLogin({
       username: process.env.HTB_EMAIL,
       password: process.env.HTB_PASS
-    }).then(function (info) { resolve(info) })
-  })
+    })
 }
 
 function getUserProfile(id, session) {
@@ -1084,21 +1087,24 @@ async function updateData(client) {
     console.log("Update lock engaged. Beginning update attempt.")
     return new Promise(async resolve => {
       await updateDiscordIds(client, "655499722454335488")
-      SESSION = await getSession()
+      var SESH = await getSession()
+      LATEST_CSRF_TOKEN = SESH.jar._jar.store.idx['www.hackthebox.eu']['/']['csrftoken'].value || ""
+      console.log("Got CSRF TOKEN:", LATEST_CSRF_TOKEN)
+      updatePusherAuth({"X-CSRF-Token": LATEST_CSRF_TOKEN})
       console.log("Got a logged in session.")
       MACHINES_BUFFER = await getMachines()
-      CHALLENGES = await getChallenges(SESSION)
-      TEAM_MEMBERS_TEMP = await getTeamData(SESSION)
+      CHALLENGES = await getChallenges(SESH)
+      TEAM_MEMBERS_TEMP = await getTeamData(SESH)
       if (Object.keys(TEAM_MEMBERS_TEMP).length > Object.keys(TEAM_MEMBERS).length) {
         TEAM_MEMBERS = TEAM_MEMBERS_TEMP
       }
-      urmachine = await getUnreleasedMachine(SESSION)
+      urmachine = await getUnreleasedMachine(SESH)
       console.warn(urmachine ? "INFO: Got unreleased machine " + urmachine.title + "..." : "INFO: There are currently no machines in unreleased section.")
       if (urmachine) {
         MACHINES[urmachine.id.toString()] = urmachine
         MACHINES_BUFFER[urmachine.id.toString()] = urmachine
       }
-      await getOwnageData(SESSION, TEAM_MEMBERS)
+      await getOwnageData(SESH, TEAM_MEMBERS)
       MACHINES = MACHINES_BUFFER
       await removeDuplicates()
       console.log("UPDATED DATA. Total machines : " + Object.values(MACHINES).length)
@@ -1314,15 +1320,23 @@ async function updateDiscordIds(client, guildIdString) {
   updateCache(['DISCORD_LINKS'])
 }
 
-
+function updatePusherAuth(authObj){
+  if (PUSHER_CLIENT){
+    PUSHER_CLIENT.auth = authObj
+    console.log("Updated Pusher Auth..")
+  }
+}
 
 async function main() {
   await importDbBackup()
   client.login(process.env.BOT_TOKEN)               // BOT_TOKEN is the Discord client secret
   client.on('ready', async () => {
+    setupPusherClient(LATEST_CSRF_TOKEN)
     DISCORD_ANNOUNCE_CHAN = await client.users.cache.get("679986418466029568").createDM()
     // console.log(DISCORD_ANNOUNCE_CHAN)
-    setInterval(() => updateData(client), 5 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 5 MINUTES0
+    console.log(DISCORD_LINKS)
+    updateData(client)
+    setInterval(() => updateData(client), 5 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 5 MINUTES
     console.log("Updated Discord User Objects...")
     console.warn('INFO: Discord connection established...')
     client.on('message', message => {
