@@ -29,20 +29,24 @@ const Pusher = require('pusher-client');
 const HTMLParser = require('node-html-parser');
 console.log(new HtbChallenge)
 
+var UPDATE_LOCK = true
 
 var DISCORD_ANNOUNCE_CHAN = false
+var PUSHER_CLIENT = false
 
-var pusher = new Pusher('97608bf7532e6f0fe898', {
-  authEndpoint: 'https://www.hackthebox.eu/pusher/auth',
-  auth: {
-    "X-CSRF-Token": "AlDPEzaehkrMApaqQJQAb9MFuYjeGTKPm3UEaOoQ"
-  },
-  authTransport: "ajax",
-  cluster: 'eu',
-  encrypted: true
-});
+function setupPusherClient(csrfToken) {
+  return new Pusher('97608bf7532e6f0fe898', {
+    authEndpoint: 'https://www.hackthebox.eu/pusher/auth',
+    auth: {
+      "X-CSRF-Token": csrfToken
+    },
+    authTransport: "ajax",
+    cluster: 'eu',
+    encrypted: true
+  });
+}
 
-const ownsChannel = pusher.subscribe('owns-channel');
+const ownsChannel = PUSHER_CLIENT.subscribe('owns-channel');
 
 ownsChannel.bind('display-info',
   function (data) {
@@ -56,7 +60,7 @@ ownsChannel.bind('display-info',
   }
 );
 
-pusher.connection.bind('state_change', function (states) {
+PUSHER_CLIENT.connection.bind('state_change', function (states) {
   // states = {previous: 'oldState', current: 'newState'}
   console.log("Pusher client state changed from " + states.previous + " to " + states.current);
 });
@@ -1076,39 +1080,47 @@ async function getUnreleasedMachine(session) {
   })
 }
 async function updateData(client) {
-  return new Promise(async resolve => {
-    await updateDiscordIds(client, "655499722454335488")
-    SESSION = await getSession()
-    console.log("Got a logged in session.")
-    MACHINES_BUFFER = await getMachines()
-    CHALLENGES = await getChallenges(SESSION)
-    TEAM_MEMBERS_TEMP = await getTeamData(SESSION)
-    if (Object.keys(TEAM_MEMBERS_TEMP).length > Object.keys(TEAM_MEMBERS).length) {
-      TEAM_MEMBERS = TEAM_MEMBERS_TEMP
-    }
-    urmachine = await getUnreleasedMachine(SESSION)
-    console.warn(urmachine ? "INFO: Got unreleased machine " + urmachine.title + "..." : "INFO: There are currently no machines in unreleased section.")
-    if (urmachine) {
-      MACHINES[urmachine.id.toString()] = urmachine
-      MACHINES_BUFFER[urmachine.id.toString()] = urmachine
-    }
-    await getOwnageData(SESSION, TEAM_MEMBERS)
-    MACHINES = MACHINES_BUFFER
-    await removeDuplicates()
-    console.log("UPDATED DATA. Total machines : " + Object.values(MACHINES).length)
-    console.log("               Total members : " + Object.values(TEAM_MEMBERS).length)
-    updateCacheSuccessful = await updateCache()
-    console.log(updateCacheSuccessful ? "All data backed up to the cloud for a rainy day..." : "Export failed...")
-    /* TO HANDLE EXPORTS WITHOUT DB (USING LOCAL JSON FILES ( useful for dev )):::
-    |  exportData(MACHINES, "machines.json")
-    |  exportData(CHALLENGES, "challenges.json")
-    |  exportData(TEAM_MEMBERS, "team_members.json");
-    |  exportData(TEAM_MEMBERS_IGNORED, "team_members_ignored.json")
-    |  exportData(DISCORD_LINKS, "discord_links.json")
-    \  exportData(TEAM_STATS, "team_stats.json")  */
-    LAST_UPDATE = new Date()
-    resolve()
-  })
+  if (!UPDATE_LOCK) {
+    UPDATE_LOCK = true
+    console.log("Update lock engaged. Beginning update attempt.")
+    return new Promise(async resolve => {
+      await updateDiscordIds(client, "655499722454335488")
+      SESSION = await getSession()
+      console.log("Got a logged in session.")
+      MACHINES_BUFFER = await getMachines()
+      CHALLENGES = await getChallenges(SESSION)
+      TEAM_MEMBERS_TEMP = await getTeamData(SESSION)
+      if (Object.keys(TEAM_MEMBERS_TEMP).length > Object.keys(TEAM_MEMBERS).length) {
+        TEAM_MEMBERS = TEAM_MEMBERS_TEMP
+      }
+      urmachine = await getUnreleasedMachine(SESSION)
+      console.warn(urmachine ? "INFO: Got unreleased machine " + urmachine.title + "..." : "INFO: There are currently no machines in unreleased section.")
+      if (urmachine) {
+        MACHINES[urmachine.id.toString()] = urmachine
+        MACHINES_BUFFER[urmachine.id.toString()] = urmachine
+      }
+      await getOwnageData(SESSION, TEAM_MEMBERS)
+      MACHINES = MACHINES_BUFFER
+      await removeDuplicates()
+      console.log("UPDATED DATA. Total machines : " + Object.values(MACHINES).length)
+      console.log("               Total members : " + Object.values(TEAM_MEMBERS).length)
+      updateCacheSuccessful = await updateCache()
+      console.log(updateCacheSuccessful ? "All data backed up to the cloud for a rainy day..." : "Export failed...")
+      /* TO HANDLE EXPORTS WITHOUT DB (USING LOCAL JSON FILES ( useful for dev )):::
+      |  exportData(MACHINES, "machines.json")
+      |  exportData(CHALLENGES, "challenges.json")
+      |  exportData(TEAM_MEMBERS, "team_members.json");
+      |  exportData(TEAM_MEMBERS_IGNORED, "team_members_ignored.json")
+      |  exportData(DISCORD_LINKS, "discord_links.json")
+      \  exportData(TEAM_STATS, "team_stats.json")  */
+      LAST_UPDATE = new Date()
+      UPDATE_LOCK = false
+      console.log("Update lock released.")
+      resolve()
+    })
+  } else {
+    console.warn("WARN: DATA UPDATE NOT STARTED, AS ONE IS ALREADY IN PROGRESS.")
+  }
 }
 
 
