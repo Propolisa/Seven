@@ -27,9 +27,8 @@ const HtbChallenge = require('./helpers/classes/HtbChallenge').HtbChallenge
 const TeamMember = require('./helpers/classes/TeamMember').TeamMember
 const Pusher = require('pusher-client');
 const HTMLParser = require('node-html-parser');
-console.log(new HtbChallenge)
 
-var UPDATE_LOCK = true
+var UPDATE_LOCK = false
 
 var DISCORD_ANNOUNCE_CHAN = false
 var PUSHER_CLIENT = false
@@ -1323,7 +1322,7 @@ async function main() {
   client.login(process.env.BOT_TOKEN)               // BOT_TOKEN is the Discord client secret
   client.on('ready', async () => {
     DISCORD_ANNOUNCE_CHAN = await client.users.cache.get("679986418466029568").createDM()
-    console.log(DISCORD_ANNOUNCE_CHAN)
+    // console.log(DISCORD_ANNOUNCE_CHAN)
     setInterval(() => updateData(client), 5 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 5 MINUTES0
     console.log("Updated Discord User Objects...")
     console.warn('INFO: Discord connection established...')
