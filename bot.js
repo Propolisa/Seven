@@ -1309,7 +1309,7 @@ async function updateDiscordIds(client, guildIdString) {
     var link = DISCORD_LINKS[keys[i]];
     guildMember = await guild.members.resolve(link.id);
     member = guildMember.user
-    console.log(DISCORD_LINKS[keys[i]], member)
+    // console.log(DISCORD_LINKS[keys[i]], member)
     DISCORD_LINKS[keys[i]] = member || DISCORD_LINKS[i]
   }
   updateCache(['DISCORD_LINKS'])
@@ -2557,7 +2557,6 @@ async function linkDiscord(message, idType, id) {
 async function unlinkDiscord(message, id) {
   if (id in DISCORD_LINKS) {
     try {
-      console.log(typeof id, id)
       delete DISCORD_LINKS[id]
       await humanSend(message, "[Discord Unlink] Dissociated HTB user " + uidToUname(id) + " (" + id + ") from Discord account (" + message.author.tag + ")", true)
       updateCache(["discord_links"])
