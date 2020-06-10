@@ -1130,7 +1130,7 @@ async function parseUserOwns(body, id) {
         TEAM_MEMBERS[id].countryCode = countryCode
         TEAM_MEMBERS[id].rank = rank
         TEAM_MEMBERS[id].joinDate = joinDate
-        console.log(TEAM_MEMBERS[id])
+        // console.log(TEAM_MEMBERS[id])
       } catch (error) {
         console.error(error)
       }
