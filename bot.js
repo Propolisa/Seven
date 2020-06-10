@@ -22,12 +22,12 @@ const dflow = new dialogflow.SessionsClient({ credentials: JSON.parse(process.en
 const dFlowEnt = require('./helpers/update.js')
 const strings = require('./static/strings.js')
 const safeEval = require('safe-eval')
-const HtbMachine = require('./helpers/classes/HtbMachine').HtbMachine
-const HtbChallenge = require('./helpers/classes/HtbChallenge').HtbChallenge
-const TeamMember = require('./helpers/classes/TeamMember').TeamMember
+const HtbMachine = require('./helpers/classes/HtbMachine')
+const HtbChallenge = require('./helpers/classes/HtbChallenge')
+const TeamMember = require('./helpers/classes/TeamMember')
 const Pusher = require('pusher-client');
 const HTMLParser = require('node-html-parser');
-
+console.log(new HtbMachine())
 var UPDATE_LOCK = false
 
 var DISCORD_ANNOUNCE_CHAN = false
@@ -743,7 +743,7 @@ function getMdLinksForOwnList(memberOwnList) { // Get markdown link to a HTB use
     memberOwnList.forEach(memberOwn => {
       if (memberOwn.uid in TEAM_MEMBERS) {
         if (memberOwn.uid in DISCORD_LINKS) {
-          console.log(JSON.stringify(DISCORD_LINKS[memberOwn.uid].username) + " " + TEAM_MEMBERS[memberOwn.uid].name)
+          console.log(DISCORD_LINKS[memberOwn.uid].username + " / " + TEAM_MEMBERS[memberOwn.uid].name)
         }
         screenNames.push('[' + tryDiscordifyUid(memberOwn.uid) + ']' + '(' + 'https://www.hackthebox.eu/home/users/profile/' + memberOwn.uid + ' ' + "'HTB Profile for " + TEAM_MEMBERS[memberOwn.uid].name + (memberOwn.uid in DISCORD_LINKS ? " / @" + DISCORD_LINKS[memberOwn.uid].tag : "") + "')")
       } else {
@@ -830,9 +830,7 @@ function getMachines() {
         var machinePoints = jp.query(machines, '$.*.points')
         machineReleases = parseDateArray(machineReleases)
         machineRetireDates = parseDateArray(machineRetireDates)
-
         for (let i = 0; i < machineIds.length; i++) {
-          //console.log(machineNames[i])
           machineSet[machineIds[i].toString()] = new HtbMachine(machineNames[i],
             machineIds[i].toString(),
             machineThumbs[i],
@@ -848,6 +846,7 @@ function getMachines() {
             false
           )
         }
+        console.log(machineSet)
         resolve(machineSet);
       })
       .catch(function (err) {
@@ -2672,7 +2671,6 @@ async function handleMessage(message) {
         var job = result.intent.displayName
         var inf = result.parameters.fields
         console.log('jobinf: ' + job + ' | ' + JSON.stringify(inf))
-        console.log(message.channel)
         message.channel.startTyping()
         switch (job) {
           // case "removeLastXMessages": break;

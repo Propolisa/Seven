@@ -16,4 +16,4 @@ class HtbChallenge {
     }
 }
 
-exports.HtbChallenge = HtbChallenge;
+module.exports = HtbChallenge

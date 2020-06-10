@@ -15,4 +15,4 @@ class TeamMember {
     }
   }
 
-exports.TeamMember = TeamMember;
+  module.exports = TeamMember

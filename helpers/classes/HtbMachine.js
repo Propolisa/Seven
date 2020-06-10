@@ -1,3 +1,14 @@
+function pointsToDifficulty(points) {
+    switch (points) {
+      case 0: return "Unknown"
+      case 20: return "Easy";
+      case 30: return "Medium";
+      case 40: return "Hard";
+      case 50: return "Insane";
+      default: return ""
+    }
+  }
+  
 /** Class representing a Hack the Box machine. */
 class HtbMachine {
     /**
@@ -38,4 +49,4 @@ class HtbMachine {
     }
 }
 
-exports.HtbMachine = HtbMachine;
+module.exports = HtbMachine
