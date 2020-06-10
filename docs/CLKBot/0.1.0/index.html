@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Home - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="HtbChallenge.html">HtbChallenge</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="HtbMachine.html">HtbMachine</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="TeamMember.html">TeamMember</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#understand">understand</a></span></li>
+</nav>
+
+<div id="main">
+    
+
+    
+
+
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+    <section class="readme">
+        <article><h1>💬 Seven</h1>
+<h4>An AI-powered Discord Bot for <a href="https://www.hackthebox.eu">Hack The Box</a> teams.</h4>
+<p><img src="/branding/seven_thumb_128.png" alt="Seven's visage"></p>
+<h2>🍉 About</h2>
+<p>Seven is a semi-intelligent AI chatbot built with <a href="https://dialogflow.cloud.google.com/">DialogFlow</a> and <a href="https://nodejs.org/">Node.js</a>, whose purpose is to make Hack The Box (hackthebox.eu/) achievement data accessible and convenient within team Discord channels.</p>
+<h2>🦾 Capabilities</h2>
+<p>Seven can provide information about</p>
+<ul>
+<li>her own functionality (try asking <code>help</code>, <code>what can you do for me</code>)</li>
+<li>machines (active, retired and unreleased)
+<code>what machines / challenges did [username] do</code></li>
+<li>challenges</li>
+<li>team members</li>
+<li>team details</li>
+<li>ownage (e.g. <code>who did [challenge name, machine name] [last?]</code>)</li>
+<li>team global rank</li>
+<li>team member leaderboard (top members)</li>
+</ul>
+<h2>🃏 Talking to Seven:</h2>
+<p>Seven is super flexible and doesn't rely on templates or specific wordings to understand what users are asking for. However, here are some example queries:</p>
+<h3>🔰 Print a manpage:</h3>
+<blockquote>
+<p>&quot;help&quot; / &quot;what can you do&quot; / &quot;user manual&quot;</p>
+</blockquote>
+ <details>
+  <summary>📸</summary>
+  <img src="docs/img/get_help.png?raw=true" width="642">
+</details>
+<h3>🔮 Get info on who owned XYZ:</h3>
+<blockquote>
+<p>&quot;Who did [<strong>boxname</strong> | <strong>challengename</strong>]&quot;, &quot;Who did mantis&quot;<br>
+&quot;who rooted <strong>json</strong> last&quot;, &quot;who can help me with Forest challenge&quot;</p>
+</blockquote>
+ <details>
+  <summary>demo</summary>
+  <img src="docs/img/get_box_owners_2.png?raw=true" width="642">
+  <img src="docs/img/get_last_box_owner.png?raw=true" width="642">
+  <img src="docs/img/get_challenge_owners.png?raw=true" width="642">
+</details>
+<h3>🐉 Get box / challenge info:</h3>
+<blockquote>
+<p>&quot;[<strong>boxname</strong> | <strong>challengename</strong>]&quot;, &quot;[<strong>boxname</strong>] info&quot; etc<br>
+&quot;what's new&quot;, &quot;what's fresh&quot; /* unreleased / latest box */</p>
+</blockquote>
+ <details>
+  <summary>demo</summary>
+  <img src="docs/img/get_box_info.png?raw=true" width="642">
+  <img src="docs/img/get_newest_box.png?raw=true" width="642">
+  <img src="docs/img/get_oldest_box.png?raw=true" width="642">
+  <img src="docs/img/get_challenge_info.png?raw=true" width="642">
+</details>
+<h3>🧙 See achievements / profile for a specific team member:</h3>
+<blockquote>
+<p>&quot;what challenges did [<strong>username</strong>] do&quot; / &quot;which boxes has [<strong>username</strong>] owned?&quot;<br>
+&quot;who is [<strong>username</strong>]&quot;, &quot;[<strong>username</strong>] info&quot;, &quot;[<strong>username</strong>] ranking&quot;<br>
+&quot;has [<strong>username</strong>] rooted multimaster yet?&quot;, &quot;Did [<strong>username</strong>] solve fuzzy&quot;\</p>
+</blockquote>
+ <details>
+  <summary>demo</summary>
+  <img src="docs/img/get_challenge_ownage_by_member.png?raw=true" width="642">
+  <img src="docs/img/get_box_ownage_by_member.png?raw=true" width="642">
+  <img src="docs/img/get_member_info.png?raw=true" width="642">
+</details>
+<h3>🏅 Get team rank and information:</h3>
+<blockquote>
+<p>&quot;team info&quot;, &quot;who are [<strong>teamname</strong>]&quot;, &quot;[<strong>teamname</strong>]&quot;<br>
+&quot;who is the team founder&quot;<br>
+&quot;team ranking&quot;, &quot;how are we doing&quot; <code>/* team global rank */</code><br>
+&quot;who's on top&quot;, &quot;team leaders&quot;<code> /* group members    */</code></p>
+</blockquote>
+ <details>
+  <summary>demo</summary>
+  <img src="docs/img/get_team_info.png?raw=true" width="642">
+  <img src="docs/img/get_team_founder_info.png?raw=true" width="642">
+  <img src="docs/img/get_team_leaderboard.png?raw=true" width="642">
+</details>
+<h3>💚🐒 Try your best to confuse / bond with / annoy Seven:</h3>
+<blockquote>
+<p>&quot;Where are you from?&quot;, &quot;what rank are you&quot;, &quot;what do you do for fun&quot;<br>
+&quot;What are you working on&quot;, &quot;do you like water skiing&quot;, &quot;what is 4+4&quot;<br>
+&quot;' UNION SELECT ...&quot; ??? &quot;sudo su&quot;, &quot;can you help me hack the pentagon&quot;</p>
+</blockquote>
+ <details>
+  <summary>demo</summary>
+  <img src="docs/img/small_talk_0.png?raw=true" width="642">
+  <img src="docs/img/small_talk_1.png?raw=true" width="642">
+  <img src="docs/img/small_talk_2.png?raw=true" width="642">
+  <img src="docs/img/small_talk_3.png?raw=true" width="642">
+</details>
+<h2>👥 Privacy</h2>
+<p>Seven cares about privacy and allows channel users to:</p>
+<ul>
+<li>associate or disassociate their Discord ID to their HTB account ID (enabling this makes achievement information more useful as users may have different handles on each platform.</li>
+<li>disallow (or re-allow) inclusion of their HTB data in bot responses</li>
+</ul>
+<h2>🛠️ Installation and Usage</h2>
+<p>🚧 This section will be completed soon! A few things have to be finished before Seven can be easily adopted by any team.</p>
+<h2>📜 Roadmap:</h2>
+<p>Some features / nice-to-haves that are under consideration:</p>
+<ul>
+<li>Offer advice / memory jogs from <a href="https://doc.lagout.org/rtfm-red-team-field-manual.pdf">RTFM</a> for users LIKE: &quot;stuck on <strong>[STAGE</strong> [<em>privesc, recon, persistence ...</em>]<strong>]</strong> with <strong>[TECHNOLOGY</strong> [<em>linux, nodejs, sql server ...</em>]<strong>]</strong></li>
+<li>Answer questions invoking possibly long data (while respecting Discord embed limitations):
+<ul>
+<li>&quot;[teamname] members&quot; (get member list, can be up into the hundreds depending on team)</li>
+<li>&quot;machine list&quot; (this returns around 250 results at time of writing)</li>
+<li>&quot;all challenges&quot; (same, around 150)</li>
+<li>Give info on self based on Discord association</li>
+</ul>
+</li>
+</ul></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Mon Jun 01 2020 05:16:23 GMT+0300 (GMT+03:00) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

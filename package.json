@@ -16,11 +16,14 @@
     "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
     "jquery": "^3.5.1",
+    "jsdoc": "^3.6.4",
     "jsdom": "^16.2.2",
     "jsonpath": "^1.0.2",
+    "node-html-parser": "^1.2.18",
     "node-wit": "^5.0.0",
     "pg": "^8.2.1",
     "pg-promise": "^10.5.5",
+    "pusher-client": "^1.1.0",
     "q": "^1.5.1",
     "request": "2.81.0",
     "request-promise": "^4.2.5",
@@ -28,6 +31,7 @@
   },
   "devDependencies": {
     "bufferutil": "^4.0.1",
+    "minami": "^1.2.3",
     "zombie": "^6.1.4"
   }
 }

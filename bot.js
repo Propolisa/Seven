@@ -5,7 +5,7 @@ if (process.env.HEROKU) {
   require('dotenv').config({ path: './config/.env' });
 }
 
-
+require('./helpers/helpers.js')
 const flagEmoji = require('country-flag-emoji')
 const Discord = require('discord.js')
 const client = new Discord.Client()
@@ -22,9 +22,51 @@ const dflow = new dialogflow.SessionsClient({ credentials: JSON.parse(process.en
 const dFlowEnt = require('./helpers/update.js')
 const strings = require('./static/strings.js')
 const safeEval = require('safe-eval')
+const HtbMachine = require('./helpers/classes/HtbMachine').HtbMachine
+const HtbChallenge = require('./helpers/classes/HtbChallenge').HtbChallenge
+const TeamMember = require('./helpers/classes/TeamMember').TeamMember
+const Pusher = require('pusher-client');
+const HTMLParser = require('node-html-parser');
+console.log(new HtbChallenge)
+
+
+var DISCORD_ANNOUNCE_CHAN = false
+
+var pusher = new Pusher('97608bf7532e6f0fe898', {
+  authEndpoint: 'https://www.hackthebox.eu/pusher/auth',
+  auth: {
+    "X-CSRF-Token": "AlDPEzaehkrMApaqQJQAb9MFuYjeGTKPm3UEaOoQ"
+  },
+  authTransport: "ajax",
+  cluster: 'eu',
+  encrypted: true
+});
+
+const ownsChannel = pusher.subscribe('owns-channel');
+
+ownsChannel.bind('display-info',
+  function (data) {
+    try {
+      // console.log("Got message "+data.text+" "+ DISCORD_ANNOUNCE_CHAN)
+      parsePusherOwn(data, DISCORD_ANNOUNCE_CHAN)
+    } catch (error) {
+      console.error(error)
+    }
+
+  }
+);
+
+pusher.connection.bind('state_change', function (states) {
+  // states = {previous: 'oldState', current: 'newState'}
+  console.log("Pusher client state changed from " + states.previous + " to " + states.current);
+});
+
+
 const pgp = require('pg-promise')({
   capSQL: true
 });
+
+
 
 /* CHECK IF DEVELOPER INSTANCE */
 var DEV_MODE_ON = false;
@@ -161,7 +203,7 @@ function getOsImage(osName) {
 function timeSince(date) {
   var seconds = Math.floor((new Date() - date) / 1000);
   var interval = Math.floor(seconds / 31536000);
-  if (interval < 0){
+  if (interval < 0) {
     return "just now"
   }
   if (interval > 1) {
@@ -315,6 +357,77 @@ function unignoreMember(uid) {
   }
 }
 
+function parsePusherOwn(data, channel = false) {
+  var msg = HTMLParser.parse(data.text)
+  var full = msg.structuredText.replace("[Tweet]", "").trim()
+  var username = msg.firstChild.structuredText.trim()
+
+  var type = "unknown"
+  var targetName = "Unknown"
+  // console.log(JSON.stringify(msg.childNodes[1]))
+  var lemmas = msg.childNodes[1].rawText.trim().split(" ")
+  verb = lemmas[0]
+  if (unameToUid(username))
+    if (verb == "solved") {
+      // This is a challenge own.
+      type = "challenge"
+      targetName = msg.childNodes[2].structuredText.trim()
+      if (channel) {
+        console.log(targetName)
+        channel.send({
+          embed: {
+            color: 3447003,
+            author: {
+              name: "HTB Challenge Own Event",
+              // icon_url: TEAM_STATS.thumb,
+              url: '',
+            },
+            thumbnail: {
+              url: "https://raw.githubusercontent.com/encharm/Font-Awesome-SVG-PNG/master/white/png/24/cogs.png"
+            },
+            description: "**[" + tryDiscordifyUid(unameToUid(username)) + "](http://0)**" + " owned " + type + " [" + targetName + "](http://0)"
+          }
+        })
+      } else {
+        // This is (probably) a box own.
+        target = lemmas[1]
+        switch (target) {
+          case "root": case "system": type = "root"; break;
+          case "user": type = "user"; break;
+          default: break;
+        }
+      }
+      targetName = msg.childNodes[2].structuredText.trim()
+      if (channel) {
+        console.log(targetName)
+        console.log(getMachineByName(targetName))
+        channel.send({
+          embed: {
+            color: 3447003,
+            author: {
+              name: "HTB Machine Own Event",
+              // icon_url: TEAM_STATS.thumb,
+              url: '',
+            },
+            thumbnail: {
+              url: getMachineByName(targetName).thumb.replace('_thumb', ''),
+            },
+            description: "**[" + username + "](http://0)**" + " owned " + type + " on " + getMdLinksForBoxIds([getMachineByName(targetName).id])
+          }
+        })
+      }
+    }
+  if (type == "unknown") {
+    console.log(full)
+    return full
+  } else {
+    logtext = (full + " (" + username + " owned " + type + " [" + targetName + "])")
+    console.log(logtext)
+    return logtext
+  }
+
+}
+
 function updateMachineStats() {
   var statBuffer = { "totalBoxes": 0, "activeBoxes": 0, "retiredBoxes": 0, "unreleasedBoxes": 0 }
   time = new Date().getTime()
@@ -344,7 +457,7 @@ function mdItemizeList(arr) {
   return out
 }
 
-function getFlag(countryCode){
+function getFlag(countryCode) {
   flag = "🏴‍☠️"
   try {
     flag = flagEmoji.data[countryCode].emoji
@@ -813,13 +926,11 @@ function getTeamData(session) {
         var totalUsers = Number($('.row-selected').children()[4].innerHTML)
         TEAM_STATS.name = teamName
         TEAM_STATS.thumb = thumb // Not working. Needs fixing
-        console.log(thumb)
         TEAM_STATS.globalRanking = globalRanking
         TEAM_STATS.points = totalPoints
-        console.log(TEAM_STATS)
         TEAM_STATS.owns.roots = totalRoots
         TEAM_STATS.owns.users = totalUsers
-
+        console.log("Team Stats Updated:", TEAM_STATS)
       } catch (error) {
         console.error(error)
         console.error('ERROR: Could not parse team Data. Failing gracefully...')
@@ -845,7 +956,7 @@ function getTeamData(session) {
             //console.log("got here")
             teamUsers[uid] = user
           }
-          console.log(user)
+          // console.log(user)
           //console.log('username: ' + uName + ' uid: ' + uid + ' uOwns: ' + uOwns)
         })
       } catch (error) {
@@ -904,14 +1015,14 @@ function uidToUname(uid) {
 }
 
 function unameToUid(username) {
-  id = 0
+  id = false
   //console.log(Object.values(TEAM_MEMBERS))
   Object.values(TEAM_MEMBERS).forEach(member => {
     if (member.name.toLowerCase() == username.toLowerCase()) {
       id = member.id
     }
   });
-  return id
+  return false
 }
 
 async function getUnreleasedMachine(session) {
@@ -966,7 +1077,7 @@ async function getUnreleasedMachine(session) {
 }
 async function updateData(client) {
   return new Promise(async resolve => {
-    await updateDiscordIds(client,"655499722454335488")
+    await updateDiscordIds(client, "655499722454335488")
     SESSION = await getSession()
     console.log("Got a logged in session.")
     MACHINES_BUFFER = await getMachines()
@@ -1093,59 +1204,60 @@ function removeDuplicates() {
   })
 }
 
-class TeamMember {
-  constructor(name, id, owns, siterank, points) {
-    this.siterank = siterank
-    this.points = points
-    this.name = name;
-    this.id = id;
-    this.totalOwns = owns
-    this.thumb = false
-    this.rank = "Noob"
-    this.countryName = "Pangea"
-    this.countryCode = ""
-    this.joinDate = 0
-    this.stats = { users: 0, roots: 0, challenges: 0, respects: 0, bloods: 0 }
-  }
-}
+// /** Class representing a team member. */
+// class TeamMember {
+//   constructor(name, id, owns, siterank, points) {
+//     this.siterank = siterank
+//     this.points = points
+//     this.name = name;
+//     this.id = id;
+//     this.totalOwns = owns
+//     this.thumb = false
+//     this.rank = "Noob"
+//     this.countryName = "Pangea"
+//     this.countryCode = ""
+//     this.joinDate = 0
+//     this.stats = { users: 0, roots: 0, challenges: 0, respects: 0, bloods: 0 }
+//   }
+// }
 
-class HtbMachine {
-  constructor(title, id, thumb, retired, maker, maker2, os, ip, rating, release, retiredate, points, unreleased) {
-    this.title = title;
-    this.id = id;
-    this.thumb = thumb;
-    this.userOwners = []
-    this.rootOwners = []
-    this.retired = retired
-    this.maker = maker
-    this.maker2 = maker2
-    this.os = os
-    this.ip = ip
-    this.rating = rating
-    this.release = release
-    this.retiredate = retiredate
-    this.points = points
-    this.difficulty = pointsToDifficulty(points)
-    this.unreleased = unreleased
-  }
-}
+// class HtbMachine {
+//   constructor(title, id, thumb, retired, maker, maker2, os, ip, rating, release, retiredate, points, unreleased) {
+//     this.title = title;
+//     this.id = id;
+//     this.thumb = thumb;
+//     this.userOwners = []
+//     this.rootOwners = []
+//     this.retired = retired
+//     this.maker = maker
+//     this.maker2 = maker2
+//     this.os = os
+//     this.ip = ip
+//     this.rating = rating
+//     this.release = release
+//     this.retiredate = retiredate
+//     this.points = points
+//     this.difficulty = pointsToDifficulty(points)
+//     this.unreleased = unreleased
+//   }
+// }
 
-class HtbChallenge {
-  constructor(name, category, date, description, isActive, points, maker, maker2, solverCount, upvotes, downvotes) {
-    this.name = name
-    this.category = category
-    this.releaseDate = date
-    this.description = description
-    this.isActive = isActive
-    this.points = points
-    this.maker = maker
-    this.maker2 = maker2
-    this.solverCount = solverCount
-    this.upvotes = upvotes
-    this.downvotes = downvotes
-    this.owners = []
-  }
-}
+// class HtbChallenge {
+//   constructor(name, category, date, description, isActive, points, maker, maker2, solverCount, upvotes, downvotes) {
+//     this.name = name
+//     this.category = category
+//     this.releaseDate = date
+//     this.description = description
+//     this.isActive = isActive
+//     this.points = points
+//     this.maker = maker
+//     this.maker2 = maker2
+//     this.solverCount = solverCount
+//     this.upvotes = upvotes
+//     this.downvotes = downvotes
+//     this.owners = []
+//   }
+// }
 
 function between(str, oTag, cTag) {
   if (oTag == 'XXX') {
@@ -1169,7 +1281,7 @@ function sendFileMsg() {
 }
 
 async function setStatus(client, statusType, activityVerb, activityName) {
-  await client.user.setPresence({ activity: { name: activityName, type: activityVerb}, status: statusType })
+  await client.user.setPresence({ activity: { name: activityName, type: activityVerb }, status: statusType })
     .then(console.log)
     .catch(console.error);
   await client.user.setStatus(statusType)
@@ -1177,24 +1289,15 @@ async function setStatus(client, statusType, activityVerb, activityName) {
     .catch(console.error);
 }
 
-async function setStatus(client, statusType, activityVerb, activityName) {
-  await client.user.setPresence({ activity: { name: activityName, type: activityVerb}, status: statusType })
-    .then(console.log)
-    .catch(console.error);
-  await client.user.setStatus(statusType)
-    .then(console.log)
-    .catch(console.error);
-}
-
-async function updateDiscordIds(client, guildIdString){
+async function updateDiscordIds(client, guildIdString) {
   keys = Object.keys(DISCORD_LINKS)
   guild = await client.guilds.resolve(guildIdString)
-  
+
   for (let i = 0; i < keys.length; i++) {
     var link = DISCORD_LINKS[keys[i]];
-    guildMember = await guild.members.resolve(link.id) ;
+    guildMember = await guild.members.resolve(link.id);
     member = guildMember.user
-    console.log(DISCORD_LINKS[keys[i]],member)
+    console.log(DISCORD_LINKS[keys[i]], member)
     DISCORD_LINKS[keys[i]] = member || DISCORD_LINKS[i]
   }
   updateCache(['DISCORD_LINKS'])
@@ -1206,7 +1309,9 @@ async function main() {
   await importDbBackup()
   client.login(process.env.BOT_TOKEN)               // BOT_TOKEN is the Discord client secret
   client.on('ready', async () => {
-    setInterval(() => updateData(client), 5 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 5 MINUTES
+    DISCORD_ANNOUNCE_CHAN = await client.users.cache.get("679986418466029568").createDM()
+    console.log(DISCORD_ANNOUNCE_CHAN)
+    setInterval(() => updateData(client), 5 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 5 MINUTES0
     console.log("Updated Discord User Objects...")
     console.warn('INFO: Discord connection established...')
     client.on('message', message => {
@@ -1481,9 +1586,9 @@ async function sendTeamRankingMsg(message, note) {
 }
 
 
-function sp(size, arr){ //size - child_array.length
-  var out = [],i = 0, n= Math.ceil((arr.length)/size); 
-  while(i < n) { out.push(arr.splice(0, (i==n-1) && size < arr.length ? arr.length: size));  i++;} 
+function sp(size, arr) { //size - child_array.length
+  var out = [], i = 0, n = Math.ceil((arr.length) / size);
+  while (i < n) { out.push(arr.splice(0, (i == n - 1) && size < arr.length ? arr.length : size)); i++; }
   return out;
 }
 
@@ -1498,8 +1603,8 @@ async function sendFlagboardMsg(message) {
   //   var flagLink = "["+getFlag(member.countryCode)+"](http://" + member.id + ")"
   //   flags.push(flagLink)
   // });
-  sortSpliced = sp(9,flagsSorted)
-  spliced = sp(9,flags)
+  sortSpliced = sp(9, flagsSorted)
+  spliced = sp(9, flags)
   spliced.forEach(flagRow => {
     flagString += "\n" + flagRow.join(" ")
   });
@@ -1511,7 +1616,7 @@ async function sendFlagboardMsg(message) {
     embed: {
       color: "LUMINOUS_VIVID_PINK",
       author: {
-        name: any("🗺️","🌎","🌏","🌍","🌐","🚩","⛳","🛂","🛫","✈️","🛩️")+" Team Locales",
+        name: any("🗺️", "🌎", "🌏", "🌍", "🌐", "🚩", "⛳", "🛂", "🛫", "✈️", "🛩️") + " Team Locales",
         url: 'https://www.hackthebox.eu/home/teams/profile/2102',
       },
       thumbnail: {
@@ -1520,7 +1625,7 @@ async function sendFlagboardMsg(message) {
       footer: {
         text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
       },
-      description: any(sortedFlagString,flagString)
+      description: any(sortedFlagString, flagString)
     }
   })
   if (maybe(0.20)) await humanSend(message, any("Globalization is a form of artificial intelligence. 🍉", "Teamwork makes the dream work 👑"), true)
@@ -1533,7 +1638,7 @@ async function sendTeamLeaderMsg(message, note) {
       title: tryDiscordifyUid(member.id),
       color: "GREEN",
       author: {
-        name: any("💯","🏆","🎖️","🔮","💠","💎","👑")+" Team Leader",
+        name: any("💯", "🏆", "🎖️", "🔮", "💠", "💎", "👑") + " Team Leader",
         icon_url: TEAM_STATS.thumb,
         url: 'https://www.hackthebox.eu/home/teams/profile/2102',
       },
@@ -1563,7 +1668,7 @@ async function sendMemberRankMsg(message, username) {
 
   if (member) {
     teamRank = getMemberTeamRankById(member.id)
-    if (teamRank == 1){
+    if (teamRank == 1) {
       sendTeamLeaderMsg(message)
       return
     }
@@ -1572,7 +1677,7 @@ async function sendMemberRankMsg(message, username) {
         title: tryDiscordifyUid(member.id),
         color: 3447003,
         author: {
-          name:"Member Rank",
+          name: "Member Rank",
           icon_url: TEAM_STATS.thumb,
           url: 'https://www.hackthebox.eu/home/teams/profile/2102',
         },
@@ -1879,7 +1984,7 @@ function sendMemberInfoMsg(message, username) {
           icon_url: TEAM_STATS.thumb,
           url: 'https://www.hackthebox.eu/home/users/profile/' + member.id,
         },
-        description: getFlag(member.countryCode)+"⠀**[" + member.rank + ".](http://0)** | HTB member since **" + formatRelative(new Date(member.joinDate), new Date()) + "**",
+        description: getFlag(member.countryCode) + "⠀**[" + member.rank + ".](http://0)** | HTB member since **" + formatRelative(new Date(member.joinDate), new Date()) + "**",
         thumbnail: {
           url: member.thumb,
         },
@@ -2488,7 +2593,7 @@ async function forgetHtbDataFlow(message, identifier, uid) {
 
 }
 
-function genBadgeUrl(){
+function genBadgeUrl() {
   return (HTBROOT + 'badge/team/image/2102?nonce=' + genRanHex(4))
 }
 
@@ -2561,14 +2666,14 @@ async function handleMessage(message) {
         switch (job) {
           // case "removeLastXMessages": break;
           case "admin.forceUpdateData": try { admin_forceUpdate(message) } catch (e) { console.log(e) }; break;
-          case "admin.setStatus": try { admin_setStatus(message,inf) } catch (e) { console.log(e) }; break;
+          case "admin.setStatus": try { admin_setStatus(message, inf) } catch (e) { console.log(e) }; break;
           case "help": try { sendHelpMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "forgetMe.htbIgnore.getUserID": try { forgetHtbDataFlow(message, "htb", inf.uid.numberValue) } catch (e) { console.log(e) }; break;
           case "forgetMe.discordUnlink.getUserID": try { forgetHtbDataFlow(message, "discord", inf.uid.numberValue) } catch (e) { console.log(e) }; break;
           case "forgetMe.all.getUserID": try { forgetHtbDataFlow(message, "all", inf.uid.numberValue) } catch (e) { console.log(e) }; break;
           case "linkDiscord": try { linkDiscord(message, ("numberValue" in Object.keys(inf.uid) ? "uid" : "uname"), ("numberValue" in Object.keys(inf.uid) ? inf.uid.numberValue : inf.username.stringValue)) } catch (e) { console.log(e) }; break;
           case "unforgetMe": try { unignoreMember(inf.uid.numberValue); humanSend(message, result.fulfillmentText, true) } catch (e) { console.log(e) }; break;
-          case "getTeamBadge": try {humanSend(message, genBadgeUrl() + '\n' + result.fulfillmentText, true) } catch (e) { console.log(e) }; break;
+          case "getTeamBadge": try { humanSend(message, genBadgeUrl() + '\n' + result.fulfillmentText, true) } catch (e) { console.log(e) }; break;
           case "getTeamInfo": try { sendTeamInfoMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "getTeamLeaders": try { sendTeamLeadersMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "getTeamLeader": try { sendTeamLeaderMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
