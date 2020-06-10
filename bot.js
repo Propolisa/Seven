@@ -33,9 +33,10 @@ var UPDATE_LOCK = true
 
 var DISCORD_ANNOUNCE_CHAN = false
 var PUSHER_CLIENT = false
+var PUSHER_OWNS_CHANNEL = false
 
-function setupPusherClient(csrfToken) {
-  return new Pusher('97608bf7532e6f0fe898', {
+async function setupPusherClient(csrfToken) {
+  PUSHER_CLIENT = new Pusher('97608bf7532e6f0fe898', {
     authEndpoint: 'https://www.hackthebox.eu/pusher/auth',
     auth: {
       "X-CSRF-Token": csrfToken
@@ -44,26 +45,26 @@ function setupPusherClient(csrfToken) {
     cluster: 'eu',
     encrypted: true
   });
-}
+  PUSHER_OWNS_CHANNEL = PUSHER_CLIENT.subscribe('owns-channel');
 
-const ownsChannel = PUSHER_CLIENT.subscribe('owns-channel');
+  PUSHER_OWNS_CHANNEL.bind('display-info',
+    function (data) {
+      try {
+        // console.log("Got message "+data.text+" "+ DISCORD_ANNOUNCE_CHAN)
+        parsePusherOwn(data, DISCORD_ANNOUNCE_CHAN)
+      } catch (error) {
+        console.error(error)
+      }
 
-ownsChannel.bind('display-info',
-  function (data) {
-    try {
-      // console.log("Got message "+data.text+" "+ DISCORD_ANNOUNCE_CHAN)
-      parsePusherOwn(data, DISCORD_ANNOUNCE_CHAN)
-    } catch (error) {
-      console.error(error)
     }
+  );
 
-  }
-);
+  PUSHER_CLIENT.connection.bind('state_change', function (states) {
+    // states = {previous: 'oldState', current: 'newState'}
+    console.log("Pusher client state changed from " + states.previous + " to " + states.current);
+  });
 
-PUSHER_CLIENT.connection.bind('state_change', function (states) {
-  // states = {previous: 'oldState', current: 'newState'}
-  console.log("Pusher client state changed from " + states.previous + " to " + states.current);
-});
+}
 
 
 const pgp = require('pg-promise')({
