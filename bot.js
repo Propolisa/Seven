@@ -1340,7 +1340,7 @@ async function main() {
     DISCORD_ANNOUNCE_CHAN = await client.users.cache.get("679986418466029568").createDM()
     // console.log(DISCORD_ANNOUNCE_CHAN)
     console.log("DISCORD LINKS:", Object.values(DISCORD_LINKS).map(link => link.username).join(", "))
-    // updateData(client)
+    updateData(client)
     setInterval(() => updateData(client), 5 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 5 MINUTES
     console.log("Updated Discord User Objects...")
     console.warn('INFO: Discord connection established...')
