@@ -27,7 +27,8 @@
     "q": "^1.5.1",
     "request": "2.81.0",
     "request-promise": "^4.2.5",
-    "safe-eval": "^0.4.1"
+    "safe-eval": "^0.4.1",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "bufferutil": "^4.0.1",

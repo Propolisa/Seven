@@ -5,7 +5,9 @@ if (process.env.HEROKU) {
   require('dotenv').config({ path: './config/.env' });
 }
 
+
 require('./helpers/helpers.js')
+// const winston = require('winston');
 const flagEmoji = require('country-flag-emoji')
 const Discord = require('discord.js')
 const client = new Discord.Client()
@@ -27,7 +29,7 @@ const HtbChallenge = require('./helpers/classes/HtbChallenge')
 const TeamMember = require('./helpers/classes/TeamMember')
 const Pusher = require('pusher-client');
 const HTMLParser = require('node-html-parser');
-console.log(new HtbMachine())
+
 var UPDATE_LOCK = false
 var LATEST_CSRF_TOKEN = "jFwVXa2rD5xbU48swIufAdjQkQPCRWrM7eYoEEPG"
 
@@ -434,7 +436,7 @@ function parsePusherOwn(data, channel = false) {
       return logtext
     }
   } else {
-    console.log("Received pusher own not related to our team...")
+    console.log("Heard a pusher achievement shout for " + username + " (not from our team)...")
   }
 }
 
@@ -820,7 +822,7 @@ function getMachines() {
     rp('https://www.hackthebox.eu/api/machines/get/all?api_token=' + process.env.HTB_TOKEN, { json: true })
       .then(function (machines) {
         machineSet = {}
-        console.log('Got machines...', machines.length);
+        console.log('Got',machines.length,'machines...');
         //console.log(value)
         var machineIds = jp.query(machines, '$.*.id');
         var machineNames = jp.query(machines, '$.*.name');
@@ -852,7 +854,7 @@ function getMachines() {
             false
           )
         }
-        console.log(machineSet)
+        // console.log(machineSet)
         resolve(machineSet);
       })
       .catch(function (err) {
@@ -863,7 +865,7 @@ function getMachines() {
 
 async function getChallenges(session) {
   challengeBuffer = {}
-  var categories = ["Reversing", "Crypto", "Stego", "Pwn", "Web", "Misc", "Forensics", "Mobile", "OSINT"]
+  var categories = ["Reversing", "Crypto", "Stego", "Pwn", "Web", "Misc", "Forensics", "Mobile", "OSINT", "Hardware"]
   return new Promise(async resolve => {
     for (let i = 0; i < categories.length; i++) {
       category = categories[i]
@@ -1337,8 +1339,8 @@ async function main() {
     setupPusherClient(LATEST_CSRF_TOKEN)
     DISCORD_ANNOUNCE_CHAN = await client.users.cache.get("679986418466029568").createDM()
     // console.log(DISCORD_ANNOUNCE_CHAN)
-    console.log(DISCORD_LINKS)
-    updateData(client)
+    console.log("DISCORD LINKS:", Object.values(DISCORD_LINKS).map(link => link.username).join(", "))
+    // updateData(client)
     setInterval(() => updateData(client), 5 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 5 MINUTES
     console.log("Updated Discord User Objects...")
     console.warn('INFO: Discord connection established...')
