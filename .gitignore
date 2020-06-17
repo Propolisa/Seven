@@ -2,6 +2,8 @@ node_modules/
 cache/*
 config/*
 .env
+.vs/
+.vscode/
 package.json
 package-lock.json
 Procfile
