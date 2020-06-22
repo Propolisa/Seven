@@ -36,7 +36,6 @@ function getCsrfInput (conf, body) {
   // console.log('body', body);
   var $ = cheerio.load(body)
   var csrf = $('input[name="' + token + '"]').val()
-  console.log("(CSRF_LOGIN) -- CSRF token captured:",csrf)
   return csrf
 }
 

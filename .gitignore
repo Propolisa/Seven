@@ -4,7 +4,9 @@ config/*
 .env
 .vs/
 .vscode/
+logs/
 package.json
 package-lock.json
 Procfile
 README.md
+desktop.ini

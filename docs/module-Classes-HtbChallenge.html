@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>HtbMachine - Documentation</title>
+    <title>HtbChallenge - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -24,12 +24,12 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="HtbMachine.html">HtbMachine</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="TeamMember.html">TeamMember</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#understand">understand</a></span></li>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-Classes-HtbChallenge.html">HtbChallenge</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-Classes-HtbMachine.html">HtbMachine</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-Classes-OwnInfo.html">OwnInfo</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-Classes.html#~TeamMember">TeamMember</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-Classes.html">Classes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Classes.html#~pointsToDifficulty">pointsToDifficulty</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-Seven.html">Seven</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Seven.html#~understand">understand</a></span></li>
 </nav>
 
 <div id="main">
     
-    <h1 class="page-title">HtbMachine</h1>
+    <h1 class="page-title">HtbChallenge</h1>
     
 
     
@@ -42,10 +42,12 @@
 <header>
     
         <h2>
-        HtbMachine
+            <span class="ancestors"><a href="module-Classes.html">Classes</a>~</span>
+        
+        HtbChallenge
         </h2>
         
-            <div class="class-description"><p>Class representing a Hack the Box machine.</p></div>
+            <div class="class-description"><p>Class representing a Hack the Box challenge.</p></div>
         
     
 </header>
@@ -60,14 +62,14 @@
     <h2>Constructor</h2>
     
 
-    <h4 class="name" id="HtbMachine"><span class="type-signature"></span>new HtbMachine<span class="signature">(title, id, thumb, userOwners, rootOwners, retired, unreleased, retiredate, release, maker, maker2, os, rating, points, difficulty)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="HtbChallenge"><span class="type-signature"></span>new HtbChallenge<span class="signature">(name, category, releaseDate, description, isActive, points, maker, maker2, solverCount, upvotes, downvotes, owners)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Create a machine object.</p>
+    <p>Creates a HtbChallenge object.</p>
 </div>
 
 
@@ -103,7 +105,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="helpers_classes_HtbMachine.js.html">helpers/classes/HtbMachine.js</a>, <a href="helpers_classes_HtbMachine.js.html#line32">line 32</a>
+        <a href="helpers_classes.js.html">helpers/classes.js</a>, <a href="helpers_classes.js.html#line80">line 80</a>
     </li></ul></dd>
     
 
@@ -147,7 +149,7 @@
 
         <tr>
             
-                <td class="name"><code>title</code></td>
+                <td class="name"><code>name</code></td>
             
 
             <td class="type">
@@ -164,7 +166,7 @@
             
 
             <td class="description last">
-                <p>The name of the machine (e.g. 'Fatty')).</p>
+                <p>The name of the challenge (e.g. 'Nostalgia')).</p>
                 
             </td>
         </tr>
@@ -173,7 +175,33 @@
 
         <tr>
             
-                <td class="name"><code>id</code></td>
+                <td class="name"><code>category</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The category of the challenge (e.g. 'Crypto')).</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>releaseDate</code></td>
             
 
             <td class="type">
@@ -190,7 +218,7 @@
             
 
             <td class="description last">
-                <p>The numeric id representing the machine.</p>
+                <p>A number representing the Unix time (seconds from epoch) at which the challenge was released.</p>
                 
             </td>
         </tr>
@@ -199,7 +227,7 @@
 
         <tr>
             
-                <td class="name"><code>thumb</code></td>
+                <td class="name"><code>description</code></td>
             
 
             <td class="type">
@@ -216,7 +244,7 @@
             
 
             <td class="description last">
-                <p>The full url to the machine's public thumbnail image.</p>
+                <p>A brief description of the challenge, if one is provided.</p>
                 
             </td>
         </tr>
@@ -225,59 +253,7 @@
 
         <tr>
             
-                <td class="name"><code>userOwners</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>array</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <p>A list of OwnInfo objects containing user id and timestamp values for user owns.</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>rootOwners</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>array</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <p>A list of OwnInfo objects (containing user id and timestamp values for root owns.</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>retired</code></td>
+                <td class="name"><code>isActive</code></td>
             
 
             <td class="type">
@@ -294,189 +270,7 @@
             
 
             <td class="description last">
-                <p>A boolean value indicating whether the machine is retired. (todo: consolodate retired/unreleased into single 'state' member.)</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>unreleased</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>boolean</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <p>A boolean value indicating whether the machine is unreleased.</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>retiredate</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <p>A number representing the UTC timestamp (in seconds) at which the machine was retired.</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>release</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <p>A number representing the UTC timestamp (in seconds) at which the machine was released.</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>maker</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <p>The name of the machine's primary maker.</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>maker2</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <p>The name of the machine's secondary maker (if applicable).</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>os</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <p>A string representing the machine's operating system (e.g. 'Linux' / 'Windows' ...).</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>rating</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <p>A number ranging from 0 to 5 indicating the overall user rating the machine has received.</p>
+                <p>A boolean value indicating whether the challenge is active or not.</p>
                 
             </td>
         </tr>
@@ -502,7 +296,7 @@
             
 
             <td class="description last">
-                <p>The amount of points the machine is worth, if it is active.</p>
+                <p>The amount of points the challenge is worth, if it is active.</p>
                 
             </td>
         </tr>
@@ -511,7 +305,7 @@
 
         <tr>
             
-                <td class="name"><code>difficulty</code></td>
+                <td class="name"><code>maker</code></td>
             
 
             <td class="type">
@@ -528,7 +322,137 @@
             
 
             <td class="description last">
-                <p>The difficulty of the box as a string, e.g. &quot;Easy&quot;, &quot;Hard&quot;.</p>
+                <p>The name of the challenge's primary maker.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maker2</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The name of the challenge's secondary maker (if applicable).</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>solverCount</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The number of times this challenge has been solved.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>upvotes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>Number of positive user ratings this challenge has received.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>downvotes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>Number of positive user ratings this challenge has received.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>owners</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>array</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>A list of OwnInfo objects, containing uid and timestamp values for each member own.</p>
                 
             </td>
         </tr>
@@ -585,7 +509,7 @@
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Wed Jun 17 2020 03:48:02 GMT+0300 (GMT+03:00) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Wed Jun 17 2020 05:44:39 GMT+0300 (GMT+03:00) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

@@ -1,3 +1,9 @@
+/**
+ * @module Seven
+ */
+
+/*** STARTUP | DECIDE ENV VAR SOURCE ***/
+
 if (process.env.HEROKU) {
   console.log("SEVEN-SERVER: Started at " + new Date().toLocaleTimeString() + " on Heroku. Using cloud-configured env vars")
 } else {
@@ -5,6 +11,7 @@ if (process.env.HEROKU) {
   require('dotenv').config({ path: './config/.env' });
 }
 
+/*** HANDLE STANDARD IMPORTS ***/
 
 require('./helpers/helpers.js')
 // const winston = require('winston');
@@ -12,79 +19,39 @@ const flagEmoji = require('country-flag-emoji')
 const Discord = require('discord.js')
 const client = new Discord.Client()
 const { JSDOM } = require("jsdom");
-var rp = require('request-promise');
-var csrfLogin = require('./helpers/csrf-login/csrf-login-override.js');
+const rp = require('request-promise');
+const csrfLogin = require('./helpers/csrf-login/csrf-login-override');
 const fs = require('fs');
-var jp = require('jsonpath');
-const nlp = require('./modules/nlp/typoify.js')
+const jp = require('jsonpath');
+const typoify = require('./modules/nlp/typoify')
 const parseDate = require('date-fns/parse')
 const formatRelative = require('date-fns/formatRelative')
-const dialogflow = require('dialogflow');
+const dialogflow = require('dialogflow').v2beta1;
 const dflow = new dialogflow.SessionsClient({ credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS) });
-const dFlowEnt = require('./helpers/update.js')
-const strings = require('./static/strings.js')
+const dFlowEnt = require('./helpers/update')
+const strings = require('./static/strings')
 const safeEval = require('safe-eval')
-const HtbMachine = require('./helpers/classes/HtbMachine')
-const HtbChallenge = require('./helpers/classes/HtbChallenge')
-const TeamMember = require('./helpers/classes/TeamMember')
-const Pusher = require('pusher-client');
-const HTMLParser = require('node-html-parser');
+const { checkSelfName } = require('./helpers/nlp');
+const { HtbMachine, HtbChallenge, TeamMember, HtbOwn, HtbMaker } = require('./helpers/classes');
+const { HtbPusherEvent, HtbPusherSubscription } = require('./helpers/pusher-htb');
+const pgp = require('pg-promise')({ capSQL: true });
 
-var UPDATE_LOCK = false
-var LATEST_CSRF_TOKEN = "jFwVXa2rD5xbU48swIufAdjQkQPCRWrM7eYoEEPG"
+/*** INIT GLOBAL VARIABLES ***/
 
-var DISCORD_ANNOUNCE_CHAN = false
-var PUSHER_CLIENT = false
-var PUSHER_OWNS_CHANNEL = false
+var UPDATE_LOCK = false           // Simple way to prevent slow / lagging updates from clashing with new ones
 
-async function setupPusherClient(csrfToken) {
-  PUSHER_CLIENT = new Pusher('97608bf7532e6f0fe898', {
-    authEndpoint: 'https://www.hackthebox.eu/pusher/auth',
-    auth: {
-      "X-CSRF-Token": csrfToken
-    },
-    authTransport: "ajax",
-    cluster: 'eu',
-    encrypted: true
-  });
-
-  PUSHER_OWNS_CHANNEL = PUSHER_CLIENT.subscribe('owns-channel');
-
-  PUSHER_OWNS_CHANNEL.bind('display-info',
-    function (data) {
-      try {
-        // console.log("Got message "+data.text+" "+ DISCORD_ANNOUNCE_CHAN)
-        parsePusherOwn(data, DISCORD_ANNOUNCE_CHAN)
-      } catch (error) {
-        console.error(error)
-      }
-
-    }
-  );
-
-  PUSHER_CLIENT.connection.bind('state_change', function (states) {
-    // states = {previous: 'oldState', current: 'newState'}
-    console.log("Pusher client state changed from " + states.previous + " to " + states.current);
-  });
-
-}
+var DISCORD_ANNOUNCE_CHAN = false // The Discord Channel object intended to recieve Pusher achievements.
+var HTB_PUSHER_OWNS_SUBSCRIPTION = false         // The Pusher Client own channel subscription.
+var CSRF_TOKEN = ""
 
 
-const pgp = require('pg-promise')({
-  capSQL: true
-});
+/*** HANDLE DEVELOPMENT INSTANCE CASE ***/
 
-
-
-/* CHECK IF DEVELOPER INSTANCE */
 var DEV_MODE_ON = false;
-try {
-  if (fs.existsSync('./config/development')) {
-    DEV_MODE_ON = true;
-    console.error("DEVELOPMENT MODE ON.\n  Only queries by the developer will be responded to by this instance.\n  (Avoids conflicts/ duplicate responses in production use)")
-  }
-} catch (err) {
-  console.error(err)
+
+if (process.env.IS_DEV_INSTANCE) {
+  DEV_MODE_ON = true;
+  console.error("DEVELOPMENT MODE ON.\n  Only queries by the developer will be responded to by this instance.\n  (Avoids conflicts/ duplicate responses in production use)")
 }
 
 
@@ -99,7 +66,9 @@ const cn = {
 const DB_FIELDNAMES_AUTO = ["MACHINES", "CHALLENGES", "TEAM_MEMBERS", "TEAM_STATS"]
 const db = pgp(cn);
 
-// IMPORT DB backup with this function
+/** Imports globals from the cloud backup (Objects stored as raw, singular JSON columns in DB)
+ * @returns {Promise}
+*/
 async function importDbBackup() {
   return new Promise(async resolve => {
     try {
@@ -124,7 +93,10 @@ async function importDbBackup() {
   })
 }
 
-// UPDATE DB backup with this function
+
+/** Updates the cloud backup, with options for selective update. 
+ * @param {string[]} fields - The specific data types / buffers specified for the update operation, e.g. ["MACHINES","TEAM_MEMBERS"]
+*/
 async function updateCache(fields = DB_FIELDNAMES_AUTO) {
   var fieldData = []
   for (let i = 0; i < fields.length; i++) {
@@ -154,18 +126,46 @@ async function updateCache(fields = DB_FIELDNAMES_AUTO) {
 }
 
 
+
+/**
+ * Arrow function to generate a random hexadecimal nonce so images always get re-downloaded in Discord client.
+ * @param {*} size - The length of the desired hex nonce.
+ */
 const genRanHex = size => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
 
+/**
+ * Returns one of the items passed as parameters, at random. Ex. usage: any("Hi","Hello","Hey")
+ */
 function any() {
   return arguments[arguments.length * Math.random() | 0]
 }
 
+/**
+ * Returns either true or false based on the provided probabilty value (a number between 0-1, where 1 => 100% true and 0 => 100% false).
+ * @param {number} probability 
+ * @returns boolean
+ */
+function maybe(probability) {
+  if (Math.random() < probability) return true;
+  else return false;
+}
+
+/**
+ * Promise-based sleep function (blocks only the caller (async) function)
+ * @param {number} ms - The time in milliseconds to sleep.
+ */
 async function wait(ms) {
   return new Promise(resolve => {
     setTimeout(resolve, ms);
   });
 }
 
+/**
+ * Returns the larger of the two objects, or -- alternatively -- the more real of the two (if one is falsey).
+ * Returns 0 if both are falsey.
+ * @param {Object} a1 
+ * @param {Object} a2 
+ */
 function realMax(a1, a2) {
   if (a1) {
     if (a2) {
@@ -182,19 +182,27 @@ function realMax(a1, a2) {
   }
 }
 
-function maybe(likelihood) {
-  if (Math.random() < likelihood) return true;
-  else return false;
-}
-
+/** Returns the appropriate ordinal suffix (does NOT concatenate) for a given number.
+ * @param {number} n - The number to get the ordinal suffix for.
+ */
 function nth(n) { return ["st", "nd", "rd"][((n + 90) % 100 - 10) % 10 - 1] || "th" }
 
+/**
+ * Returns the number of days that have elapsed since the provided date.
+ * @param {Date} date - The Date object to compare against.
+ * @returns {number}
+ */
 function elapsedDays(date) {
   var thisTime = new Date();
   var diff = thisTime.getTime() - date.getTime();  // Get the time elapsed
   return Math.round(diff / (1000 * 60 * 60 * 24)); // ... As a positive number of days 
 }
 
+/**
+ * Returns the appropriate OS thumbnail for a specified OS name.
+ * @param {string} osName
+ * @returns {string}
+ */
 function getOsImage(osName) {
   switch (osName) {
     case "Linux": return 'https://i.ibb.co/mHXrhyC/linux.png'
@@ -207,7 +215,10 @@ function getOsImage(osName) {
   }
 }
 
-
+/**
+ * Returns a fuzzy time estimate for a given date, relative to the present, that some date occurred (e.g. "4 months ago").
+ * @param {Date} date 
+ */
 function timeSince(date) {
   var seconds = Math.floor((new Date() - date) / 1000);
   var interval = Math.floor(seconds / 31536000);
@@ -236,7 +247,12 @@ function timeSince(date) {
   return Math.floor(seconds) + " seconds ago";
 }
 
-
+/**
+ * Uses unicode special character sets to prettify text, despite all of Discord's precautions.
+ * @param {string} str - The string to format
+ * @param {string} inType - The style / alphabet to apply. One of: [bold sans-serif ('bs'), sans-serif ('s'), bold ('b'), monospaced ('m')]
+ * @returns {string}
+ */
 function FMT(str, inType) { //Converts text to the unicode special math font equivalent specified in switch [ bs, s, b, m ]
   var out = ""
   type = "𝟢𝟣𝟤𝟥𝟦𝟧𝟨𝟩𝟪𝟫𝖠𝖡𝖢𝖣𝖤𝖥𝖦𝖧𝖨𝖩𝖪𝖫𝖬𝖭𝖮𝖯𝖰𝖱𝖲𝖳𝖴𝖵𝖶𝖷𝖸𝖹𝖺𝖻𝖼𝖽𝖾𝖿𝗀𝗁𝗂𝗃𝗄𝗅𝗆𝗇𝗈𝗉𝗊𝗋𝗌𝗍𝗎𝗏𝗐𝗑𝗒𝗓"           // Default to math sans
@@ -265,7 +281,10 @@ function FMT(str, inType) { //Converts text to the unicode special math font equ
   return out
 }
 
-
+/**
+ * Formats a given number in Unicode bold characters, for emphasis.
+ * @param {string} str - The number to style in bold text.
+ */
 function numS(str) {
   str = str.toString()
   console.log(str)
@@ -292,8 +311,11 @@ function numS(str) {
   return o
 }
 
-
-function halfMoon(num) {       // HELPER FUNCTION (Returns the sub-integral symbol for 'ratingString' function)
+/**
+ * Calculates and returns the sub-integral symbol, used in 'ratingString' function
+ * @param {number} num - the sub-integral value, between 0 - 1.
+ */
+function halfMoon(num) {
   divd = num % 1
   scale = Math.round(divd * 4);
   switch (scale) {
@@ -306,7 +328,11 @@ function halfMoon(num) {       // HELPER FUNCTION (Returns the sub-integral symb
   }
 }
 
-function ratingString(rating) { // CONVERTS A NUMERIC RATING (0.0 - 5.0) TO UNICODE MOON RATING (e.g. '2.5' => 🌕🌕🌗🌑🌑)
+/**
+ * Converts a numeric rating (0.0 - 5.0) to a Unicode moon rating expression (e.g. '2.5' => 🌕🌕🌗🌑🌑)
+ * @param {number} rating - The rating, a positive number from 0 - 5. 
+ */
+function ratingString(rating) {
   if (rating == 0) {
     return 'Unrated'
   } else {
@@ -314,10 +340,16 @@ function ratingString(rating) { // CONVERTS A NUMERIC RATING (0.0 - 5.0) TO UNIC
   }
 }
 
+/**
+ * Returns whether the provided Discord user has admin privileges.
+ * @param {Discord.User} author 
+ */
 function isAdmin(author) {
   return author.id == process.env.ADMIN_DISCORD_ID
 }
 
+
+/*** INITIALIZE HACKTHEBOX STATE VARIABLES ***/
 const HTBROOT = "https://www.hackthebox.eu/"
 var LAST_UPDATE = new Date()
 var MACHINES = {}
@@ -329,6 +361,11 @@ var TEAM_MEMBERS_IGNORED = {}
 var MACHINE_STATS = { "totalBoxes": 0, "activeBoxes": 0, "retiredBoxes": 0, "unreleasedBoxes": 0 }
 var TEAM_STATS = { "globalRanking": 5, "points": 0, "teamFounder": "7383", "topMembers": [], "name": "", "owns": { "users": 0, "roots": 0 }, "thumb": "" }
 
+/**
+ * Moves a member to the 'ignored' set, meaning that their data will not be updated
+ * or shared by the bot until the user undoes this (see unignoreMember()).
+ * @param {number} uid 
+ */
 function ignoreMember(uid) {
   if (uid in TEAM_MEMBERS) {
     console.log(Object.keys(TEAM_MEMBERS).length)
@@ -346,6 +383,12 @@ function ignoreMember(uid) {
   }
 }
 
+/**
+ * Moves a member out of the 'ignored' set, meaning that their data will now be
+ * updated and shared by the bot unless the user requests otherwise again (see ignoreMember()).
+ * @param {number} uid
+ * @returns {(string|false)} 
+ */
 function unignoreMember(uid) {
   console.log("Unignoring member " + uid)
   if (uid in TEAM_MEMBERS_IGNORED) {
@@ -365,81 +408,12 @@ function unignoreMember(uid) {
   }
 }
 
-function parsePusherOwn(data, channel = false) {
-  var msg = HTMLParser.parse(data.text)
-  var full = msg.structuredText.replace("[Tweet]", "").trim()
-  var username = msg.firstChild.structuredText.trim()
 
-  var type = "unknown"
-  var targetName = "Unknown"
-  // console.log(JSON.stringify(msg.childNodes[1]))
-  var lemmas = msg.childNodes[1].rawText.trim().split(" ")
-  verb = lemmas[0]
-  if (unameToUid(username)) {
 
-    // This relates to a member on our team.
-    if (verb == "solved") {
-      // This is a challenge own.
-      type = "challenge"
-      targetName = msg.childNodes[2].structuredText.trim()
-      if (channel) {
-        console.log(targetName)
-        channel.send({
-          embed: {
-            color: 3447003,
-            author: {
-              name: "HTB Challenge Own Event",
-              // icon_url: TEAM_STATS.thumb,
-              url: '',
-            },
-            thumbnail: {
-              url: "https://raw.githubusercontent.com/encharm/Font-Awesome-SVG-PNG/master/white/png/24/cogs.png"
-            },
-            description: "**[" + tryDiscordifyUid(unameToUid(username)) + "](http://0)**" + " owned **" + type + "** [" + targetName + "](http://0)" + "!"
-          }
-        })
-      }
-    } else {
-      // This is (probably) a box own.
-      target = lemmas[1]
-      switch (target) {
-        case "root": case "system": type = "root"; break;
-        case "user": type = "user"; break;
-        default: break;
-      }
-    }
-    targetName = msg.childNodes[2].structuredText.trim()
-    if (channel) {
-      console.log(targetName)
-      console.log(getMachineByName(targetName))
-      channel.send({
-        embed: {
-          color: 3447003,
-          author: {
-            name: "HTB Machine Own Event",
-            // icon_url: TEAM_STATS.thumb,
-            url: '',
-          },
-          thumbnail: {
-            url: getMachineByName(targetName).thumb.replace('_thumb', ''),
-          },
-          description: "**[" + username + "](http://0)**" + " owned **" + type + "** on " + getMdLinksForBoxIds([getMachineByName(targetName).id]) + "!"
-        }
-      })
-    }
-    if (type == "unknown") {
-      console.log(full)
-      return full
-    } else {
-      logtext = (full + " (" + username + " owned " + type + " [" + targetName + "])")
-      console.log(logtext)
-      return logtext
-    }
-  } else {
-    console.log("Heard a pusher achievement shout for " + username + " (not from our team)...")
-  }
-}
-
+/**
+ * Calculates the total machine count and the subcounts of active, retired and unreleased machines.
+ * @returns {Object}
+ */
 function updateMachineStats() {
   var statBuffer = { "totalBoxes": 0, "activeBoxes": 0, "retiredBoxes": 0, "unreleasedBoxes": 0 }
   time = new Date().getTime()
@@ -456,7 +430,11 @@ function updateMachineStats() {
   return statBuffer
 }
 
-
+/**
+ * Returns a Discord Markdown formatted list of member rankings.
+ * @param {string[]} arr - A list of hyperlinked member names sorted by rank (descending) where index 0 is the highest ranking member.
+ * @returns {string[]}
+ */
 function mdItemizeList(arr) {
   var out = []
   for (const [index, element] of arr.entries()) {
@@ -469,6 +447,11 @@ function mdItemizeList(arr) {
   return out
 }
 
+/**
+ * Returns a pretty emoji flag for a given country code. If not recognized, returns the Jolly Roger.
+ * @param {string} countryCode - Example: "EU", "AU", "NZ"
+ * @returns {string} - The emoji, e.g. 🏴‍☠️
+ */
 function getFlag(countryCode) {
   flag = "🏴‍☠️"
   try {
@@ -479,13 +462,18 @@ function getFlag(countryCode) {
   return flag
 }
 
-
+/** Updates the top team member tally. Should be done after every achievement update (or Pusher own receipt) */
 async function updateTeamStats() {
   var teamMembersAll = { ...TEAM_MEMBERS, ...TEAM_MEMBERS_IGNORED }
   sortedByTPoints = Object.keys(teamMembersAll).sort(function (a, b) { return teamMembersAll[b].points - teamMembersAll[a].points })
   TEAM_STATS.topMembers = sortedByTPoints
 }
 
+/**
+ * Returns true if the object has any properties (is not empty), else returns false.
+ * @param {Object} obj 
+ * @returns {boolean}
+ */
 function isEmpty(obj) {
   for (var key in obj) {
     if (obj.hasOwnProperty(key))
@@ -494,19 +482,9 @@ function isEmpty(obj) {
   return true;
 }
 
-function Set_toJSON(key, value) {
-  if (typeof value === 'object' && value instanceof Set) {
-    return [...value];
-  }
-  return value;
-}
-
-
-Set.revive = function (data) {
-  return new Set(data.foo, data.bar);
-};
-
-
+/**
+ * A local file-based method for restoring local backups, useful for early testing without a database instance.
+ */
 function importExistingData() { // Imports machine and team data from json files, enabling the bot to serve answers immediately.
   try {
     MACHINES = JSON.parse(fs.readFileSync('cache/machines.json', 'utf8'));
@@ -518,10 +496,6 @@ function importExistingData() { // Imports machine and team data from json files
     MACHINE_STATS = updateMachineStats()
     updateTeamStats()
     console.info("Imported existing datafiles! Will update automatically every half-hour.")
-    machines = []
-    Object.values(MACHINES).forEach(machine => {
-      machines.push(machine.title)
-    });
   }
   catch (e) {
     console.warn('ERROR: couldn\'t import data. Moving on..')
@@ -529,6 +503,11 @@ function importExistingData() { // Imports machine and team data from json files
   }
 }
 
+/**
+ * A local file-based export method that serializes a specific HTB state data to a JSON file. Useful for pre-deployment testing.
+ * @param {Object} object - The object to back up as JSON.
+ * @param {*} filename - The name to use for the JSON file.
+ */
 function exportData(object, filename) { // Save JSON files of team and machine data.
   var objectName = varObj => Object.keys(varObj)[0]
   //if (!isEmpty(object)) {
@@ -542,7 +521,12 @@ function exportData(object, filename) { // Save JSON files of team and machine d
   //}
 }
 
-function andifyList(str) { // Convert comma-joined list to English "Bob, Sue, and Jane" format
+/**
+ * Converts a textual list (e.g. "Bob, Jane, Alice") to "Bob, Jane, and Alice".
+ * @param {string} - A ", " separated textual list
+ * @returns {string} The converted text.
+ */
+function andifyList(str) { // 
   if (str.includes(',')) {
     var n = str.lastIndexOf(",");
     return str.substring(0, n + 1) + ' and' + str.substring(n + 1, str.length);
@@ -551,49 +535,55 @@ function andifyList(str) { // Convert comma-joined list to English "Bob, Sue, an
   }
 }
 
-function getNewReleaseName() { // Returns the name of either an upcoming release (if announced) or the latest published box.
-  var machineArray = Object.values(MACHINES)
-  for (let i = 0; i < machineArray.length; i++) {
-    // console.log(machineArray[i] + JSON.stringify(machineArray[i]))
-    if (machineArray[i].unreleased) {
-      console.log('Found unreleased machine ' + machineArray[i].title + '!')
-      return machineArray[i].title
-    }
-  }
-  if (machineArray['1']) {
-    lastBoxName = machineArray[machineArray.length - 1]
-    return lastBoxName.title
-  }
-  return null
+/**
+ * Returns the name of either an upcoming release (if announced) or the latest published box.
+ * @returns {(string|null)}
+ */
+function getNewReleaseName() {
+  const unreleasedBox = Object.values(MACHINES).find(machine => machine.unreleased)
+  return unreleasedBox.name || null
 }
 
-function getMachineIdFromName(name) { // Get the ID of the machine whose name matches the parameter string
+/**
+ * Get the ID of the machine whose name matches the parameter string.
+ * @param {string} name - The machine name.
+ * @returns {(number|null)}
+ */
+function getMachineIdFromName(name) {
   var machineArray = Object.values(MACHINES)
-  for (let i = 0; i < machineArray.length; i++) {
-    //console.log(machineArray[i] + JSON.stringify(machineArray[i]))
-    if (machineArray[i].title.toLowerCase() == name.toLowerCase()) {
-      console.log('Machine name ' + name + ' matched MID #' + machineArray[i].id)
-      return machineArray[i].id
-    }
-  }
-  return null
+  const fetchedId = Number(Object.values(MACHINES).find(machine => machine.name.toLowerCase() == name.toLowerCase()).id)
+
+  return fetchedId
 }
 
-function getMachineByName(name) { // Return machine object with name matching parameter string
-  //console.log(name)
+/**
+ * Get the machine object whose name matches the parameter string.
+ * @param {string} name - The machine name.
+ * @returns {(HtbMachine|null)}
+ */
+function getMachineByName(name) {
   if (name) {
     var machineArray = Object.values(MACHINES)
-    for (let i = 0; i < machineArray.length; i++) {
-      //console.log(machineArray[i] + JSON.stringify(machineArray[i]))
-      if (machineArray[i].title.toLowerCase() == name.toLowerCase()) {
-        //console.log('Machine name ' + name + ' matched validated name ' + machineArray[i].title)
-        return machineArray[i]
-      }
-    }
+    return machineArray.find(machine => machine.name.toLowerCase() == name.toLowerCase())
   }
   return null
 }
 
+/**
+ * Get the machine object whose id matches the parameter string.
+ * @param {string} id - The machine id.
+ * @returns {(HtbMachine|null)}
+ */
+function getMachineById(id) {
+  try { return MACHINES[id] } catch (error) { console.error(error); return null }
+
+}
+
+/**
+ * Get the challenge object whose name matches the parameter string.
+ * @param {string} name - The challenge name.
+ * @returns {(HtbChallenge|null)}
+ */
 function getChallengeByName(name) { // Return machine object with name matching parameter string
   //console.log(name)
   if (name && CHALLENGES) {
@@ -611,6 +601,11 @@ function getChallengeByName(name) { // Return machine object with name matching 
   return null
 }
 
+/**
+ * Get the  current rank of a team member by ID.
+ * @param {number} id - The member ID.
+ * @returns {(number|"Unknown")}
+ */
 function getMemberTeamRankById(id) {
   try {
     return TEAM_STATS.topMembers.indexOf(id) + 1
@@ -620,11 +615,12 @@ function getMemberTeamRankById(id) {
   }
 }
 
-function checkSelfName(name) {
-  return ((["i", "me", "my", "mine", "i'm", "i've", "myself"].includes(name.toLowerCase())) ? true : false)
-}
-
-function getMemberByName(name) { // Return member object with name matching parameter string
+/**
+ * Get the member object whose name matches the parameter string.
+ * @param {string} name - The member name.
+ * @returns {(TeamMember|null)}
+ */
+function getMemberByName(name) {
   //console.log(name)
   if (name) {
     var match = (Object.values(TEAM_MEMBERS).find(member => member.name.toLowerCase() == name.toLowerCase()))
@@ -637,6 +633,62 @@ function getMemberByName(name) { // Return member object with name matching para
   }
 }
 
+/**
+ * Takes information about a new own achievement and adds it to our records.
+ * @param {number} uid - The ID of the user associated with the achievement.
+ * @param {string} type - A string value describing the thing / milestone owned, e.g. "root", "user", "challenge", "endgame", "akerva" etc.
+ * @param {(number|string)} target - If a machine user/system own, use the numeric machine ID (e.g. 238). If a challenge or fortress own, use the title.
+ * @param {string} flag - For pro labs and fortresses with multiple flags, use this field to specify the milestone title.
+ */
+function addOwn(uid, time, type, target, flag = "", isPusher = false) {
+  if (uid in TEAM_MEMBERS) {
+    try {
+      switch (type) {
+        case "user":
+          var own = getMachineByName(target).userOwners.find(ownItem => ownItem.uid == uid)
+          if (!own) {
+            console.log((isPusher ? "user owns for this target: " + getMachineByName(target).userOwners.length : ""))
+            getMachineByName(target).userOwners.push(new HtbOwn(uid, time))
+            console.log((isPusher ? "user owns for this target: " + getMachineByName(target).userOwners.length : ""))
+            TEAM_MEMBERS[uid].totalOwns.user++
+            console.log((isPusher ? "Added user own for " + uidToUname(uid) : ""))
+          } break;
+
+        case "root":
+          console.log((isPusher ? "root owns for this target:" + getMachineByName(target).userOwners.length : ""))
+          var own = getMachineByName(target).rootOwners.find(ownItem => ownItem.uid == uid)
+          console.log((isPusher ? "root owns for this target: " + getMachineByName(target).userOwners.length : ""))
+          if (!own) {
+            getMachineByName(target).rootOwners.push(new HtbOwn(uid, time))
+            TEAM_MEMBERS[uid].totalOwns.user++
+            console.log((isPusher ? "Added root own for " + uidToUname(uid) : "")); break;
+          }
+
+        case "challenge":
+          var challenge = getChallengeByName(target)
+          var own = challenge.owners.find(ownItem => ownItem.uid == uid)
+          if (!own) {
+            console.log((isPusher ? "root owns for this target: " + challenge.userOwners.length : ""))
+            challenge.owners.push(new HtbOwn(uid, time))
+            console.log((isPusher ? "root owns for this target: " + challenge.userOwners.length : ""))
+            TEAM_MEMBERS[uid].totalOwns.challenge++
+            console.log((isPusher ? "Added challenge own for " + uidToUname(uid) : ""))
+          } break;
+        default:
+          break;
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  } else {
+  }
+}
+
+/**
+ * Returns a list of HtbOwn objects representing the members who have owned the specified challenge.
+ * @param {string} challengeName - Name of the challenge.
+ * @returns {(HtbOwn[]|null)}
+ */
 function getOwnersByChallengeName(challengeName) {
   console.log("Getting owners by challenge name:", challengeName)
   if (challengeName) {
@@ -646,7 +698,11 @@ function getOwnersByChallengeName(challengeName) {
   }
 }
 
-
+/**
+ * Returns a list of HtbOwn objects representing the members who have rooted the machine with the specified ID.
+ * @param {number} machineId - Name of the challenge.
+ * @returns {(HtbOwn[]|null)}
+ */
 function getOwnersByMachineId(machineId) {
   console.log(machineId)
   if (machineId) {
@@ -656,11 +712,21 @@ function getOwnersByMachineId(machineId) {
   }
 }
 
+/**
+ * Gets the HTB user ID for a given Discord username, if such an association exists.
+ * @param {string} username - The Discord username to lookup linked account for.
+ * @returns {(number|null)}
+ */
 function getIdFromDiscordName(username) {
   var id = Object.keys(DISCORD_LINKS).find(link => DISCORD_LINKS[link].username.toLowerCase() == username.toLowerCase())
   return (id ? id : null)
 }
 
+/**
+ * Returns a pretty-printable version of the Discord username and / or HTB username for a given HTB UID, in hyperlinked Discord markdown.
+ * @param {number} uid
+ * @returns {(string|"[Invalid ID]")}
+ */
 function tryDiscordifyUid(uid) {
   if (uid in TEAM_MEMBERS) {
     if (uid in DISCORD_LINKS) {
@@ -677,6 +743,12 @@ function tryDiscordifyUid(uid) {
     return "[Invalid ID]"
   }
 }
+
+/**
+ * Returns a set of markdown-formatted username links for a given list of HTB ids.
+ * @param {number[]} memberIds - An array of HTB UIDs 
+ * @returns {(string[]|"[Invalid ID]")}
+ */
 function getMdLinksForUids(memberIds) { // Get markdown link to a HTB user's profile, based on UID.
   //console.log(memberIds)
   if (memberIds) {
@@ -707,7 +779,7 @@ function getMdLinksForBoxIds(boxIds) { // Get markdown link to a HTB user's prof
     boxIds.forEach(boxId => {
       if (boxId in MACHINES) {
         var box = MACHINES[boxId]
-        boxLinks.push('**[' + box.title + "](" + 'https://www.hackthebox.eu/home/machines/profile/' + box.id + " 'Goto HTB page')**")
+        boxLinks.push('**[' + box.name + "](" + 'https://www.hackthebox.eu/home/machines/profile/' + box.id + " 'Goto HTB page')**")
       }
     });
     // console.log(boxLinks)
@@ -769,7 +841,7 @@ function getMdLinksForOwnList(memberOwnList) { // Get markdown link to a HTB use
   }
 }
 
-function parseSingleDate(date, ) { // Parse date to timestamp (millis) for various formats used on HTB site, based on length
+function parseSingleDate(date,) { // Parse date to timestamp (millis) for various formats used on HTB site, based on length
   if (date) {
     switch (date.length) {
       case 10:
@@ -807,22 +879,12 @@ function parseDateArray(dates) { // Parse array of dates (see parseSingleDate)
   return newDates
 }
 
-function pointsToDifficulty(points) {
-  switch (points) {
-    case 0: return "Unknown"
-    case 20: return "Easy";
-    case 30: return "Medium";
-    case 40: return "Hard";
-    case 50: return "Insane";
-    default: return ""
-  }
-}
 function getMachines() {
   return new Promise(resolve => {
     rp('https://www.hackthebox.eu/api/machines/get/all?api_token=' + process.env.HTB_TOKEN, { json: true })
       .then(function (machines) {
         machineSet = {}
-        console.log('Got',machines.length,'machines...');
+        console.log('Got', machines.length, 'machines...');
         //console.log(value)
         var machineIds = jp.query(machines, '$.*.id');
         var machineNames = jp.query(machines, '$.*.name');
@@ -840,7 +902,7 @@ function getMachines() {
         machineRetireDates = parseDateArray(machineRetireDates)
         for (let i = 0; i < machineIds.length; i++) {
           machineSet[machineIds[i].toString()] = new HtbMachine(machineNames[i],
-            machineIds[i].toString(),
+            Number(machineIds[i]),
             machineThumbs[i],
             machineIsRetireds[i],
             machineMakers[i],
@@ -864,6 +926,7 @@ function getMachines() {
 }
 
 async function getChallenges(session) {
+  console.log("Getting challenges...")
   challengeBuffer = {}
   var categories = ["Reversing", "Crypto", "Stego", "Pwn", "Web", "Misc", "Forensics", "Mobile", "OSINT", "Hardware"]
   return new Promise(async resolve => {
@@ -902,18 +965,19 @@ async function getChallenges(session) {
         }
         var tex = $(this).text()
         //console.log("TEX",tex)
-        var title = tex.substring(tex.indexOf((isActive ? '] ' : '     ')) + 1, tex.indexOf('[by') - 1).trim()
+        var name = tex.substring(tex.indexOf((isActive ? '] ' : '     ')) + 1, tex.indexOf('[by') - 1).trim()
         var solverCount = Number($(spans[1]).text().match(/[\d]*(\d+)/g))
         var ratePro = Number($(spans[2]).text())
         var rateSucks = Number($(spans[3]).text())
-        // console.log("GOT CHALLENGE. Datestring:", dateString, "|", "title:", title, "| maker:", maker.name, "| maker2:", (maker2 ? maker2.name : "None"), "| points:", points, "| active:", isActive, "| solvercount:", solverCount, "| ratings:", ratePro, rateSucks * -1)
-        // console.log("Got challenge", title + " ...")
-        var thisChallenge = new HtbChallenge(title, category, releaseDate, description, isActive, points, maker, maker2, solverCount, ratePro, rateSucks)
+        // console.log("GOT CHALLENGE. Datestring:", dateString, "|", "name:", name, "| maker:", maker.name, "| maker2:", (maker2 ? maker2.name : "None"), "| points:", points, "| active:", isActive, "| solvercount:", solverCount, "| ratings:", ratePro, rateSucks * -1)
+        // console.log("Got challenge", name + " ...")
+        var thisChallenge = new HtbChallenge(name, category, releaseDate, description, isActive, points, maker, maker2, solverCount, ratePro, rateSucks)
         thisCategoryChallenges.push(thisChallenge)
         if (!getChallengeByName(thisChallenge.name)) {
           // dFlowEnt.updateEntity('challenge', thisChallenge.name)
         }
       })
+      console.log("Got", thisCategoryChallenges.length, "challenges in the '" + category + "' category")
       challengeBuffer[category] = thisCategoryChallenges
     };
     resolve(challengeBuffer)
@@ -922,7 +986,7 @@ async function getChallenges(session) {
 
 function getTeamData(session) {
   return new Promise(resolve => {
-    console.log("Starting team data collection...")
+    console.log("Getting team details...")
     session.request('/home/teams/profile/2102', function (error, response, body) {
 
       teamData = {}
@@ -948,7 +1012,7 @@ function getTeamData(session) {
         console.error(error)
         console.error('ERROR: Could not parse team Data. Failing gracefully...')
       }
-
+      console.log("Getting team members...")
       // Parse Team Members
       try {
 
@@ -1014,7 +1078,7 @@ async function getOwnageData(session, mbrs) {
 }
 
 function uidToUname(uid) {
-  console.log("uidToUname(uid):", uid)
+  // console.log("uidToUname(uid):", uid)
   try {
     if (uid in TEAM_MEMBERS) {
       return TEAM_MEMBERS[uid].name
@@ -1046,7 +1110,7 @@ async function getUnreleasedMachine(session) {
       var mids = trs.find("a[href^='https://www.hackthebox.eu/home/machines/profile/']")
       var urmid = mids[0].href.substring(48)
       var oldmid = mids[1].href.substring(48)
-      var title = mids[0].innerHTML
+      var name = mids[0].innerHTML
       var rname = mids[1].innerHTML
       var thumb = trs.find("img[src^='https://www.hackthebox.eu/storage/avatars']")[0].src
       var releaseDate = parseSingleDate($($('.table tr')[1]).find(":contains('UTC')")[0].innerHTML)
@@ -1065,7 +1129,7 @@ async function getUnreleasedMachine(session) {
       var points = Number($('td span')[1].innerHTML)
       var difficulty = $('td span')[0].innerHTML
       var os = $('td')[1].innerHTML.substring($('td')[1].innerHTML.lastIndexOf('>') + 1).replace(' ', '')
-      var unreleasedBox = new HtbMachine(title,
+      var unreleasedBox = new HtbMachine(name,
         urmid,
         thumb,
         false,
@@ -1079,54 +1143,72 @@ async function getUnreleasedMachine(session) {
         points,
         { "replaces": rname, "mid": oldmid }
       )
-      dFlowEnt.updateEntity('Machines', unreleasedBox.title)
+      dFlowEnt.updateEntity('Machines', unreleasedBox.name)
       resolve(unreleasedBox)
     } else {
       resolve(null)
     }
   })
 }
+
+function grabCsrfFromJar(session) {
+  try {
+    return session.jar._jar.store.idx['www.hackthebox.eu']['/']['csrftoken'].value
+  } catch (error) {
+    console.error(error)
+    return ""
+  }
+}
+
 async function updateData(client) {
   if (!UPDATE_LOCK) {
     UPDATE_LOCK = true
     console.log("Update lock engaged. Beginning update attempt.")
     return new Promise(async resolve => {
-      await updateDiscordIds(client, "655499722454335488")
-      var SESH = await getSession()
-      LATEST_CSRF_TOKEN = SESH.jar._jar.store.idx['www.hackthebox.eu']['/']['csrftoken'].value || ""
-      console.log("Got CSRF TOKEN:", LATEST_CSRF_TOKEN)
-      updatePusherAuth({ "X-CSRF-Token": LATEST_CSRF_TOKEN })
-      console.log("Got a logged in session.")
-      MACHINES_BUFFER = await getMachines()
-      CHALLENGES = await getChallenges(SESH)
-      TEAM_MEMBERS_TEMP = await getTeamData(SESH)
-      if (Object.keys(TEAM_MEMBERS_TEMP).length > Object.keys(TEAM_MEMBERS).length) {
-        TEAM_MEMBERS = TEAM_MEMBERS_TEMP
+      try {
+        await updateDiscordIds(client, "655499722454335488")
+        var SESH = await getSession()
+        CSRF_TOKEN = grabCsrfFromJar(SESH)
+        console.log("Got CSRF TOKEN:", CSRF_TOKEN)
+        HTB_PUSHER_OWNS_SUBSCRIPTION.auth = CSRF_TOKEN
+        console.log("Got a logged in session.")
+        console.log("BEGINNING DATA COLLECTION [HTML Parse]")
+        MACHINES_BUFFER = await getMachines()
+        CHALLENGES = await getChallenges(SESH)
+        TEAM_MEMBERS_TEMP = await getTeamData(SESH)
+        if (Object.keys(TEAM_MEMBERS_TEMP).length > Object.keys(TEAM_MEMBERS).length) {
+          TEAM_MEMBERS = TEAM_MEMBERS_TEMP
+        }
+        urmachine = await getUnreleasedMachine(SESH)
+        console.warn(urmachine ? "INFO: Got unreleased machine " + urmachine.name + "..." : "INFO: There are currently no machines in unreleased section.")
+        if (urmachine) {
+          MACHINES[urmachine.id.toString()] = urmachine
+          MACHINES_BUFFER[urmachine.id.toString()] = urmachine
+        }
+        await getOwnageData(SESH, TEAM_MEMBERS)
+        MACHINES = MACHINES_BUFFER
+        await cleanTargetSets()
+        console.log("UPDATED DATA. Total machines : " + Object.values(MACHINES).length)
+        console.log("               Total members : " + Object.values(TEAM_MEMBERS).length)
+        updateCacheSuccessful = await updateCache()
+        console.log(updateCacheSuccessful ? "All data backed up to the cloud for a rainy day..." : "Export failed...")
+        /* TO HANDLE EXPORTS WITHOUT DB (USING LOCAL JSON FILES ( useful for dev )):::
+        |  exportData(MACHINES, "machines.json")
+        |  exportData(CHALLENGES, "challenges.json")
+        |  exportData(TEAM_MEMBERS, "team_members.json");
+        |  exportData(TEAM_MEMBERS_IGNORED, "team_members_ignored.json")
+        |  exportData(DISCORD_LINKS, "discord_links.json")
+        \  exportData(TEAM_STATS, "team_stats.json")  */
+        LAST_UPDATE = new Date()
+        UPDATE_LOCK = false
+        console.log("Update lock released.")
+        resolve()
+      } catch (error) {
+        console.error("UPDATE FAILED.")
+        console.error(error, "\nUPDATE LOCK HAS BEEN RESET AS A PRECAUTION.")
+        UPDATE_LOCK = false
+        resolve()
       }
-      urmachine = await getUnreleasedMachine(SESH)
-      console.warn(urmachine ? "INFO: Got unreleased machine " + urmachine.title + "..." : "INFO: There are currently no machines in unreleased section.")
-      if (urmachine) {
-        MACHINES[urmachine.id.toString()] = urmachine
-        MACHINES_BUFFER[urmachine.id.toString()] = urmachine
-      }
-      await getOwnageData(SESH, TEAM_MEMBERS)
-      MACHINES = MACHINES_BUFFER
-      await removeDuplicates()
-      console.log("UPDATED DATA. Total machines : " + Object.values(MACHINES).length)
-      console.log("               Total members : " + Object.values(TEAM_MEMBERS).length)
-      updateCacheSuccessful = await updateCache()
-      console.log(updateCacheSuccessful ? "All data backed up to the cloud for a rainy day..." : "Export failed...")
-      /* TO HANDLE EXPORTS WITHOUT DB (USING LOCAL JSON FILES ( useful for dev )):::
-      |  exportData(MACHINES, "machines.json")
-      |  exportData(CHALLENGES, "challenges.json")
-      |  exportData(TEAM_MEMBERS, "team_members.json");
-      |  exportData(TEAM_MEMBERS_IGNORED, "team_members_ignored.json")
-      |  exportData(DISCORD_LINKS, "discord_links.json")
-      \  exportData(TEAM_STATS, "team_stats.json")  */
-      LAST_UPDATE = new Date()
-      UPDATE_LOCK = false
-      console.log("Update lock released.")
-      resolve()
     })
   } else {
     console.warn("WARN: DATA UPDATE NOT STARTED, AS ONE IS ALREADY IN PROGRESS.")
@@ -1175,7 +1257,7 @@ async function parseUserOwns(body, id) {
         // There was a problem getting stats for the user based on profile timechart
         console.log(error)
       }
-
+      var up2DateStats = { user: 0, root: 0, challenge: 0 } // Let's actually count these ourselves when parsing.
       $('.p-xs').each(function () { // Go through the user profile ownage rows (on right of page)
         var t = $($(this).children()[1]).text().trim().split(/\s+/);
         var parsedTime = $($(this).children('span.pull-right')[0]).attr('title')
@@ -1183,23 +1265,28 @@ async function parseUserOwns(body, id) {
         var machineId = ''
         var machineLitmus = $(this).find('[href*="/machines/"]')
         if (machineLitmus.length > 0) { machineId = machineLitmus[0].href.substring(48) }
-        if (t[2].includes('user')) {
-          // It is a machine user own
+        if (t[2].includes('user')) { // It is a machine user own
+          up2DateStats.user++
           MACHINES_BUFFER[machineId].userOwners.push({ "uid": id, "timestamp": timestamp })
-        } else if (t[2].includes('root')) {
-          // It is a machine root own
+        } else if (t[2].includes('root')) { // It is a machine root own
+          up2DateStats.root++
           MACHINES_BUFFER[machineId].rootOwners.push({ "uid": id, "timestamp": timestamp })
         } else if (t[2].includes('challenge')) {
-          if ($(this).find('i.far.fa-cog.text-warning').length) {
-            // It is a valid challenge
+          if ($(this).find('i.far.fa-cog.text-warning').length) {// It is a valid challenge
+            up2DateStats.challenge++
             var challengeName = $(this).find('i.far.fa-cog.text-warning')[0].nextSibling.data.trim()
             getChallengeByName(challengeName).owners.push({ "uid": id, "timestamp": timestamp })
           } else {
             // It is not a challenge
           }
         }
-        else { /*console.log('Something unparsable (e.g. special challenge, fortress OR a site update has screwed our parsing (FML, please give us an API))...')*/ }
+        else { /*console.log('Something unparsable (e.g. special challenge, fortress OR a site update has screwed our parsing (PLS GIV US API, PLSSS HTB)...')*/ }
       })
+      try {
+        TEAM_MEMBERS[id].totalOwns = up2DateStats
+      } catch (error) {
+        console.error(error)
+      }
     } catch (error) {
       //console.log(error + " - Could not parse page. (Likely user has no rank / XP)")
     }
@@ -1207,7 +1294,7 @@ async function parseUserOwns(body, id) {
   })
 }
 
-function removeDuplicates() {
+function cleanTargetSets() {
   return new Promise(resolve => {
     Object.values(MACHINES).forEach(machine => {
       machine.userOwners = [... new Set(machine.userOwners)]
@@ -1226,60 +1313,6 @@ function removeDuplicates() {
   })
 }
 
-// /** Class representing a team member. */
-// class TeamMember {
-//   constructor(name, id, owns, siterank, points) {
-//     this.siterank = siterank
-//     this.points = points
-//     this.name = name;
-//     this.id = id;
-//     this.totalOwns = owns
-//     this.thumb = false
-//     this.rank = "Noob"
-//     this.countryName = "Pangea"
-//     this.countryCode = ""
-//     this.joinDate = 0
-//     this.stats = { users: 0, roots: 0, challenges: 0, respects: 0, bloods: 0 }
-//   }
-// }
-
-// class HtbMachine {
-//   constructor(title, id, thumb, retired, maker, maker2, os, ip, rating, release, retiredate, points, unreleased) {
-//     this.title = title;
-//     this.id = id;
-//     this.thumb = thumb;
-//     this.userOwners = []
-//     this.rootOwners = []
-//     this.retired = retired
-//     this.maker = maker
-//     this.maker2 = maker2
-//     this.os = os
-//     this.ip = ip
-//     this.rating = rating
-//     this.release = release
-//     this.retiredate = retiredate
-//     this.points = points
-//     this.difficulty = pointsToDifficulty(points)
-//     this.unreleased = unreleased
-//   }
-// }
-
-// class HtbChallenge {
-//   constructor(name, category, date, description, isActive, points, maker, maker2, solverCount, upvotes, downvotes) {
-//     this.name = name
-//     this.category = category
-//     this.releaseDate = date
-//     this.description = description
-//     this.isActive = isActive
-//     this.points = points
-//     this.maker = maker
-//     this.maker2 = maker2
-//     this.solverCount = solverCount
-//     this.upvotes = upvotes
-//     this.downvotes = downvotes
-//     this.owners = []
-//   }
-// }
 
 function between(str, oTag, cTag) {
   if (oTag == 'XXX') {
@@ -1325,23 +1358,24 @@ async function updateDiscordIds(client, guildIdString) {
   updateCache(['DISCORD_LINKS'])
 }
 
-function updatePusherAuth(authObj) {
-  if (PUSHER_CLIENT) {
-    PUSHER_CLIENT.auth = authObj
-    console.log("Updated Pusher Auth..")
-  }
-}
-
 async function main() {
   await importDbBackup()
   client.login(process.env.BOT_TOKEN)               // BOT_TOKEN is the Discord client secret
   client.on('ready', async () => {
-    setupPusherClient(LATEST_CSRF_TOKEN)
+    var SESH = await getSession()
+    CSRF_TOKEN = grabCsrfFromJar(SESH)
+    HTB_PUSHER_OWNS_SUBSCRIPTION = new HtbPusherSubscription('97608bf7532e6f0fe898', 'owns-channel', 'display-info', CSRF_TOKEN)
+    HTB_PUSHER_OWNS_SUBSCRIPTION.on("pusherevent", message => {
+      if (uidToUname(message.uid)){
+        console.log("PUSHER: " + message.debug)
+        addOwn(message.uid, message.time, message.type, message.target, true)
+      }
+    })
     DISCORD_ANNOUNCE_CHAN = await client.users.cache.get("679986418466029568").createDM()
     // console.log(DISCORD_ANNOUNCE_CHAN)
     console.log("DISCORD LINKS:", Object.values(DISCORD_LINKS).map(link => link.username).join(", "))
     updateData(client)
-    setInterval(() => updateData(client), 5 * 60 * 1000);   // UPDATE OWNAGE DATA EVERY 5 MINUTES
+    setInterval(() => updateData(client), 30 * 60 * 1000);   // UPDATE OWNAGE DATA BY PARSING, EVERY 30 MINUTES
     console.log("Updated Discord User Objects...")
     console.warn('INFO: Discord connection established...')
     client.on('message', message => {
@@ -1396,7 +1430,7 @@ function sendBoxOwnersMsg(message, machineName) {
         embed: {
           color: 3447003,
           author: {
-            name: getMachineByName(machineName).title,
+            name: getMachineByName(machineName).name,
             icon_url: getMachineByName(machineName).thumb,
             url: 'https://www.hackthebox.eu/home/machines/profile/' + getMachineByName(machineName).id,
           },
@@ -1412,7 +1446,7 @@ function sendBoxOwnersMsg(message, machineName) {
         embed: {
           color: 3447003,
           author: {
-            name: getMachineByName(machineName).title,
+            name: getMachineByName(machineName).name,
             icon_url: getMachineByName(machineName).thumb,
             url: 'https://www.hackthebox.eu/home/machines/profile/' + getMachineByName(machineName).id,
           },
@@ -1446,7 +1480,7 @@ function sendUserOwnersMsg(message, machineName) {
         embed: {
           color: 3447003,
           author: {
-            name: getMachineByName(machineName).title,
+            name: getMachineByName(machineName).name,
             icon_url: getMachineByName(machineName).thumb,
             url: 'https://www.hackthebox.eu/home/machines/profile/' + getMachineByName(machineName).id,
           },
@@ -1462,7 +1496,7 @@ function sendUserOwnersMsg(message, machineName) {
         embed: {
           color: 3447003,
           author: {
-            name: getMachineByName(machineName).title,
+            name: getMachineByName(machineName).name,
             icon_url: getMachineByName(machineName).thumb,
             url: 'https://www.hackthebox.eu/home/machines/profile/' + getMachineByName(machineName).id,
           },
@@ -1492,7 +1526,7 @@ function sendLastBoxOwnerMsg(message, machineName) {
       embed: {
         color: 16580705,
         author: {
-          name: getMachineByName(machineName).title,
+          name: getMachineByName(machineName).name,
           icon_url: getMachineByName(machineName).thumb,
           url: 'https://www.hackthebox.eu/home/machines/profile/' + getMachineByName(machineName).id,
         },
@@ -1822,7 +1856,7 @@ async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
         embed: {
           color: "AQUA",
           author: {
-            name: machine.title,
+            name: machine.name,
             icon_url: machine.thumb,
             url: 'https://www.hackthebox.eu/home/machines/profile/' + machine.id,
           },
@@ -1840,7 +1874,7 @@ async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
         embed: {
           color: "GOLD",
           author: {
-            name: machine.title,
+            name: machine.name,
             icon_url: machine.thumb,
             url: 'https://www.hackthebox.eu/home/machines/profile/' + machine.id,
           },
@@ -1954,7 +1988,7 @@ function sendBoxInfoMsg(message, machineName) {
       embed: {
         color: 1146986,
         author: {
-          name: getMachineByName(machineName).title,
+          name: getMachineByName(machineName).name,
           icon_url: getOsImage(box.os),
           url: 'https://www.hackthebox.eu/home/machines/profile/' + getMachineByName(machineName).id,
         },
@@ -2028,7 +2062,7 @@ function sendMemberInfoMsg(message, username) {
               + '+ 🧡 𝖱𝖾𝗌𝗉𝖾𝖼𝗍    : ' + member.stats.respects + '\n'
               + '+ 👨‍💻 𝖱𝗈𝗈𝗍𝗌      : ' + member.totalOwns.root + '\n'
               + '  💻 𝖴𝗌𝖾𝗋𝗌      : ' + member.totalOwns.user + '\n'
-              + '  ⚙️ 𝖢𝗁𝖺𝗅𝗅𝖾𝗇𝗀𝖾𝗌  : ' + member.stats.challenges + '\n'
+              + '  ⚙️ 𝖢𝗁𝖺𝗅𝗅𝖾𝗇𝗀𝖾𝗌  : ' + member.totalOwns.challenge + '\n'
               + '- 🔴 𝟣𝗌𝗍 𝖡𝗅𝗈𝗈𝖽𝗌  : ' + member.stats.bloods + '\n'
               // + (challenge.unreleased ? FMT('- Replaces : ') + challenge.unreleased.replaces : '')
               + '\n```'
@@ -2114,7 +2148,33 @@ function difficultySymbol(difficulty) {
     case "Medium": return "📘";
     case "Hard": return "📙";
     case "Insane": return "📕";
-    default: return ""
+    default: return "📓"
+  }
+}
+
+function challengeSymbol(category) {
+  switch (category.toLowerCase()) {
+    case "reversing": return "↩️"
+    case "crypto": return "👩‍💻️";
+    case "stego": return "🖼️";
+    case "pwn": return "🧊";
+    case "forensics": return "🔎";
+    case "misc": return "🎲";
+    case "mobile": return "☎️";
+    case "osint": return "🌐";
+    case "hardware": return "🧰";
+    default: return "❓"
+  }
+}
+
+function boxOsSymbol(category) {
+  switch (category.toLowerCase()) {
+    case "Linux": return '🐧'
+    case "Windows": return any('🔷', '🔶', "💠")
+    case "Solaris": return '☀️'
+    case "FreeBSD": return '😈'
+    case "Android": return '🍈'
+    default: return "❓"
   }
 }
 
@@ -2128,7 +2188,7 @@ function rankSymbol(rankText) {
     case "Guru": return "🔮";
     case "Omniscient": return "🧙";
     case "Admin": return "🤺";
-    default: return ""
+    default: return "💯"
   }
 }
 
@@ -2141,7 +2201,7 @@ function rankSymbol(rankText) {
 
 /**
  * Send a query to the dialogflow agent, and return the query result.
- * @param {string} projectId The project to be used
+ * @param {Object} message A Discord Message object.
  */
 async function understand(message) {
   var sessionPath = dflow.sessionPath(process.env.GOOGLE_CLOUD_PROJECT, message.author.id);
@@ -2198,7 +2258,7 @@ async function humanSend(message, msg, noMention) {
       message.channel.startTyping()
       //console.log(ln)
       if (Math.random() < 0.1) { // random chance we'll try to generate a typo
-        var typoData = nlp.typo(ln)
+        var typoData = typoify.typo(ln)
         if (typoData) {
           console.log(typoData)
           message.channel.startTyping()
@@ -2275,7 +2335,6 @@ async function sendIncompleteBoxesByMemberMsg(message, note, username) {
     Object.values(MACHINES).sort((a, b) => (Number(a.id) < Number(b.id)) ? 1 : -1).forEach(machine => {
       var match = machine.rootOwners.find(user => user.uid === uid);
       if (!match) {
-        // console.log(machine.title + " not completed by " + username + ": YES");
         boxIds.push(machine.id)
       }
     });
@@ -2328,7 +2387,6 @@ async function sendOwnedBoxesByMemberMsg(message, note, username) {
     Object.values(MACHINES).sort((a, b) => (Number(a.id) < Number(b.id)) ? 1 : -1).forEach(machine => {
       var match = machine.rootOwners.find(user => user.uid === uid);
       if (match) {
-        // console.log(machine.title + " completed by " + username + ": YES");
         boxIds.push(machine.id)
       } else {
         // console.error("User w/ ID of '" + uid + "' not found.")

@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Classes - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module-Classes.html#~HtbChallenge">HtbChallenge</a></li><li><a href="module-Classes.html#~HtbMachine">HtbMachine</a></li><li><a href="module-Classes.html#~HtbMaker">HtbMaker</a></li><li><a href="module-Classes.html#~HtbOwn">HtbOwn</a></li><li><a href="module-Classes.html#~TeamMember">TeamMember</a></li></ul><h3>Modules</h3><ul><li><a href="module-Classes.html">Classes</a><ul class='methods'><li data-type='method'><a href="module-Classes.html#~pointsToDifficulty">pointsToDifficulty</a></li></ul></li><li><a href="module-Seven.html">Seven</a><ul class='methods'><li data-type='method'><a href="module-Seven.html#~addOwn">addOwn</a></li><li data-type='method'><a href="module-Seven.html#~andifyList">andifyList</a></li><li data-type='method'><a href="module-Seven.html#~any">any</a></li><li data-type='method'><a href="module-Seven.html#~checkSelfName">checkSelfName</a></li><li data-type='method'><a href="module-Seven.html#~elapsedDays">elapsedDays</a></li><li data-type='method'><a href="module-Seven.html#~exportData">exportData</a></li><li data-type='method'><a href="module-Seven.html#~FMT">FMT</a></li><li data-type='method'><a href="module-Seven.html#~genRanHex">genRanHex</a></li><li data-type='method'><a href="module-Seven.html#~getChallengeByName">getChallengeByName</a></li><li data-type='method'><a href="module-Seven.html#~getFlag">getFlag</a></li><li data-type='method'><a href="module-Seven.html#~getIdFromDiscordName">getIdFromDiscordName</a></li><li data-type='method'><a href="module-Seven.html#~getMachineById">getMachineById</a></li><li data-type='method'><a href="module-Seven.html#~getMachineByName">getMachineByName</a></li><li data-type='method'><a href="module-Seven.html#~getMachineIdFromName">getMachineIdFromName</a></li><li data-type='method'><a href="module-Seven.html#~getMdLinksForUids">getMdLinksForUids</a></li><li data-type='method'><a href="module-Seven.html#~getMemberByName">getMemberByName</a></li><li data-type='method'><a href="module-Seven.html#~getMemberTeamRankById">getMemberTeamRankById</a></li><li data-type='method'><a href="module-Seven.html#~getNewReleaseName">getNewReleaseName</a></li><li data-type='method'><a href="module-Seven.html#~getOsImage">getOsImage</a></li><li data-type='method'><a href="module-Seven.html#~getOwnersByChallengeName">getOwnersByChallengeName</a></li><li data-type='method'><a href="module-Seven.html#~getOwnersByMachineId">getOwnersByMachineId</a></li><li data-type='method'><a href="module-Seven.html#~halfMoon">halfMoon</a></li><li data-type='method'><a href="module-Seven.html#~ignoreMember">ignoreMember</a></li><li data-type='method'><a href="module-Seven.html#~importDbBackup">importDbBackup</a></li><li data-type='method'><a href="module-Seven.html#~importExistingData">importExistingData</a></li><li data-type='method'><a href="module-Seven.html#~isAdmin">isAdmin</a></li><li data-type='method'><a href="module-Seven.html#~isEmpty">isEmpty</a></li><li data-type='method'><a href="module-Seven.html#~maybe">maybe</a></li><li data-type='method'><a href="module-Seven.html#~mdItemizeList">mdItemizeList</a></li><li data-type='method'><a href="module-Seven.html#~nth">nth</a></li><li data-type='method'><a href="module-Seven.html#~numS">numS</a></li><li data-type='method'><a href="module-Seven.html#~ratingString">ratingString</a></li><li data-type='method'><a href="module-Seven.html#~realMax">realMax</a></li><li data-type='method'><a href="module-Seven.html#~timeSince">timeSince</a></li><li data-type='method'><a href="module-Seven.html#~tryDiscordifyUid">tryDiscordifyUid</a></li><li data-type='method'><a href="module-Seven.html#~understand">understand</a></li><li data-type='method'><a href="module-Seven.html#~unignoreMember">unignoreMember</a></li><li data-type='method'><a href="module-Seven.html#~updateCache">updateCache</a></li><li data-type='method'><a href="module-Seven.html#~updateMachineStats">updateMachineStats</a></li><li data-type='method'><a href="module-Seven.html#~updateTeamStats">updateTeamStats</a></li><li data-type='method'><a href="module-Seven.html#~wait">wait</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Classes</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        
+            
+        
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+                <div class="description usertext"><p>A module for friends.</p></div>
+            
+
+            
+                
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="helpers_classes.js.html">helpers/classes.js</a>, <a href="helpers_classes.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+        
+        </div>
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="module-Classes.html#~HtbChallenge">HtbChallenge</a></dt>
+            <dd></dd>
+        
+            <dt><a href="module-Classes.html#~HtbMachine">HtbMachine</a></dt>
+            <dd></dd>
+        
+            <dt><a href="module-Classes.html#~HtbMaker">HtbMaker</a></dt>
+            <dd></dd>
+        
+            <dt><a href="module-Classes.html#~HtbOwn">HtbOwn</a></dt>
+            <dd></dd>
+        
+            <dt><a href="module-Classes.html#~TeamMember">TeamMember</a></dt>
+            <dd></dd>
+        </dl>
+    
+    
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="~pointsToDifficulty"><span class="type-signature">(inner) </span>pointsToDifficulty<span class="signature">(points)</span><span class="type-signature"> &rarr; {'Unknown'|'Easy'|'Medium'|'Hard'|'Insane'}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="helpers_classes.js.html">helpers/classes.js</a>, <a href="helpers_classes.js.html#line12">line 12</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Converts a numeric points value to an scaled 'difficulty' indicator.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>points</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The points offered for solving a machine (proportional to difficulty).</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">'Unknown'</span>
+|
+
+<span class="param-type">'Easy'</span>
+|
+
+<span class="param-type">'Medium'</span>
+|
+
+<span class="param-type">'Hard'</span>
+|
+
+<span class="param-type">'Insane'</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Type Definitions</h3>
+
+        
+                
+<h4 class="name" id="~HtbChallenge">HtbChallenge</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="helpers_classes.js.html">helpers/classes.js</a>, <a href="helpers_classes.js.html#line81">line 81</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the challenge (e.g. 'Nostalgia')).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>category</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The category of the challenge (e.g. 'Crypto')).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>releaseDate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A number representing the Unix time (seconds from epoch) at which the challenge was released.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>description</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A brief description of the challenge, if one is provided.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>isActive</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A boolean value indicating whether the challenge is active or not.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>points</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The amount of points the challenge is worth, if it is active.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maker</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HtbMaker</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>An object containing the id and name of the primary maker.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maker2</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HtbMaker</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>An object containing the id and name of the secondary maker (if applicable).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>solverCount</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The number of times this challenge has been solved.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>upvotes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Number of positive user ratings this challenge has received.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>downvotes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Number of positive user ratings this challenge has received.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>owners</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;HtbOwn></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A list of HtbOwn objects, containing uid and timestamp values for each member own.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description usertext">
+    <p>Class representing a Hack the Box challenge.</p>
+</div>
+
+
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="~HtbMachine">HtbMachine</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="helpers_classes.js.html">helpers/classes.js</a>, <a href="helpers_classes.js.html#line24">line 24</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the machine (e.g. 'Fatty')).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The numeric id representing the machine.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>thumb</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The full url to the machine's public thumbnail image.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userOwners</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;HtbOwn></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A list of HtbOwn objects, containing uid and timestamp values for each member user own.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>rootOwners</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;HtbOwn></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A list of HtbOwn objects, containing uid and timestamp values for each member root own.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>retired</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A boolean value indicating whether the machine is retired. (todo: consolodate retired/unreleased into single 'state' member.)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>unreleased</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A boolean value indicating whether the machine is unreleased.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>retiredate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A number representing the Unix time (seconds from epoch) at which the machine was retired.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>release</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A number representing the Unix time (seconds from epoch) at which the machine was released.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maker</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HtbMaker</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>An object containing the id and name of the primary maker.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maker2</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HtbMaker</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>An object containing the id and name of the secondary maker (if applicable).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>os</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A string representing the machine's operating system (e.g. 'Linux' / 'Windows' ...).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ip</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The machine's IP address.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>rating</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A number ranging from 0 to 5 indicating the overall user rating the machine has received.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>points</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The amount of points the machine is worth, if it is active.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>difficulty</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The difficulty of the box as a string, e.g. &quot;Easy&quot;, &quot;Hard&quot;.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description usertext">
+    <p>Class representing a Hack the Box machine.</p>
+</div>
+
+
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="~HtbMaker">HtbMaker</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="helpers_classes.js.html">helpers/classes.js</a>, <a href="helpers_classes.js.html#line195">line 195</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The ID of the member.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Unix time (seconds) at which the own occurred.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description usertext">
+    <p>Class representing a HTB challenge / box creator.</p>
+</div>
+
+
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="~HtbOwn">HtbOwn</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="helpers_classes.js.html">helpers/classes.js</a>, <a href="helpers_classes.js.html#line176">line 176</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>uid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The ID of the member.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>timestamp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Unix time (seconds) at which the own occurred.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description usertext">
+    <p>Class representing a member own. (challenge, user, or root)</p>
+</div>
+
+
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="~TeamMember">TeamMember</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="helpers_classes.js.html">helpers/classes.js</a>, <a href="helpers_classes.js.html#line128">line 128</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>siterank</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The current global rank of the member as an integer, e.g. 112 (112th).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>points</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The total points currently held by the member.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The member's formal name, e.g. 'bkr32'.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The unique ID number identifying the user on Hack The Box.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>totalOwns</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>An object containing ownage info.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>thumb</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The full url to the member's public thumbnail image.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>rank</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The member's title / level, e.g. ['Noob', 'Script Kiddie', 'Hacker', 'Pro Hacker', 'Elite Hacker', 'Guru', 'Omniscient', 'Admin']</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>countryName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The country associated with the member's profile.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>countryCode</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The country code associated with the member's profile (used for flag lookup).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>joinDate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The Unix timestamp (in seconds) representing when the member joined Hack The Box (NOTE: Team join date information is currently not available.)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>stats</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A container holding various metrics, as parsed from the profile page chart area. (this is updated only nightly -- prefer totalOwns where possible data as it is realtime).</p>
+                <h6>Properties</h6>
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>users</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Member user owns (nightly update)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>roots</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Member system owns (nightly update)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>challenges</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Member challenge owns (nightly update)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>respects</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Member total respect (nightly update)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>bloods</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Member total first bloods (nightly update)</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description usertext">
+    <p>Class representing a Hack the Box team member.</p>
+</div>
+
+
+
+
+
+
+
+
+            
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Mon Jun 22 2020 23:55:43 GMT+0300 (GMT+03:00) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
