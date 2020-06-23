@@ -5,7 +5,5 @@ config/*
 .vs/
 .vscode/
 logs/
-package.json
-package-lock.json
 Procfile
 desktop.ini
