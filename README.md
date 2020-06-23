@@ -1,5 +1,8 @@
-If you enjoy Seven, feel free to ⭐ the repo and / or buy me a coffee! ☕
+👩‍💻️ *If you enjoy Seven, feel free to show some love so I can create more projects like this!*
+
+
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F1F61UIUZ)
+
 # 💬 Seven
 #### An AI-powered Discord Bot for [Hack The Box](https://www.hackthebox.eu) teams. 
 ![Seven's visage](/branding/seven_thumb_128.png)
