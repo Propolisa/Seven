@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>HtbOwn - Documentation</title>
+    <title>HtbPusherEvent - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -32,7 +32,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">HtbOwn</h1>
+    <h1 class="page-title">HtbPusherEvent</h1>
     
 
     
@@ -45,9 +45,9 @@
 <header>
     
         <h2>
-            <span class="ancestors"><a href="module-Classes.html">Classes</a>~</span>
+            <span class="ancestors"><a href="module-Pusher-Htb.html">Pusher-Htb</a>~</span>
         
-        HtbOwn
+        HtbPusherEvent
         </h2>
         
     
@@ -61,7 +61,7 @@
 
     
 
-    <h4 class="name" id="~HtbOwn"><span class="type-signature"></span>new HtbOwn<span class="signature">(uid, timestamp)</span><span class="type-signature"> &rarr; {HtbOwn}</span></h4>
+    <h4 class="name" id="HtbPusherEvent"><span class="type-signature"></span>new HtbPusherEvent<span class="signature">(uid, type, target, flag, markdown, debug)</span><span class="type-signature"></span></h4>
 
     
 
@@ -73,7 +73,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="helpers_classes.js.html">helpers/classes.js</a>, <a href="helpers_classes.js.html#line189">line 189</a>
+        <a href="helpers_pusher-htb.js.html">helpers/pusher-htb.js</a>, <a href="helpers_pusher-htb.js.html#line64">line 64</a>
     </li></ul></dd>
     
 
@@ -113,7 +113,7 @@
 
 
 <div class="description usertext">
-    <p>Creates a new HtbOwn object.</p>
+    <p>An object containing data parsed from a HTB Pusher event. Contains structured information about the specific achievement, target and users involved, as well as the original text for debugging.</p>
 </div>
 
 
@@ -167,20 +167,20 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>The Htb UID of the user involved.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>timestamp</code></td>
+                <td class="name"><code>type</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">string</span>
 
 
             
@@ -190,7 +190,99 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>The type of message this was, e.g. a challenge own, fortress milestone, machine rating etc.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The string name of the target (thing that was owned), if relevant.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>flag</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The string name of the flag / milestone, if a pro lab or other necessitating challenge.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>markdown</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The bare markdown representation of the original HTML announcement string.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>debug</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The raw HTML string passed in the Pusher event.</p></td>
         </tr>
 
     
@@ -212,24 +304,6 @@
 
 
 
-<h5>Returns:</h5>
-
-        
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">HtbOwn</span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 

@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>HtbOwn - Documentation</title>
+    <title>Pusher-Htb - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -32,7 +32,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">HtbOwn</h1>
+    <h1 class="page-title">Pusher-Htb</h1>
     
 
     
@@ -44,11 +44,8 @@
 
 <header>
     
-        <h2>
-            <span class="ancestors"><a href="module-Classes.html">Classes</a>~</span>
         
-        HtbOwn
-        </h2>
+            
         
     
 </header>
@@ -58,10 +55,124 @@
         <div class="container-overview">
         
             
+                <div class="description usertext"><p>Implements functionality for parsing and responding to Pusher events from the public HTB Shoutbox.</p></div>
+            
+
+            
+                
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="helpers_pusher-htb.js.html">helpers/pusher-htb.js</a>, <a href="helpers_pusher-htb.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
 
     
 
-    <h4 class="name" id="~HtbOwn"><span class="type-signature"></span>new HtbOwn<span class="signature">(uid, timestamp)</span><span class="type-signature"> &rarr; {HtbOwn}</span></h4>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+        
+        </div>
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="module-Pusher-Htb-HtbPusherEvent.html">HtbPusherEvent</a></dt>
+            <dd></dd>
+        
+            <dt><a href="module-Pusher-Htb.html#~HtbPusherSubscription">HtbPusherSubscription</a></dt>
+            <dd></dd>
+        </dl>
+    
+    
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="~parsePusherEvent"><span class="type-signature">(inner) </span>parsePusherEvent<span class="signature">(data, channel)</span><span class="type-signature"> &rarr; {string}</span></h4>
 
     
 
@@ -73,7 +184,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="helpers_classes.js.html">helpers/classes.js</a>, <a href="helpers_classes.js.html#line189">line 189</a>
+        <a href="helpers_pusher-htb.js.html">helpers/pusher-htb.js</a>, <a href="helpers_pusher-htb.js.html#line21">line 21</a>
     </li></ul></dd>
     
 
@@ -113,7 +224,7 @@
 
 
 <div class="description usertext">
-    <p>Creates a new HtbOwn object.</p>
+    <p>Handles a single Pusher achievement message, sending it to our announcement channel as a pretty embed if it concerns our team.</p>
 </div>
 
 
@@ -151,13 +262,13 @@
 
         <tr>
             
-                <td class="name"><code>uid</code></td>
+                <td class="name"><code>data</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">Object</span>
 
 
             
@@ -167,20 +278,20 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>Contains the Pusher event data.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>timestamp</code></td>
+                <td class="name"><code>channel</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">Discord.Channel</span>
 
 
             
@@ -190,7 +301,7 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>The Discord channel to send the announcement to, if one is configured.</p></td>
         </tr>
 
     
@@ -215,6 +326,12 @@
 <h5>Returns:</h5>
 
         
+<div class="param-desc">
+    <ul>
+<li>Debug description of the event / achievement.</li>
+</ul>
+</div>
+
 
 
 <dl class="param-type">
@@ -223,7 +340,7 @@
     </dt>
     <dd>
         
-<span class="param-type">HtbOwn</span>
+<span class="param-type">string</span>
 
 
     </dd>
@@ -234,7 +351,26 @@
 
 
         
-        </div>
+    
+
+    
+        <h3 class="subsection-title">Type Definitions</h3>
+
+        
+                
+<h4 class="name" id="~HtbPusherSubscription">HtbPusherSubscription</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="helpers_pusher-htb.js.html">helpers/pusher-htb.js</a>, <a href="helpers_pusher-htb.js.html#line78">line 78</a>
+    </li></ul></dd>
     
 
     
@@ -242,10 +378,6 @@
     
 
     
-    
-    
-
-     
 
     
 
@@ -253,6 +385,116 @@
 
     
 
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>client</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The Pusher Client instance.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>channel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The channel being listened on.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description usertext">
+    <p>Class representing a HTB challenge / box creator.</p>
+</div>
+
+
+
+
+
+
+
+
+            
     
 
     
