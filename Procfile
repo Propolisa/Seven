@@ -1,1 +1,1 @@
-worker: node bot.js --color=always
+worker: node bot.js
