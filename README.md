@@ -1,3 +1,7 @@
+👩‍💻️ *If you enjoy Seven, feel free to show some love so I can create more projects like this!*
+
+
+[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F1F61UIUZ)
 
 # 💬 Seven
 #### An AI-powered Discord Bot for [Hack The Box](https://www.hackthebox.eu) teams. 
@@ -31,7 +35,7 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 > "Who did [**boxname** | **challengename**]", "Who did mantis"\
 > "who rooted **json** last", "who can help me with Forest challenge"
  <details>
-  <summary>demo</summary>
+  <summary>📸</summary>
   
   <img src="docs/img/get_box_owners_2.png?raw=true" width="642">
   <img src="docs/img/get_last_box_owner.png?raw=true" width="642">
@@ -42,7 +46,7 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 > "[**boxname** | **challengename**]", "[**boxname**] info" etc\
 > "what's new", "what's fresh" /* unreleased / latest box */
  <details>
-  <summary>demo</summary>
+  <summary>📸</summary>
   
   <img src="docs/img/get_box_info.png?raw=true" width="642">
   <img src="docs/img/get_newest_box.png?raw=true" width="642">
@@ -55,7 +59,7 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 > "who is [**username**]", "[**username**] info", "[**username**] ranking"\
 > "has [**username**] rooted multimaster yet?", "Did [**username**] solve fuzzy"\
  <details>
-  <summary>demo</summary>
+  <summary>📸</summary>
   
   <img src="docs/img/get_challenge_ownage_by_member.png?raw=true" width="642">
   <img src="docs/img/get_box_ownage_by_member.png?raw=true" width="642">
@@ -68,7 +72,7 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 > "team ranking", "how are we doing" `/* team global rank */`\
 > "who's on top", "team leaders"` /* group members    */`
  <details>
-  <summary>demo</summary>
+  <summary>📸</summary>
   
   <img src="docs/img/get_team_info.png?raw=true" width="642">
   <img src="docs/img/get_team_founder_info.png?raw=true" width="642">
@@ -80,7 +84,7 @@ Seven is super flexible and doesn't rely on templates or specific wordings to un
 > "What are you working on", "do you like water skiing", "what is 4+4"\
 > "' UNION SELECT ..." ??? "sudo su", "can you help me hack the pentagon"
  <details>
-  <summary>demo</summary>
+  <summary>📸</summary>
   
   <img src="docs/img/small_talk_0.png?raw=true" width="642">
   <img src="docs/img/small_talk_1.png?raw=true" width="642">
