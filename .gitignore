@@ -5,5 +5,4 @@ config/*
 .vs/
 .vscode/
 logs/
-Procfile
 desktop.ini
