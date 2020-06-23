@@ -1794,7 +1794,7 @@ async function sendCheckMemberOwnedChallengeMsg(message, challengename, username
             url: member.thumb,
           },
           footer: {
-            text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
+            text: "ℹ️  Accurate as of " + timeSince(new Date(Math.max(LAST_UPDATE.getTime(),own.timestamp)))
           },
           description: "🥳 W00t! " + (checkSelfName(username) ? " **[You](https://www.hackthebox.eu/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + " completed challenge **[" + challenge.name + "](https://www.hackthebox.eu/home/challenges/" + challenge.category + ") " + timeSince(new Date(own.timestamp * 1000)) + "**."
         }
@@ -1812,7 +1812,7 @@ async function sendCheckMemberOwnedChallengeMsg(message, challengename, username
             url: member.thumb,
           },
           footer: {
-            text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
+            text: "ℹ️  Accurate as of " + timeSince(new Date(Math.max(LAST_UPDATE.getTime(),own.timestamp)))
           },
           description: "Looks like " + getMdLinksForUids([member.id]) + " hasn't owned challenge **[" + challenge.name + "](https://www.hackthebox.eu/home/challenges/" + challenge.category + ")** yet. 🐳"
         }
@@ -1864,7 +1864,7 @@ async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
             url: member.thumb,
           },
           footer: {
-            text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
+            text: "ℹ️  Accurate as of " + timeSince(new Date(Math.max(LAST_UPDATE.getTime(),own.timestamp)))
           },
           description: (own.userOnly == true ? "🥳 Looks like " : "👑 W00t! ") + (checkSelfName(username) ? " **[You](https://www.hackthebox.eu/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + (own.userOnly == true ? " got " : " owned ") + (own.userOnly == true ? "user" : "root") + " on " + getMdLinksForBoxIds([machine.id]) + (own.userOnly == true ? " **" : " ") + timeSince(new Date(own.timestamp * 1000)) + (own.userOnly == true ? "**." : ".")
         }
@@ -1882,7 +1882,7 @@ async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
             url: member.thumb,
           },
           footer: {
-            text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
+            text: "ℹ️  Accurate as of " + timeSince(new Date(Math.max(LAST_UPDATE.getTime(),own.timestamp)))
           },
           description: "Looks like " + getMdLinksForUids([member.id]) + " hasn't got user or root on " + getMdLinksForBoxIds([machine.id]) + " yet. 🍟"
         }
