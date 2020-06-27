@@ -38,7 +38,7 @@ const pgp = require('pg-promise')({ capSQL: true });
 
 const log = winston.createLogger({
   transports: [
-      new winston.transports.Console()
+    new winston.transports.Console()
   ]
 });
 
@@ -547,8 +547,18 @@ function andifyList(str) { //
  * @returns {(string|null)}
  */
 function getNewReleaseName() {
-  const unreleasedBox = Object.values(MACHINES).find(machine => machine.unreleased)
-  return unreleasedBox.name || null
+  try {
+    const unreleasedBox = Object.values(MACHINES).find(machine => machine.unreleased)
+    if (unreleasedBox) {
+      console.log(unreleasedBox)
+      return unreleasedBox.name
+    } else {
+      return Object.values(MACHINES).slice(-1)[0].name
+    }
+  } catch (error) {
+    console.error(error)
+    return "Lame" // First HTB machine, may it RIP :)
+  }
 }
 
 /**
@@ -1373,7 +1383,7 @@ async function main() {
     CSRF_TOKEN = grabCsrfFromJar(SESH)
     HTB_PUSHER_OWNS_SUBSCRIPTION = new HtbPusherSubscription('97608bf7532e6f0fe898', 'owns-channel', 'display-info', CSRF_TOKEN)
     HTB_PUSHER_OWNS_SUBSCRIPTION.on("pusherevent", message => {
-      if (uidToUname(message.uid)){
+      if (uidToUname(message.uid)) {
         console.log("PUSHER: " + message.debug)
         addOwn(message.uid, message.time, message.type, message.target, true)
       }
@@ -1801,7 +1811,7 @@ async function sendCheckMemberOwnedChallengeMsg(message, challengename, username
             url: member.thumb,
           },
           footer: {
-            text: "ℹ️  Accurate as of " + timeSince(new Date(Math.max(LAST_UPDATE.getTime(),own.timestamp)))
+            text: "ℹ️  Accurate as of " + timeSince(new Date(Math.max(LAST_UPDATE.getTime(), own.timestamp)))
           },
           description: "🥳 W00t! " + (checkSelfName(username) ? " **[You](https://www.hackthebox.eu/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + " completed challenge **[" + challenge.name + "](https://www.hackthebox.eu/home/challenges/" + challenge.category + ") " + timeSince(new Date(own.timestamp * 1000)) + "**."
         }
@@ -1871,7 +1881,7 @@ async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
             url: member.thumb,
           },
           footer: {
-            text: "ℹ️  Accurate as of " + timeSince(new Date(Math.max(LAST_UPDATE.getTime(),own.timestamp)))
+            text: "ℹ️  Accurate as of " + timeSince(new Date(Math.max(LAST_UPDATE.getTime(), own.timestamp)))
           },
           description: (own.userOnly == true ? "🥳 Looks like " : "👑 W00t! ") + (checkSelfName(username) ? " **[you](https://www.hackthebox.eu/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + (own.userOnly == true ? " got " : " owned ") + (own.userOnly == true ? "user" : "root") + " on " + getMdLinksForBoxIds([machine.id]) + (own.userOnly == true ? " **" : " ") + timeSince(new Date(own.timestamp * 1000)) + (own.userOnly == true ? "**." : ".")
         }
@@ -1891,7 +1901,7 @@ async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
           footer: {
             text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
           },
-          description: "Looks like " + (checkSelfName(username) ? " **[you](https://www.hackthebox.eu/home/users/profile/" + member.id + ")** haven't " : getMdLinksForUids([member.id])+ " hasn't ") + "got user or root on " + getMdLinksForBoxIds([machine.id]) + " yet. 🍟"
+          description: "Looks like " + (checkSelfName(username) ? " **[you](https://www.hackthebox.eu/home/users/profile/" + member.id + ")** haven't " : getMdLinksForUids([member.id]) + " hasn't ") + "got user or root on " + getMdLinksForBoxIds([machine.id]) + " yet. 🍟"
         }
       })
     }
@@ -2788,7 +2798,7 @@ async function handleMessage(message) {
           case "getRetiredBoxCount": try { sendRetiredBoxCountMsg(message, result.fulfillmentText) } catch (e) { console.log(e) }; break;
           case "getFirstBox": try { sendBoxInfoMsg(message, "Lame") } catch (e) { console.log(e) };
           case "agent.doReboot": doFakeReboot(message, result.fulfillmentText); break;
-          case "getNewBox": console.log("got here6.."); sendBoxInfoMsg(message, getNewReleaseName()); break;
+          case "getNewBox": sendBoxInfoMsg(message, getNewReleaseName()); break;
           case "getChallengeInfo": try { sendChallengeInfoMsg(message, inf.challengeName.stringValue); } catch (e) { console.log(e) }; break;
           case "getChallengeOwners": try { sendChallengeOwnersMsg(message, inf.challengeName.stringValue); } catch (e) { console.log(e) }; break;
           case "getLastChallengeOwner": try { sendLastChallengeOwnerMsg(message, inf.challengeName.stringValue) } catch (e) { console.log(e) }; break;
