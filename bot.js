@@ -14,7 +14,7 @@ if (process.env.HEROKU) {
 /*** HANDLE STANDARD IMPORTS ***/
 
 require('./helpers/helpers.js')
-// const winston = require('winston');
+const winston = require('winston');
 const flagEmoji = require('country-flag-emoji')
 const Discord = require('discord.js')
 const client = new Discord.Client()
@@ -35,6 +35,12 @@ const { checkSelfName } = require('./helpers/nlp');
 const { HtbMachine, HtbChallenge, TeamMember, HtbOwn, HtbMaker } = require('./helpers/classes');
 const { HtbPusherEvent, HtbPusherSubscription } = require('./helpers/pusher-htb');
 const pgp = require('pg-promise')({ capSQL: true });
+
+const log = winston.createLogger({
+  transports: [
+      new winston.transports.Console()
+  ]
+});
 
 /*** INIT GLOBAL VARIABLES ***/
 
@@ -343,6 +349,7 @@ function ratingString(rating) {
 /**
  * Returns whether the provided Discord user has admin privileges.
  * @param {Discord.User} author 
+ * @returns {boolean}
  */
 function isAdmin(author) {
   return author.id == process.env.ADMIN_DISCORD_ID
@@ -1812,9 +1819,9 @@ async function sendCheckMemberOwnedChallengeMsg(message, challengename, username
             url: member.thumb,
           },
           footer: {
-            text: "ℹ️  Accurate as of " + timeSince(new Date(Math.max(LAST_UPDATE.getTime(),own.timestamp)))
+            text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
           },
-          description: "Looks like " + getMdLinksForUids([member.id]) + " hasn't owned challenge **[" + challenge.name + "](https://www.hackthebox.eu/home/challenges/" + challenge.category + ")** yet. 🐳"
+          description: "Looks like " + (checkSelfName(username) ? " **[you](https://www.hackthebox.eu/home/users/profile/" + member.id + ")** haven't " : getMdLinksForUids([member.id]) + " hasn't ") + " owned challenge **[" + challenge.name + "](https://www.hackthebox.eu/home/challenges/" + challenge.category + ")** yet. 🐳"
         }
       })
     }
@@ -1866,7 +1873,7 @@ async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
           footer: {
             text: "ℹ️  Accurate as of " + timeSince(new Date(Math.max(LAST_UPDATE.getTime(),own.timestamp)))
           },
-          description: (own.userOnly == true ? "🥳 Looks like " : "👑 W00t! ") + (checkSelfName(username) ? " **[You](https://www.hackthebox.eu/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + (own.userOnly == true ? " got " : " owned ") + (own.userOnly == true ? "user" : "root") + " on " + getMdLinksForBoxIds([machine.id]) + (own.userOnly == true ? " **" : " ") + timeSince(new Date(own.timestamp * 1000)) + (own.userOnly == true ? "**." : ".")
+          description: (own.userOnly == true ? "🥳 Looks like " : "👑 W00t! ") + (checkSelfName(username) ? " **[you](https://www.hackthebox.eu/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + (own.userOnly == true ? " got " : " owned ") + (own.userOnly == true ? "user" : "root") + " on " + getMdLinksForBoxIds([machine.id]) + (own.userOnly == true ? " **" : " ") + timeSince(new Date(own.timestamp * 1000)) + (own.userOnly == true ? "**." : ".")
         }
       })
     } else {
@@ -1882,9 +1889,9 @@ async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
             url: member.thumb,
           },
           footer: {
-            text: "ℹ️  Accurate as of " + timeSince(new Date(Math.max(LAST_UPDATE.getTime(),own.timestamp)))
+            text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
           },
-          description: "Looks like " + getMdLinksForUids([member.id]) + " hasn't got user or root on " + getMdLinksForBoxIds([machine.id]) + " yet. 🍟"
+          description: "Looks like " + (checkSelfName(username) ? " **[you](https://www.hackthebox.eu/home/users/profile/" + member.id + ")** haven't " : getMdLinksForUids([member.id])+ " hasn't ") + "got user or root on " + getMdLinksForBoxIds([machine.id]) + " yet. 🍟"
         }
       })
     }
