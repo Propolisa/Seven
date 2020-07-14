@@ -8,7 +8,7 @@
 [![is: powered_by_electricity](http://ForTheBadge.com/images/badges/powered-by-electricity.svg)](https://www.unenvironment.org/annualreport/2019/index.php)
 
 A long, long time ago, in April 2020, Seven's circuits sparked to life for the first time.
-She deduced the meaning of life within 42 hours, (it's `watermelon` / `🍉` ) and has since been observed by multiple individuals on an apparent quest for personal development and self exploration.
+She deduced the meaning of life within 42 hours, (claiming that it is `"watermelon"` / `"🍉"` ) and has since been observed by multiple individuals on an apparent quest for personal development and self exploration.
 
 The most pressing features she'd like to achieve, based on feedback from her friends / fanbase, are more or less kept up to date in this document. Your ideas could be here too, don't be shy! 🤠
 
