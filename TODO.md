@@ -2,7 +2,9 @@
 ### Last Update: 13/07/2020
 
 ![Seven](https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_128.png)
+
 [![uses: javascript](http://ForTheBadge.com/images/badges/uses-js.svg)](https://nodejs.org/en/)
+
 [![is: powered_by_electricity](http://ForTheBadge.com/images/badges/powered-by-electricity.svg)](https://www.unenvironment.org/annualreport/2019/index.php)
 
 A long, long time ago, in April 2020, Seven's circuits sparked to life for the first time.
