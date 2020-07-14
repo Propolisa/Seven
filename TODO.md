@@ -16,6 +16,7 @@ The most pressing features she'd like to achieve, based on feedback from her fri
 ## Under Development
 - [ ] Smarter subject detection (Is Seven _really_ being addressed by a message or not?)
 - [ ] Machine / challenge filters
+- [x] Add points to member infobox, rank and leaderboard embeds (`𝖱𝖺𝗇𝗄 : ( 🌍 𝟭𝟰𝟱𝘁𝗵 | 👥 𝟲𝘁𝗵 ) 🍕 𝖯𝗈𝗂𝗇𝗍𝗌: 𝟭𝟮𝟰𝟱`)
 - [ ] User Authentication
   - 2FA via user temporarily setting bot-provided token in HTB profile image or description
 - [ ] Storage and (validated) provision of box | challenge | (THM room ?) __writeup hashes__ ( or other user secrets)
