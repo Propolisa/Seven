@@ -14,6 +14,8 @@ The most pressing features she'd like to achieve, based on feedback from her fri
 
 # Overview
 ## Under Development
+- [ ] Fix sorting of owns data (most recent first)
+- [ ] Allow listing, sorting and filtering of challenges (e.g. `"latest 10 retired boxes"`, `"BOF challenges"`, `"oldest Active Directory machine"`).
 - [ ] Smarter subject detection (Is Seven _really_ being addressed by a message or not?)
 - [ ] Machine / challenge filters
 - [x] Add points to member infobox, rank and leaderboard embeds (`𝖱𝖺𝗇𝗄 : ( 🌍 𝟭𝟰𝟱𝘁𝗵 | 👥 𝟲𝘁𝗵 ) 🍕 𝖯𝗈𝗂𝗇𝗍𝗌: 𝟭𝟮𝟰𝟱`)
