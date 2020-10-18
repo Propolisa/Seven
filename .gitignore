@@ -4,8 +4,10 @@ config/*
 .env
 .vs/
 .vscode/
+logs/
 desktop.ini
 .history/*
 .history/
 .history
 .vscode
+.
