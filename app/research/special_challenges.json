@@ -1,0 +1,231 @@
+ {
+ 	"Endgame": [{
+ 		"name": "P.O.O.",
+ 		"id": 1,
+ 		"category": "Endgame",
+ 		"flags": {
+ 			"1": "Recon",
+ 			"2": "Huh?!",
+ 			"3": "BackTrack",
+ 			"4": "Foothold",
+ 			"5": "p00ned"
+ 		},
+ 		"description": "Professional Offensive Operations is a rising name in the cyber security world.\n\nLately they've been working into migrating core services and components to a state of the art cluster which offers cutting edge software and hardware.\n\nP.O.O., is designed to put your skills in enumeration, lateral movement, and privilege escalation to the test within a small Active Directory environment configured with the latest and greatest operating systems and technologies.\n\nThe goal is to compromise the perimeter host, escalate privileges and ultimately compromise the domain while collecting several flags along the way.\n",
+ 		"entries": ["10.13.38.11"],
+ 		"makers": {
+ 			"username": "eks",
+ 			"id": 302
+ 		},
+ 		"retired": true
+ 	}, {
+ 		"name": "Xen",
+ 		"id": 2,
+ 		"category": "Endgame",
+ 		"flags": {
+ 			"1": "Breach",
+ 			"2": "Deploy",
+ 			"3": "Ghost",
+ 			"4": "Camouflage",
+ 			"5": "Doppelgänger",
+ 			"6": "Owned"
+ 		},
+ 		"description": "Humongous Retail operates a nationwide chain of stores.\n\nThe company has reacted to several recent skimming incidents by investing heavily in their POS systems. Keen to avoid any further negative publicity, they have engaged the services of a penetration testing company to assess the security of their perimeter and internal infrastructure.\n\nXen is designed to put your skills in enumeration, breakout, lateral movement, and privilege escalation to the test within a small Active Directory environment.\n\nThe goal is to gain a foothold on the internal network, escalate privileges and ultimately compromise the domain while collecting several flags along the way.\n",
+ 		"entries": ["10.13.38.12"],
+ 		"makers": {
+ 			"username": "egre55",
+ 			"id": 1190
+ 		},
+ 		"retired": true
+ 	}, {
+ 		"name": "Hades",
+ 		"id": 3,
+ 		"category": "Endgame",
+ 		"flags": {
+ 			"1": "Chasm",
+ 			"2": "Guardian",
+ 			"3": "Messenger",
+ 			"4": "Resurrection",
+ 			"5": "Gateway",
+ 			"6": "Celestial",
+ 			"7": "Dominion"
+ 		},
+ 		"description": "Gigantic Hosting are a leading website hosting and SSL certificate provider. The company are concerned that any breach could result in downtime, the compromise of thousands of websites, and lead to millions of security certificates being revoked. Therefore, they have proactively engaged the services of a penetration testing firm to assess their security.\n\nHades is designed to put your skills in Active Directory enumeration & exploitation, lateral movement, and privilege escalation to the test within a small enterprise network.\n\nThe goal is to gain a foothold on the internal network, escalate privileges and ultimately compromise the domain while collecting several flags along the way.\n\n",
+ 		"entries": ["10.13.38.16"],
+ 		"makers": {
+ 			"username": "cube0x0",
+ 			"id": 9164
+ 		},
+ 		"retired": false
+ 	}, {
+ 		"name": "RPG",
+ 		"id": 4,
+ 		"category": "Endgame",
+ 		"flags": {
+ 			"1": "Would you like to play a game?",
+ 			"2": "Sword and mind",
+ 			"3": "One's act, one's profit",
+ 			"4": "The source of power",
+ 			"5": "Wake from death and turn to life",
+ 			"6": "Collapse of the empire"
+ 		},
+ 		"description": "Roundsoft Inc. is a startup with a mission to develop the best video games the world has ever seen. Safeguarding the company's intellectual property from corporate espionage and other external threats is their highest priority.\n\nRoundsoft has enlisted the services of your pentesting firm, with a scope to determine if their perimeter can be breached, leading to compromise of their entire domain.\n",
+ 		"entries": ["10.13.38.18", "10.13.38.19"],
+ 		"makers": {
+ 			"username": "MinatoTW",
+ 			"id": 8308
+ 		},
+ 		"retired": false
+ 	}],
+ 	"Fortress": [{
+ 		"name": "Jet",
+ 		"id": 1,
+ 		"category": "Fortress",
+ 		"flags": {
+ 			"1": "Connect",
+ 			"2": "Digging in...",
+ 			"3": "Going Deeper",
+ 			"4": "Bypassing Authentication",
+ 			"5": "Command",
+ 			"6": "Overflown",
+ 			"7": "Secret Message",
+ 			"8": "Elasticity",
+ 			"9": "Member Manager",
+ 			"10": "More Secrets",
+ 			"11": "Memo"
+ 		},
+ 		"description": "",
+ 		"entries": ["10.13.37.10"],
+ 		"retired": false
+ 	}, {
+ 		"name": "Akerva",
+ 		"id": 2,
+ 		"category": "Fortress",
+ 		"flags": {
+ 			"1": "Plain Sight",
+ 			"2": "Take a Look Around",
+ 			"3": "Dead Poets",
+ 			"4": "Now You See Me",
+ 			"5": "Open Book",
+ 			"6": "Say Friend and Enter",
+ 			"7": "Super Mushroom",
+ 			"8": "Little Secret"
+ 		},
+ 		"description": "",
+ 		"entries": ["10.13.37.11"],
+ 		"retired": false
+ 	}],
+ 	"Pro Labs": [{
+ 		"name": "RastaLabs",
+ 		"id": 1,
+ 		"category": "Pro Labs",
+ 		"flags": {
+ 			"1": "Humble beginnings",
+ 			"2": "A fisherman's dream",
+ 			"3": "Brave new world",
+ 			"4": "The hurt locker",
+ 			"5": "Slacking off",
+ 			"6": "Bad practices never cease",
+ 			"7": "The gift that keeps on giving",
+ 			"8": "You just can't trust some people",
+ 			"9": "Is nothing safe!?",
+ 			"10": "Sometimes, the way forward is also the way back",
+ 			"11": "ROP the night away",
+ 			"12": "The classics never die",
+ 			"13": "Carelessness causes tears",
+ 			"14": "Good security, turned sour",
+ 			"15": "But it's such a hassle...",
+ 			"16": "Turning up the heat",
+ 			"17": "Gimmie juicy data",
+ 			"18": "Trust is a fickle mistress",
+ 			"19": "Winner, winner, chicken dinner",
+ 			"20": "The Devil's in the detail"
+ 		},
+ 		"description": "RastaLabs is a red team simulation environment, designed to be attacked as a means of learning and honing your engagement skills. The company provides security and penetration testing ser…eam assessment of their secured Active Directory environment.\n\nThe goal of this challenging lab is to gain a foothold, elevate privileges, establish persistence and move laterally, in order to reach the goal of domain admin. There are many flags to be captured and badges to be gained along the way.\n\nActive Directory enumeration and exploitation\nA variety of lateral movement techniques\nEvading endpoint protections\nExploit development\nPersistence techniques\nPhishing\nPrivilege escalation",
+ 		"entries": [],
+ 		"makers": {
+ 			"username": "RastaMouse",
+ 			"id": null
+ 		},
+ 		"retired": false
+ 	}, {
+ 		"name": "Offshore",
+ 		"id": 2,
+ 		"category": "Pro Labs",
+ 		"flags": {
+ 			"1": "Just gettin' started",
+ 			"2": "Wanna see some magic?",
+ 			"3": "I can see all things",
+ 			"4": "Nothing to see here",
+ 			"5": "We can do better than this",
+ 			"6": "All powerful, all knowing",
+ 			"7": "Memories, fond memories",
+ 			"8": "The Cuckoo's Egg",
+ 			"9": "Never cease to amaze",
+ 			"10": "I'll take fries with that",
+ 			"11": "Users love to take shortcuts",
+ 			"12": "My my what do we have here?",
+ 			"13": "Whats the worst that could happen?",
+ 			"14": "Clean up, clean up!",
+ 			"15": "All the way back around",
+ 			"16": "Headed down another path",
+ 			"17": "Entrance to the big show",
+ 			"18": "This is normal",
+ 			"19": "So we meet again!",
+ 			"20": "No place to hide",
+ 			"21": "Deforestation is such a shame",
+ 			"22": "But I read it was secure",
+ 			"23": "Again, and again, and again",
+ 			"24": "I feel like a kangaroo",
+ 			"25": "One massive screwup",
+ 			"26": "Your eyes aren't deceiving you",
+ 			"27": "We don't need no stinkin' encryption",
+ 			"28": "MinatoTW leaves his mark",
+ 			"29": "The grand finale",
+ 			"30": "It happened again",
+ 			"31": "Some secrets are meant to be broken",
+ 			"32": "Ippsec leaves his mark",
+ 			"33": "The child takes all",
+ 			"34": "I feel so exposed"
+ 		},
+ 		"description": "Offshore is a real-world enterprise environment that features a wide range of modern Active Directory flaws and misconfigurations. Offshore Corp is mandated to have quarterly penetration tests per financial regulatory body compliance requirements, and are focused on patching. The company has completed several acquisitions, with the acquired entities being \"plugged in\" by means of domain trusts.\n\nIf you are able to breach the perimeter and gain a foothold, you are tasked to explore the corporate environment, pivot across trust boundaries, and ultimately attempt to compromise all Offshore Corp entities.\n\nOffshore will test your understanding of Active Directory enumeration, exploitation, and post-exploitation as well as lateral movement, pivoting, and modern web application attacks. Some flags are required to advance through the lab, while others are side-quests that reinforce enumeration and post-exploitation skills. Players can submit flags to earn their place in the Offshore Hall of Fame, and collect badges along the way at certain checkpoints.\n\nEnumeration\nEvading endpoint protections\nExploitation of a wide range of real-world Active Directory flaws\nLateral movement and crossing trust boundaries\nPrivilege escalation\nWeb application attacks",
+ 		"entries": [],
+ 		"makers": {
+ 			"username": "mrb3n",
+ 			"id": null
+ 		},
+ 		"retired": false
+ 	}, {
+ 		"name": "Cybernetics",
+ 		"id": 3,
+ 		"category": "Pro Labs",
+ 		"flags": {
+ 			"1": "The fun begins!",
+ 			"2": "We first learn to crawl before walking",
+ 			"3": "Those damn webapps!",
+ 			"4": "You can't constrain me!",
+ 			"5": "Welcome to Cybernetics",
+ 			"6": "The art of writing descriptions",
+ 			"7": "Fisherman's Training",
+ 			"8": "Secure credential storage",
+ 			"9": "Signature required upon delivery",
+ 			"10": "Not again Steven!",
+ 			"11": "Curiosity killed the cat",
+ 			"12": "The Great Escape",
+ 			"13": "Out of Control",
+ 			"14": "The parent knows best",
+ 			"15": "Rebellious children",
+ 			"16": "Monitoring tools gone astray",
+ 			"17": "Ask jeeves?",
+ 			"18": "Ask and you shall receive",
+ 			"19": "Automation at its finest!",
+ 			"20": "A fight to the end!"
+ 		},
+ 		"description": "Cybernetics is an immersive enterprise Active Directory environment that features advanced infrastructure. Cybernetics LLC have enlisted your services to perform a red team assessment on their environment. Cybernetics have gone through multiple pentest engagements, iteratively hardening their environment each time, and therefore have a more mature security posture. Many protection technologies are present and the modern operating systems are fully updated. The enterprise in this real-world scenario focuses on Microsoft and DevOps/automation technologies.\n\nThis is an extremely challenging and modern environment that will push you to the limit, and put your skills to the test in enumeration, exploitation, lateral movement, persistence and privilege escalation.\n\nThere are many flags to be captured along the way, some on the main attack path and others in side-quests that you must go looking for. Submitting flags will propel you through the Hall of Fame, rewarding you with badges in the process.\n\nActive Directory enumeration and exploitation\nBreakout\nEvading endpoint protections\nKerberos abuse\nLateral movement\nPhishing\nPrivilege escalation\nWeb application attacks",
+ 		"entries": [],
+ 		"makers": {
+ 			"username": "lkys37en",
+ 			"id": null
+ 		},
+ 		"retired": false
+ 	}]
+ }

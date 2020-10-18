@@ -1,0 +1,10 @@
+node_modules/
+cache/*
+config/*
+.env
+.vs/
+.vscode/
+logs/
+desktop.ini
+.history/*
+.history/
