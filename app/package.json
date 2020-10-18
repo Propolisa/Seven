@@ -2,9 +2,9 @@
   "name": "seven",
   "description": "A Discord bot for Hack The Box teams.",
   "version": "0.1.0",
-  "main": "app/bot.js",
+  "main": "bot.js",
   "scripts": {
-    "start": "node app/bot.js"
+    "start": "node bot.js"
   },
   "dependencies": {
     "check-more-types": "^2.24.0",
