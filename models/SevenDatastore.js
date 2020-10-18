@@ -648,12 +648,12 @@ class SevenDatastore {
 	 * @param {number} uid
 	 * @returns {(string|"[Invalid ID]")}
 	 */
-	tryDiscordifyUid(uid, isSelf = false) {
+	tryDiscordifyUid(uid, isSelf = false, showBothNames=true) {
 		if (uid in this.TEAM_MEMBERS) {
 			if (uid in this.DISCORD_LINKS) {
 				var discordName = this.DISCORD_LINKS[uid].username
 				if (discordName.toLowerCase() != this.TEAM_MEMBERS[uid].name.toLowerCase()) {
-					return `🌀${F.STL(discordName, "bs")} (${this.TEAM_MEMBERS[uid].name})${(isSelf ? " [You]":"")}`
+					return `🌀${F.STL(discordName, "bs")}${(showBothNames ? " ("+this.TEAM_MEMBERS[uid].name+")" : "" )}${(isSelf ? " [You]":"")}`
 				} else {
 					return `🌀 ${F.STL(discordName, "bs")}${(isSelf ? " [You]":"")}`
 				}
@@ -689,14 +689,14 @@ class SevenDatastore {
 	 * @param {number[]} memberIds - An array of HTB UIDs 
 	 * @returns {(string[]|"[Invalid ID]")}
 	 */
-	getMdLinksForUids(memberIds, customTextFieldBasis = null) { // Get markdown link to a HTB user's profile, based on UID.
+	getMdLinksForUids(memberIds, showBothNames=true, customTextFieldBasis = null) { // Get markdown link to a HTB user's profile, based on UID.
 		//console.log(memberIds)
 		if (memberIds) {
 			var screenNames = []
 			memberIds.forEach(uid => {
 				console.log("UID: " + uid)
 				if (uid in this.TEAM_MEMBERS) {
-					screenNames.push(`[\`${this.tryDiscordifyUid(uid)}\`](${F.memberProfileUrl({id:uid})} '${(customTextFieldBasis ? this.TEAM_MEMBERS[uid][customTextFieldBasis] : "View on HTB" )}')`)
+					screenNames.push(`[\`${this.tryDiscordifyUid(uid,false,showBothNames)}\`](${F.memberProfileUrl({id:uid})} '${(customTextFieldBasis ? this.TEAM_MEMBERS[uid][customTextFieldBasis] : "View on HTB" )}')`)
 				} else {
 					console.log("UID opted out of data collection.")
 					screenNames.push("[٩(͡๏̯͡๏)۶](http://? '👀')")

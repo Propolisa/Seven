@@ -234,7 +234,7 @@ class HtbEmbeds {
 	}
 
 	teamLeaderboard() {
-		var leaderLinkArray = F.mdItemizeList((this.ds.getMdLinksForUids(this.ds.getTopMembers(60), "points")))
+		var leaderLinkArray = F.mdItemizeList((this.ds.getMdLinksForUids(this.ds.getTopMembers(60), false, "points")))
 		var embed = this.TEAM_INFO_BASE
 			.attachFiles(new Attachment("./static/img/ui/rank.png", "rank.png"))
 			.setAuthor(this.ds.TEAM_STATS.name, "attachment://rank.png", F.teamProfileUrl(this.ds.TEAM_STATS))

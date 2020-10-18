@@ -309,13 +309,13 @@ async function main() {
 		console.log("CLIENT READY")
 		// dFlowEnt.addMissingFieldsToEntity([].concat(Object.values(MEMBERS_V4).map(member => member.name), await getGuildUsernames(client, "679990388911767553")),"memberName")
 		// DISCORD_ANNOUNCE_CHAN = await client.users.cache.get("679986418466029568").createDM()
-		DISCORD_ANNOUNCE_CHAN = await client.channels.fetch("746263377462034474")
+		DISCORD_ANNOUNCE_CHAN = await client.channels.fetch(process.env.DISCORD_ANNOUNCE_CHAN_ID.toString())
 		//E.clearCustEmoji(client)
 		//DISCORD_ANNOUNCE_CHAN.send(`${E.of("rastalabs")} RastaLabs\n${E.of("dante")} Dante\n${E.of("cybernetics")} Cybernetics \n${E.of("other")} Other\n${E.of("windows")} Windows\n${E.of("offshore")} Offshore`).catch(e => {})
 
 		//PUSHER_DUMMY_DATA.slice(0,20).forEach(e => {console.info(e); HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel:"owns-channel"})})
 		console.log("Discord account associations:", Object.values(DAT.DISCORD_LINKS).length)
-		setInterval(() => updateDiscordIds(client, "679990388911767553"), 30 * 60 * 1000)   // UPDATE OWNAGE DATA BY PARSING, EVERY 30 MINUTES
+		setInterval(() => updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString()), 30 * 60 * 1000)   // UPDATE OWNAGE DATA BY PARSING, EVERY 30 MINUTES
 	})
 	client.on("message", message => {
 		message.content = message.content.substring(0, 255)
