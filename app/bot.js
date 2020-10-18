@@ -571,6 +571,20 @@ async function admin_forceUpdate(message) {
 	}
 }
 
+async function admin_clearCached(message) {
+	if (message.author.id == process.env.ADMIN_DISCORD_ID) {
+		SEND.human(message, "Clearing the in-memory HTB data (not including ignored member or discord link settings)", false)
+		DAT.MISC={}
+		DAT.TEAM_MEMBERS = {}
+		DAT.TEAM_STATS = {}
+		DAT.MACHINES = {}
+		DAT.CHALLENGES = {}
+		updateCache(["MACHINES", "CHALLENGES", "TEAM_MEMBERS", "TEAM_STATS", "MISC"]).then(SEND.human(message, H.any("Done!"), false))
+	} else {
+		SEND.human(message, "You're not my boss! 🤔\nno can do.\nAsk __@Propolis__!")
+	}
+}
+
 const checkIsSevenMsg = /[\t ]?seven\W?/g
 
 async function handleMessage(message) {
@@ -593,12 +607,13 @@ async function handleMessage(message) {
 					var job = result.intent.displayName
 					var inf = result.parameters.fields
 					var params = struct.decode(result.parameters)
-					console.log(params)
+					if (params) console.log(params)
 					console.log("[DF] Query returned: " + job + " | " + JSON.stringify(inf))
 					try {
 						switch (job) {
 						case "help": sendHelpMsg(message); break
 						case "admin.forceUpdateData":  admin_forceUpdate(message); break
+						case "admin.clearCached":  admin_clearCached(message); break
 						case "admin.setStatus":  admin_setStatus(message, inf); break
 						case "admin.clearEmoji":  E.clearCustEmoji(client).then(SEND.human(message, "Successfully purged Seven-related emoji from supporting channel.", false)); break
 						case "admin.setupEmoji":  E.initCustEmoji(client).then(SEND.human(message, "Successfully initialized Seven-related emoji on supporting channel.", false)); break
