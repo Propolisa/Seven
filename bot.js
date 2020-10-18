@@ -403,7 +403,7 @@ async function sendActivityMsg(message, member, targetType=undefined, sortBy=und
  * @param {Object} message A Discord Message object.
  */
 function understand(message) {
-	console.log(dflow)
+	// console.log(dflow)
 	//var sessionPath = dflow.environmentSessionPath(process.env.GOOGLE_CLOUD_PROJECT, "Production", "seven-server", message.author.id)
 	var sessionPath = dflow.sessionPath(process.env.GOOGLE_CLOUD_PROJECT, message.author.id)
 	console.log("Sending message to DialogFlow for comprehension. Session ID:", sessionPath)
@@ -599,7 +599,7 @@ async function handleMessage(message) {
 				var result = await understand(message)
 				var isRipe = result.allRequiredParamsPresent
 				console.log("result.intent: " + result.intent.displayName + "  |  isRipe(hasParams): " + isRipe)
-				console.dir(result)
+				// console.dir(result)
 				if (result.intent && isRipe) {
 					var job = result.intent.displayName
 					var inf = result.parameters.fields

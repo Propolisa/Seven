@@ -695,8 +695,10 @@ class SevenDatastore {
 			var screenNames = []
 			memberIds.forEach(uid => {
 				// console.log("UID: " + uid)
+				var discordName = (this.DISCORD_LINKS[uid]? this.DISCORD_LINKS[uid].username : "")
+				var isSameName = discordName.toLowerCase() == this.TEAM_MEMBERS[uid].name.toLowerCase()
 				if (uid in this.TEAM_MEMBERS) {
-					screenNames.push(`[\`${this.tryDiscordifyUid(uid,false,showBothNames)}\`](${F.memberProfileUrl({id:uid})} '${(!showBothNames? "("+this.TEAM_MEMBERS[uid].name+") ⟶ " :"")}${(customTextFieldBasis ?  this.TEAM_MEMBERS[uid][customTextFieldBasis] : "View on HTB" )}')`)
+					screenNames.push(`[\`${this.tryDiscordifyUid(uid,false,showBothNames)}\`](${F.memberProfileUrl({id:uid})} '${((!isSameName && discordName) && !showBothNames? "("+this.TEAM_MEMBERS[uid].name+") ⟶ " :"")}${(customTextFieldBasis ?  this.TEAM_MEMBERS[uid][customTextFieldBasis] : "View on HTB" )}')`)
 				} else {
 					console.log("UID opted out of data collection.")
 					screenNames.push("[٩(͡๏̯͡๏)۶](http://? '👀')")
