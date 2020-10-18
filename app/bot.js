@@ -16,14 +16,11 @@ if (process.env.HEROKU) {
 const Discord = require("discord.js")
 const client = new Discord.Client()
 const fs = require("fs")
-const typoify = require("./modules/nlp/typoify")
-const formatRelative = require("date-fns/formatRelative")
 const { struct } = require("pb-util")
 const { Format: F } = require("./helpers/format")
 const dialogflow = require("dialogflow").v2beta1
 const dflow = new dialogflow.SessionsClient({ credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS) })
 const strings = require("./static/strings")
-const { checkSelfName } = require("./helpers/nlp")
 const { Helpers: H } = require("./helpers/helpers.js")
 const { HtbPusherSubscription } = require("./helpers/pusher-htb")
 const pgp = require("pg-promise")({ capSQL: true })
@@ -541,7 +538,7 @@ async function admin_setStatus(message, params) {
 		var status = params.discordStatusType.stringValue
 		var activity = params.discordStatusActivity.stringValue
 		var actverb = params.discordStatusVerb.stringValue
-		SEND.human(message, any("You're the boss!\nsetting the status 😊",
+		SEND.human(message, H.any("You're the boss!\nsetting the status 😊",
 			"Ok " + message.author.username + ", you got it!",
 			"you got it, " + message.author.username + " 😁",
 			"no prob, i'm on it 🍉",
