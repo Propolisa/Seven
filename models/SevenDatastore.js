@@ -73,7 +73,7 @@ class SevenDatastore {
 		return Object.values(this.TEAM_MEMBERS)
 	}
 	get vTMI() {
-		return Object.values(this.TEAM_MEMBERS)
+		return Object.values(this.TEAM_MEMBERS_IGNORED)
 	}
 	get vM() {
 		return Object.values(this.MACHINES)
@@ -93,7 +93,7 @@ class SevenDatastore {
 		return Object.keys(this.TEAM_MEMBERS)
 	}
 	get kTMI() {
-		return Object.keys(this.TEAM_MEMBERS)
+		return Object.keys(this.TEAM_MEMBERS_IGNORED)
 	}
 	get kM() {
 		return Object.keys(this.MACHINES)
