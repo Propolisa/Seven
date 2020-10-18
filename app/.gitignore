@@ -8,3 +8,6 @@ logs/
 desktop.ini
 .history/*
 .history/
+.history
+.vscode
+.
