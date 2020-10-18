@@ -272,6 +272,14 @@ class Format {
 			"root",
 			"web",
 			"rank",
+			"poor",
+			"fair",
+			"good",
+			"great",
+			"easy",
+			"medium",
+			"hard",
+			"insane",
 			"windows"].includes(name.replace("_r",""))){
 			return `${IMGDIR}${name}.png`
 		} else {

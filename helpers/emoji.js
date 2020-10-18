@@ -43,7 +43,15 @@ var cache = {
 		["user"],
 		["root"],
 		["complete"],
-		["rank"]
+		["rank"],
+		["easy"],
+		["medium"],
+		["hard"],
+		["insane"],
+		["poor"],
+		["fair"],
+		["good"],
+		["great"]
 	]
 }
 
