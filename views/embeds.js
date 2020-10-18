@@ -242,7 +242,7 @@ class HtbEmbeds {
 			.setThumbnail(F.avatarFullUrl(this.ds.getMemberById(this.ds.getTopMembers(1))))
 			.setFooter("ℹ️  Hover over a name to see individual points [Desktop]")
 		var chunkedFields = H.chunk(leaderLinkArray, 10)
-		console.log(chunkedFields)
+		// console.log(chunkedFields)
 		chunkedFields.forEach(field => embed.addField("…", field, true))
 		return embed
 	}
