@@ -377,10 +377,10 @@ class HtbEmbeds {
 	}
 
 	filteredTargets(targets, sortend="release date", inf={}, message={}){
-		console.warn(targets)
+		// console.warn(targets)
 		console.log(inf.targetFilterBasis, inf.targetFilterBasis.find(e => (e.cust || "").includes("complete")))
 		var isIncomplete = inf.targetFilterBasis.some(e => (e.cust || "").includes("incomplete"))
-		var filterRuleDescription = F.andifyList(inf.targetFilterBasis.filter(e => e.ccat || e.bpath || e.bsub || e.blang).map(e => Object.values(e)[0]))
+		var filterRuleDescription = inf.targetFilterBasis.filter(e => (e.cust && !["complete", "incomplete"].includes(e.cust) ) || e.ccat || e.bpath || e.bsub || e.blang).map(e => Object.values(e)[0]).join(", ")
 		if (filterRuleDescription){
 			filterRuleDescription = ` (${filterRuleDescription})`
 		}
@@ -519,7 +519,7 @@ class HtbEmbeds {
 		var outArrays = [[[]]]
 		array.forEach(function (item, idx) {
 			//console.log(this, item)
-			var outString = processor.call(this, item)
+			var outString = processor.call(this, (item.params || item))
 			//console.log(outString)
 			if (totSum + outString.length + (padding * outArrays.length) > embedCharLimit) {
 				index2d += 1
@@ -590,11 +590,11 @@ class HtbEmbeds {
 		return F.mdLink(member.name,F.profileUrl(member), true, F.timeSinceSmall(new Date(date)))
 	}
 
-	filteredTargetString(target,sortend=null) {
+	filteredTargetString(target) {
 		//console.log(target)
 		switch (target.type) {
-		case "machine":	  return `${this.E.of(target.os)}` + " " + F.mdLink(`\`${target.name}\``, F.profileUrl(target), false, target.os)
-		case "challenge":	return `${this.E.of(target.category_name)}` + " " + F.mdLink(`\`${target.name}\``, F.profileUrl(target), false, target.category_name)
+		case "machine":	  return `${this.E.of(target.os)}${this.E.of(F.targetDifficultyToEmojiName(target))}${this.E.of(F.targetRatingToEmojiName(target))}` + " " + F.mdLink(`\`${target.name}\``, F.profileUrl(target), false, target.os)
+		case "challenge":	return `${this.E.of(target.category_name)}${this.E.of(F.targetDifficultyToEmojiName(target))}${this.E.of(F.targetRatingToEmojiName(target))}` + " " + F.mdLink(`\`${target.name}\``, F.profileUrl(target), false, target.category_name)
 		case "endgame":		return `${this.E.of("endgame")}` + " [`"+target.name+"`]("+F.profileUrl(target)+")"
 		case "fortress":	break
 		case "prolab":		break
@@ -646,7 +646,7 @@ class HtbEmbeds {
 			.setAuthor(F.toTitleCase(target.type || "Unknown") + (["root", "user"].includes(sub) ? ` ${sub} ` : " ") + "own", F.avatarFullUrl(member), "")
 			.setThumbnail(F.avatar2Url(target.avatar) || (member.team? F.avatar2Url(member.team.avatar) : F.avatar2Url(member.avatar)))
 			.setColor(H.any(...Object.values(F.COL)))
-			.setDescription(`${F.memberToMdLink(member)} owned ${(["root", "user"].includes(sub)? sub + " on" : "")} ${F.mdLink(target.name, F.profileUrl(target))}${(target.type == "challenge" ? " from the *"+target.category_name+"* category":"")}${(H.maybe(0.2) ? H.any(". Nice work! 🙂", ". **Why is all the RUM GONE!!!!**", ", woohoo!!", "!", ". Congrats! 🥳") : "")}` )
+			.setDescription(`${F.memberToMdLink(member,true,this.ds.tryDiscordifyUid(member.id))} owned ${(["root", "user"].includes(sub)? sub + " on" : "")} ${F.mdLink(target.name, F.profileUrl(target))}${(target.type == "challenge" ? " from the *"+target.category_name+"* category":"")}${(H.maybe(0.2) ? H.any(". Nice work! 🙂", ". **Why is all the RUM GONE!!!!**", ", woohoo!!", "!", ". Congrats! 🥳") : "")}` )
 			.setFooter(`ℹ️  Source: ${F.STL("Shoutbox", "bs")}`)
 	}
 

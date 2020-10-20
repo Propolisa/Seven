@@ -10,44 +10,43 @@ var cache = {
 		["lin", "linux"],
 		["mac", "macintosh"],
 		["sol", "solaris"],
-		["fbd", "fbsd", "freebsd"],
-		["obd", "obsd", "openbsd"],
-		["and", "android", "droid"],
+		["fbsd", "fsd", "freebsd"],
+		["obsd", "osd", "openbsd"],
+		["droid", "android", "droid"],
 	],
 	chall: [
-		["crypto"],
-		["forensics"],
-		["hardware"],
+		["cryp", "crypto"],
+		["fnsc", "forensic", "forensics"],
+		["hw", "hardware"],
 		["misc"],
-		["mobile"],
+		["mobl", "mobile"],
 		["osint"],
 		["pwn"],
-		["reversing"],
-		["stego"],
+		["rev", "reversing"],
+		["stego", "stego"],
 		["web"]
 	],
 	specials: [
-		["cybernetics"],
+		["cnetics","cybernetics"],
 		["dante"],
-		["rastalabs"],
-		["offshore"],
-		["endgame"],
-		["fortress"],
+		["rlabs", "rastalabs"],
+		["offsh", "offshore"],
+		["endg","endgame"],
+		["fort", "fortress"],
 		["jet", "jet.com"],
-		["akerva"],
-		["prolab"],
-		["offshore"]
+		["akrv", "akerva"],
+		["prolab"]
 	],
 	ui: [
-		["other"],
-		["user"],
-		["root"],
-		["complete"],
-		["rank"],
-		["easy"],
-		["medium"],
-		["hard"],
-		["insane"],
+		["oth", "other"],
+		["usr", "user"],
+		["sys", "root"],
+		["own", "complete"],
+		["rnk", "rank"],
+		["easy", "easy"],
+		["medi", "medium"],
+		["hard", "hard"],
+		["insn", "insane"],
 		["poor"],
 		["fair"],
 		["good"],
@@ -66,31 +65,31 @@ class HTBEmoji {
 		var fields = ["os", "chall", "specials", "ui"]
 		fields.forEach((fieldName,idx) => {
 			this.state[fieldName] = cache[fieldName].map((e, i) => ({
-				id: ((idx+1)*1000)+i, names: e
+				id: e[0], names: e
 			}))
 		})
 	}
 
 	initCustEmoji(client){
 		var emojis = client.guilds.resolve(process.env.EMOJI_CHAN_ID).emojis
+		console.log(emojis)
 		var initPromises = []
 		Object.values(this.state).forEach(cat => {
 			cat.forEach(catItems => {
-				console.log(catItems)
-				var match = catItems.names.find(e => {console.log(e); return F.getIcon(e)})
+				// console.log(catItems)
+				var match = catItems.names.find(e => F.getIcon(e))
 				if (match){
 					var iconFileName = F.getIcon(match)
 					var alreadyExisting = [...emojis.cache.values()].find(e => e.name == catItems.id)
 					if (!alreadyExisting) {
 						console.log(`:${catItems.id}: doesn't exist yet...`)
 						var prom = emojis.create(iconFileName, catItems.id)
-							.then(emoji => console.log(`Created new emoji with name ${emoji.name}!`))
-							.catch(console.error)
 						initPromises.push(prom)
 					}
 				}
 			})
 		})
+		// console.log(initPromises)
 		return Promise.all(initPromises)
 	}
 

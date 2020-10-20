@@ -186,7 +186,7 @@ class HtbPusherSubscription extends EventEmitter {
 
 	/**
    * 
-   * @param {*} message 
+   * @param {HtbPusherEvent} message 
    */
 	alertSeven(message) {
 		if (message) {

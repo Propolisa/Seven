@@ -37,7 +37,7 @@ const { HTBEmoji } = require("./helpers/emoji.js")
 var DISCORD_ANNOUNCE_CHAN = false         // The Discord Channel object intended to recieve Pusher achievements.
 var HTB_PUSHER_OWNS_SUBSCRIPTION = false  // The Pusher Client own channel subscription.
 // var PUSHER_MSG_LOG = require("./cache/PUSHER_MSG_LOG.json")
-// var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
+
 
 const CHART_RENDERER = htbCharts.newChartRenderer()
 const DAT = new SevenDatastore()    // Open an abstract storage container for HTB / bot data
@@ -173,42 +173,6 @@ function unignoreMember(uid) {
 	}
 }
 
-/**
- * A local file-based method for restoring local backups, useful for early testing without a database instance.
- */
-// function importExistingData() { // Imports machine and team data from json files, enabling the bot to serve answers immediately.
-// 	try {
-// 		DAT.MACHINES = JSON.parse(fs.readFileSync("cache/machines.json", "utf8"))
-// 		DAT.CHALLENGES = JSON.parse(fs.readFileSync("cache/challenges.json", "utf8"))
-// 		DAT.TEAM_MEMBERS = JSON.parse(fs.readFileSync("cache/team_members.json", "utf8"))
-// 		DAT.TEAM_MEMBERS_IGNORED = JSON.parse(fs.readFileSync("cache/team_members_ignored.json", "utf8"))
-// 		DAT.DISCORD_LINKS = JSON.parse(fs.readFileSync("cache/discord_links.json", "utf8"))
-// 		DAT.TEAM_STATS = JSON.parse(fs.readFileSync("cache/team_stats.json", "utf8"))
-// 		console.info("Imported existing datafiles! Will update automatically every half-hour.")
-// 	}
-// 	catch (e) {
-// 		console.warn("ERROR: couldn't import data. Moving on..")
-// 		console.log(e)
-// 	}
-// }
-
-/**
- * A local file-based export method that serializes a specific HTB state data to a JSON file. Useful for pre-deployment testing.
- * @param {Object} object - The object to back up as JSON.
- * @param {*} filename - The name to use for the JSON file.
- */
-// function exportData(object, filename) { // Save JSON files of team and machine data.
-// 	var objectName = varObj => Object.keys(varObj)[0]
-// 	//if (!isEmpty(object)) {
-// 	fs.writeFile("cache/" + filename, JSON.stringify(object, null, "\t"), "utf8", function (err) {
-// 		if (err) {
-// 			console.log("An error occured while writing " + objectName + " settings to File.")
-// 			return console.log(err)
-// 		}
-// 		console.log("JSON file " + filename + " has been saved.")
-// 	})
-// 	//}
-
 function sendFileMsg() {
 	try {
 		var contents = JSON.parse(fs.readFileSync("config/sendable.json", "utf8"))
@@ -237,7 +201,6 @@ async function updateDiscordIds(client, guildIdString) {
 			var guildMember = await guild.members.resolve(link.id) || false
 			if (guildMember) {
 				var member = guildMember.user
-				// console.log(DISCORD_LINKS[keys[i]], member)
 				DAT.DISCORD_LINKS[keys[i]] = member || DAT.DISCORD_LINKS[i]
 			}
 		} catch (error) {
@@ -274,15 +237,10 @@ async function main() {
 		if (updated) {console.log("Updated the DB...")}
 	}, 5 * 60 * 1000)
 	HTB_PUSHER_OWNS_SUBSCRIPTION.on("pusherevent", async message => {
-		//console.warn(message)
-		// PUSHER_MSG_LOG.push(message)
-		// let data = JSON.stringify(PUSHER_MSG_LOG, null, 2)
-		// fs.writeFileSync("./cache/PUSHER_MSG_LOG.json", data)
-		// eslint-disable-next-line no-constant-condition
 		try {
 			switch (message.type) {
 			case "machine": case "challenge": case "endgame": case "fortress": case	"prolab":
-				if (DAT.getMemberById(message.uid || -1)) {
+				if (DAT.DISCORD_LINKS[message.uid]) {
 					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherOwn(await DAT.resolveEnt(message.uid,"member",true,null,true), message.target, message.flag || message.type))
 				}
 				break
@@ -307,13 +265,12 @@ async function main() {
 	client.on("ready", async () => {
 		console.warn("INFO: Discord connection established...")
 		console.log("CLIENT READY")
-		// dFlowEnt.addMissingFieldsToEntity([].concat(Object.values(MEMBERS_V4).map(member => member.name), await getGuildUsernames(client, "679990388911767553")),"memberName")
-		// DISCORD_ANNOUNCE_CHAN = await client.users.cache.get("679986418466029568").createDM()
-		DISCORD_ANNOUNCE_CHAN = await client.channels.fetch(process.env.DISCORD_ANNOUNCE_CHAN_ID.toString())
-		//E.clearCustEmoji(client)
-		//DISCORD_ANNOUNCE_CHAN.send(`${E.of("rastalabs")} RastaLabs\n${E.of("dante")} Dante\n${E.of("cybernetics")} Cybernetics \n${E.of("other")} Other\n${E.of("windows")} Windows\n${E.of("offshore")} Offshore`).catch(e => {})
 
-		//PUSHER_DUMMY_DATA.slice(0,20).forEach(e => {console.info(e); HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel:"owns-channel"})})
+		DISCORD_ANNOUNCE_CHAN = await client.channels.fetch(process.env.DISCORD_ANNOUNCE_CHAN_ID.toString())
+
+		/** Test the Pusher owns functionality */
+		// var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
+		// PUSHER_DUMMY_DATA.slice(0,10).forEach(e => {console.info(e); HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel:"owns-channel"})})
 		console.log("Discord account associations:", Object.values(DAT.DISCORD_LINKS).length)
 		setInterval(() => updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString()), 30 * 60 * 1000)   // UPDATE OWNAGE DATA BY PARSING, EVERY 30 MINUTES
 	})
@@ -359,7 +316,6 @@ async function sendTeamLeaderMsg(message) {
 	if (H.maybe(0.6)) await SEND.human(message, "Let's give a round of applause!", true)
 	if (H.maybe(0.4)) await SEND.human(message, "Pain is the heart of success. No one knows that like " + member.name + "! 🎉", true)
 }
-
 
 async function sendMemberChartMsg(message, username, term) {
 	var member = await DAT.resolveEnt(username, "member", false, message)
@@ -640,7 +596,7 @@ async function handleMessage(message) {
 						case "filterMemberOwns": sendActivityMsg(message,	await DAT.resolveEnt(params.username, "member", false, message),
 							params.targettype, params.sortby, params.sortorder,	params.limit || 24); break
 						case "filterTargets": SEND.embed(message, EGI.filteredTargets(DAT.filterEnt(message,
-							params.targettype, params.sortby, params.sortorder,	params.limit || 20,	null,	null, params.memberName, params.targetFilterBasis),
+							params.targettype, params.sortby, params.sortorder,	params.limit || 15,	null,	null, params.memberName, params.targetFilterBasis),
 						params.sortby,
 						params, message), true
 						); break

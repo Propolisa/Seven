@@ -2,7 +2,10 @@ const flagEmoji = require("country-flag-emoji")
 const dateFormat = require("date-fns/format")
 const { Helpers: H } = require("./helpers")
 const parseDate = require("date-fns/parse")
+const fs = require("fs")
 
+var IMG_DIR = "./static/img/"
+var IMG_FILENAMES = null
 /**
  * Formatter class. For lots of string transforms.
  */
@@ -14,7 +17,12 @@ class Format {
 	 * @returns {string}
 	 */
 
-	constructor() { }
+	constructor() {}
+
+	static getImageFileNames(){
+		return Array.from(fs.readdirSync(IMG_DIR))
+	}
+
 	static STL(str, inType) {
 		str = str.toString()
 		//Converts text to the unicode special math font equivalent specified in switch [ bs, s, b, m ]
@@ -164,6 +172,16 @@ class Format {
 		return `https://app.hackthebox.eu/${kwd}/${target.id}`
 	}
 
+	static targetPercentRating(target){
+		switch (target.type) {
+		case "machine":	return target.rating * 20
+		case "challenge": return (target.likes / (target.likes + target.dislikes)) * 100
+		default:	break
+		}
+	}
+
+	
+
 
 	/** Returns the appropriate ordinal suffix (does NOT concatenate) for a given number.
  * @param {number} n - The number to get the ordinal suffix for.
@@ -239,51 +257,12 @@ class Format {
 		}
 	}
 
-	static emojiIdFromName(name){
-		
-	}
-
 	static getIcon(name) {
-		const IMGDIR = "./static/img/"
-		if (["challenge",
-			"complete",
-			"crypto",
-			"cybernetics",
-			"dante",
-			"rastalabs",
-			"endgame",
-			"forensics",
-			"fortress",
-			"freebsd",
-			"hardware",
-			"linux",
-			"machine",
-			"misc",
-			"mobile",
-			"offshore",
-			"reversing",
-			"openbsd",
-			"osint",
-			"other",
-			"pwn",
-			"solaris",
-			"stego",
-			"user",
-			"root",
-			"web",
-			"rank",
-			"poor",
-			"fair",
-			"good",
-			"great",
-			"easy",
-			"medium",
-			"hard",
-			"insane",
-			"windows"].includes(name.replace("_r",""))){
-			return `${IMGDIR}${name}.png`
+		if (!IMG_FILENAMES) IMG_FILENAMES = this.getImageFileNames()
+		if (IMG_FILENAMES.includes(`${name}.png`)){
+			return `${IMG_DIR}${name}.png`
 		} else {
-			console.warn(`Invalid icon name '${name}' specified`)
+			// console.warn(`Invalid icon name '${name}' specified`)
 			return undefined
 		}
 	}
@@ -300,7 +279,6 @@ class Format {
 			return "Insane"
 		}
 	}
-
 
 	static difficultySymbol(difficulty) {
 		switch (difficulty) {
@@ -326,6 +304,24 @@ class Format {
 		case "hardware": return "🧰"
 		default: return "❓"
 		}
+	}
+
+	static targetDifficultyToEmojiName(target){
+		switch (target.type) {
+		case "machine": return target.difficultyText.toLowerCase()
+		case "challenge": return target.difficulty.toLowerCase()
+		case "fortress": return null
+		case "prolab": return null
+		default: return null
+		}
+	}
+
+	static targetRatingToEmojiName(target){
+		var rating = this.targetPercentRating(target)
+		if (rating <= 25) return "poor"
+		if (rating <= 50) return "fair"
+		if (rating <= 75) return "good"
+		return "great"
 	}
 
 	static boxOsSymbol(category) {

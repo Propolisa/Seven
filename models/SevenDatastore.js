@@ -143,24 +143,24 @@ class SevenDatastore {
 
 
 				this.TEAM_STATS = await this.V4API.getCompleteTeamProfile(process.env.HTB_TEAM_ID)
-				console.info(this.TEAM_STATS)
+				
 				var TEAM_MEMBERS_BASE = await this.V4API.getTeamMembers(process.env.HTB_TEAM_ID, Object.keys(this.TEAM_MEMBERS_IGNORED))
-				console.info(TEAM_MEMBERS_BASE)
 				this.TEAM_MEMBERS = await this.V4API.getCompleteMemberProfilesByMemberPartials(TEAM_MEMBERS_BASE)
-				console.info(this.TEAM_MEMBERS)
 
 				console.warn(`Got ${Object.keys(this.TEAM_MEMBERS).length} team member profiles...`)
 				this.CHALLENGES = await this.V4API.getAllCompleteChallengeProfiles()
 				this.MISC.CHALLENGE_CATEGORIES = await this.V4API.getChallengeCategories()
 				console.warn(`Got ${this.kC.length} challenges spanning ${Object.keys(this.MISC.CHALLENGE_CATEGORIES).length} categories...`)
+				console.log("Team stats:")
+				console.info(this.TEAM_STATS)
 
-				// dFlowEnt.addMissingFieldsToEntity(Object.values(this.CHALLENGE_CATEGORIES).map(category => category.name), "challengeCategoryName")
-				// dFlowEnt.addMissingFieldsToEntity(this.MACHINE_TAGS["7" ].tags.map(attackPath => attackPath.name), "boxAttackPath")
-				// dFlowEnt.addMissingFieldsToEntity(this.MACHINE_TAGS["11" ].tags.map(attackSub  => attackSub.name ), "boxAttackSub")
-				// dFlowEnt.addMissingFieldsToEntity(this.MACHINE_TAGS["9"].tags.map(attackLang => attackLang.name), "boxLanguage")
-				// dFlowEnt.addMissingFieldsToEntity(Object.values(this.MACHINES).map(machine => machine.name), "Machines")
-				// dFlowEnt.addMissingFieldsToEntity(Object.values(this.TEAM_MEMBERS).map(member => member.name), "memberName")
-				// dFlowEnt.addMissingFieldsToEntity(Object.values(this.CHALLENGES).map(challenge => challenge.name), "challenge")
+				dFlowEnt.addMissingFieldsToEntity(Object.values(this.CHALLENGE_CATEGORIES).map(category => category.name), "challengeCategoryName")
+				dFlowEnt.addMissingFieldsToEntity(this.MACHINE_TAGS["7" ].tags.map(attackPath => attackPath.name), "boxAttackPath")
+				dFlowEnt.addMissingFieldsToEntity(this.MACHINE_TAGS["11" ].tags.map(attackSub  => attackSub.name ), "boxAttackSub")
+				dFlowEnt.addMissingFieldsToEntity(this.MACHINE_TAGS["9"].tags.map(attackLang => attackLang.name), "boxLanguage")
+				dFlowEnt.addMissingFieldsToEntity(Object.values(this.MACHINES).map(machine => machine.name), "Machines")
+				dFlowEnt.addMissingFieldsToEntity(Object.values(this.TEAM_MEMBERS).map(member => member.name), "memberName")
+				dFlowEnt.addMissingFieldsToEntity(Object.values(this.CHALLENGES).map(challenge => challenge.name), "challenge")
 
 				/* TO HANDLE EXPORTS WITHOUT DB (USING LOCAL JSON FILES ( useful for dev )):::
 					|  exportData(MACHINES, "machines.json")
