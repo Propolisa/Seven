@@ -175,7 +175,7 @@ class Format {
 	static targetPercentRating(target){
 		switch (target.type) {
 		case "machine":	return target.rating * 20
-		case "challenge": return (target.likes / (target.likes + target.dislikes)) * 100
+		case "challenge": return ((target.likes / (target.likes + target.dislikes)) * 100) || 0
 		default:	break
 		}
 	}

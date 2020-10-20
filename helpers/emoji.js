@@ -72,7 +72,7 @@ class HTBEmoji {
 	}
 
 	initCustEmoji(client){
-		var emojis = client.guilds.resolve(process.env.EMOJI_CHAN_ID).emojis
+		var emojis = client.guilds.resolve(process.env.EMOJI_GUILD_ID).emojis
 		// console.log(emojis)
 		var initPromises = []
 		Object.values(this.state).forEach(cat => {
@@ -95,7 +95,7 @@ class HTBEmoji {
 	}
 
 	clearCustEmoji(client){
-		var emoji = client.guilds.resolve(process.env.EMOJI_CHAN_ID).emojis
+		var emoji = client.guilds.resolve(process.env.EMOJI_GUILD_ID).emojis
 		// console.log(emoji)
 		var deletionPromises = []
 		Object.values(this.state).forEach(cat => {
@@ -119,7 +119,7 @@ class HTBEmoji {
 	of(emojiName){
 		var eId = this.idOf(emojiName)
 		//console.log("EID:", eId)
-		var resolved = this.client.guilds.resolve(process.env.EMOJI_CHAN_ID).emojis.cache.find(emoji => emoji.name == eId) || ""
+		var resolved = this.client.guilds.resolve(process.env.EMOJI_GUILD_ID).emojis.cache.find(emoji => emoji.name == eId) || ""
 		//if (resolved) {console.warn(`EMOJI SIGHTED! ${resolved}`)}
 		return resolved
 	}

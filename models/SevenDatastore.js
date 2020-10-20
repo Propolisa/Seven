@@ -229,14 +229,14 @@ class SevenDatastore {
 			if (targetType == "machine") {
 				sorter = (a, b) => (b.stars - a.stars)
 			} else if (targetType == "challenge") {
-				sorter = (a, b) => (b.likes - b.dislikes) - (a.likes - a.dislikes)
+				sorter = (a, b) => F.targetPercentRating(b) - F.targetPercentRating(a)
 			}
 			break
 		case "worst rated":
 			if (targetType == "machine") {
 				sorter = (a, b) => (a.stars - b.stars)
 			} else if (targetType == "challenge") {
-				sorter = (a, b) => (a.likes - a.dislikes) - (b.likes - b.dislikes)
+				sorter = (a, b) => F.targetPercentRating(a) - F.targetPercentRating(b)
 			}
 			break
 		case "hardest":
