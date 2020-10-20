@@ -196,7 +196,7 @@ class HtbEmbeds {
 		}
 		default: break
 		}
-		console.info(embed)
+		// console.info(embed)
 		return embed
 	}
 

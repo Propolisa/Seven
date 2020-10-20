@@ -38,19 +38,20 @@ var cache = {
 		["prolab"]
 	],
 	ui: [
+		["null", "empty", "undefined"],
 		["oth", "other"],
 		["usr", "user"],
 		["sys", "root"],
 		["own", "complete"],
-		["rnk", "rank"],
-		["easy", "easy"],
-		["medi", "medium"],
-		["hard", "hard"],
+		["rank"],
+		["easy"],
+		["medium"],
+		["hard"],
 		["insn", "insane"],
+		["bad"],
 		["poor"],
 		["fair"],
-		["good"],
-		["great"]
+		["good"]
 	]
 }
 
@@ -72,7 +73,7 @@ class HTBEmoji {
 
 	initCustEmoji(client){
 		var emojis = client.guilds.resolve(process.env.EMOJI_CHAN_ID).emojis
-		console.log(emojis)
+		// console.log(emojis)
 		var initPromises = []
 		Object.values(this.state).forEach(cat => {
 			cat.forEach(catItems => {
@@ -95,7 +96,7 @@ class HTBEmoji {
 
 	clearCustEmoji(client){
 		var emoji = client.guilds.resolve(process.env.EMOJI_CHAN_ID).emojis
-		console.log(emoji)
+		// console.log(emoji)
 		var deletionPromises = []
 		Object.values(this.state).forEach(cat => {
 			cat.forEach(catItems => {

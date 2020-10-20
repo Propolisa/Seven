@@ -318,10 +318,11 @@ class Format {
 
 	static targetRatingToEmojiName(target){
 		var rating = this.targetPercentRating(target)
-		if (rating <= 25) return "poor"
-		if (rating <= 50) return "fair"
-		if (rating <= 75) return "good"
-		return "great"
+		if (!rating || !target) return "empty"
+		if (rating <= 25) return "bad"
+		if (rating <= 50) return "poor"
+		if (rating <= 75) return "fair"
+		return "good"
 	}
 
 	static boxOsSymbol(category) {
