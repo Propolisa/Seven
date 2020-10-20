@@ -109,7 +109,7 @@ async function updateCache(fields = DB_FIELDNAMES_AUTO) {
 		}
 	}
 	console.info("About to push this data to the DB: ")
-	console.log(fieldData)
+	console.dir(fieldData, { depth: 1 } )
 	const cs = new pgp.helpers.ColumnSet(["?id", { name: "json", cast: "json" }], { table: "cache" })
 	const update = pgp.helpers.update(fieldData, cs) + " WHERE v.id = t.id"
 	return await db.result(update)
@@ -560,7 +560,7 @@ async function handleMessage(message) {
 					var job = result.intent.displayName
 					var inf = result.parameters.fields
 					var params = struct.decode(result.parameters)
-					if (params) console.log(params)
+					if (Object.keys(params)) console.log(params)
 					console.log("[DF] Query returned: " + job + " | " + JSON.stringify(inf))
 					try {
 						switch (job) {
