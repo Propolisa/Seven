@@ -1,7 +1,7 @@
 const { Format: F } = require("../../helpers/format")
 
-const fontString = process.env.HC_FONT_STRING || "Lato"
-const fontSize = process.env.HC_FONT_SIZE || "12px"
+const fontString = process.env.HC_FONT_STRING || "'Lato', sans-serif"
+const fontSize = process.env.HC_FONT_SIZE || "14px"
 
 function calcStartDateFromTerm(term){
 	const SEC = 1000
@@ -128,7 +128,7 @@ function genChart(name, type, term, series=false, dateRange=null){
 					marker: { symbol: "circle" },
 				},
 				{
-					name: "System Owns",
+					name: "Root Owns",
 					data: [],
 					color: "#0086FF",
 					lineWidth: 1,
