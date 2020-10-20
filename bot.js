@@ -241,7 +241,10 @@ async function main() {
 			switch (message.type) {
 			case "machine": case "challenge": case "endgame": case "fortress": case	"prolab":
 				if (DAT.DISCORD_LINKS[message.uid]) {
-					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherOwn(await DAT.resolveEnt(message.uid,"member",true,null,true), message.target, message.flag || message.type))
+					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherOwn(DAT.resolveEnt(message.uid,"member",true,null,true), message.target, message.flag || message.type))
+				}
+				if (DAT.TEAM_MEMBERS[message.uid]) {
+					DAT.integratePusherOwn(message.uid, message.time, message.type, message.target, null, true)
 				}
 				break
 			default:
@@ -251,7 +254,7 @@ async function main() {
 		} catch (error) {
 			console.error(error)
 		}
-		DAT.integratePusherOwn(message.uid, message.time, message.type, message.target, null, true)
+	
 	})
 	// updateData()
 
@@ -318,7 +321,7 @@ async function sendTeamLeaderMsg(message) {
 }
 
 async function sendMemberChartMsg(message, username, term) {
-	var member = await DAT.resolveEnt(username, "member", false, message)
+	var member = DAT.resolveEnt(username, "member", false, message)
 	var chartData = await DAT.V4API.getMemberAchievementChart(member.id, term)
 	var chartImageB64 = await CHART_RENDERER.renderChart(member, chartData, term, "userProgress")
 	var chartImage = new Buffer.from(chartImageB64, "base64")
@@ -546,7 +549,7 @@ async function handleMessage(message) {
 			if (message.content.toLowerCase().match(checkIsSevenMsg)) {
 				message.content = message.content.toLowerCase().replace(checkIsSevenMsg, "")
 			}
-			var htbItem = await DAT.resolveEnt(message.content,null,null,message,false)
+			var htbItem = DAT.resolveEnt(message.content,null,null,message,false)
 			if (message.content.toLowerCase().trim() == "help") {
 				try { sendHelpMsg(message) } catch (e) { console.log(e) }
 			} else if (htbItem) {
@@ -584,16 +587,16 @@ async function handleMessage(message) {
 						case "getTeamRanking": SEND.embed(message, EGI.teamRank()); break
 						case "getFlagboard":  sendFlagboardMsg(message); break
 						case "getBoxInfo": SEND.embed(message, EGI.targetInfo("machine", params.machines)); break
-						case "getTargetOwners": SEND.embed(message, EGI.teamOwnsForTarget(await DAT.resolveEnt(params.target,params.ownType),undefined,params.ownType,params.ownFilter)); break
-						case "checkMemberOwnedTarget": SEND.embed(message, EGI.checkMemberOwnedTarget(await DAT.resolveEnt(params.username, "member", false, message), await DAT.resolveEnt(params.targetname, params.targettype))); break
+						case "getTargetOwners": SEND.embed(message, EGI.teamOwnsForTarget(DAT.resolveEnt(params.target,params.ownType),undefined,params.ownType,params.ownFilter)); break
+						case "checkMemberOwnedTarget": SEND.embed(message, EGI.checkMemberOwnedTarget(DAT.resolveEnt(params.username, "member", false, message), DAT.resolveEnt(params.targetname, params.targettype))); break
 						case "getFirstBox":  SEND.embed(message, EGI.targetInfo("machine", "Lame")); await SEND.human(message, result.fulfillmentText); break
 						case "agent.doReboot": doFakeReboot(message, result.fulfillmentText); break
 						case "getNewBox": SEND.embed(message, EGI.targetInfo("machine", DAT.getNewBoxId(), true)); break
 						case "getChallengeInfo": SEND.embed(message, EGI.targetInfo("challenge", params.challengeName)); break
-						case "getMemberInfo": SEND.embed(message, EGI.targetInfo("member", params.username, false, message, await DAT.resolveEnt(params.username, "member", false, message) || { type: null })); break
-						case "getMemberRank": SEND.embed(message, EGI.memberRank(await DAT.resolveEnt(params.username, "member", false, message))); break
+						case "getMemberInfo": SEND.embed(message, EGI.targetInfo("member", params.username, false, message, DAT.resolveEnt(params.username, "member", false, message) || { type: null })); break
+						case "getMemberRank": SEND.embed(message, EGI.memberRank(DAT.resolveEnt(params.username, "member", false, message))); break
 						case "getMemberChart": console.log("GOT HERE..."); sendMemberChartMsg(message, params.username, (params.interval ? params.interval : "1Y")); break
-						case "filterMemberOwns": sendActivityMsg(message,	await DAT.resolveEnt(params.username, "member", false, message),
+						case "filterMemberOwns": sendActivityMsg(message,	DAT.resolveEnt(params.username, "member", false, message),
 							params.targettype, params.sortby, params.sortorder,	params.limit || 24); break
 						case "filterTargets": SEND.embed(message, EGI.filteredTargets(DAT.filterEnt(message,
 							params.targettype, params.sortby, params.sortorder,	params.limit || 15,	null,	null, params.memberName, params.targetFilterBasis),

@@ -87,7 +87,7 @@ class Send {
 	}
 	
 	async embed(message, content, noMention) {
-		console.log(content)
+		// console.log(content)
 		return new Promise(resolve => {
 			if (Array.isArray(content)) {
 				// We're looking at multiple embed objects here. Let's send them in order.

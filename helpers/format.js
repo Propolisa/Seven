@@ -391,7 +391,7 @@ class Format {
 	static progressBar(progressAsPercent = 75, length = 10, label = true) {
 		// Returns pretty unicode progress bar, like:	▰▰▰▱▱▱▱▱ 38%
 		var normalized = (progressAsPercent / 100) * length
-		console.log(length, Math.round(normalized))
+		// console.log(length, Math.round(normalized))
 		return "🀰".repeat(Math.round(normalized)) + this.randomDominoes(length - Math.round(normalized)) + (label ? " " + progressAsPercent + "%" : "")
 	}
 
@@ -520,7 +520,6 @@ class Format {
  */
 	static numS(str) {
 		str = str.toString()
-		console.log(str)
 		var bold = "𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵"
 		var bDig = [...bold]
 		var o = ""

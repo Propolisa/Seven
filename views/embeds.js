@@ -57,11 +57,12 @@ class HtbEmbeds {
 	/* INFOBOXES */
 
 	targetInfo(type, identifier, isId = false, discordMessage = null, target=null) {
+		console.info(`Sending target info message for ${type} '${identifier}'...`)
 		target = target || this.ds.resolveEnt(identifier, type, isId, discordMessage) || { type: null }
 		if (target.country_name) { // A living, breathing human being
 			target.type = "member"
 		}
-		console.log(target)
+		// console.log(target.name)
 		var embed = this.TARGET_INFO_BASE
 		switch (target.type) {
 		case "machine": {
@@ -92,7 +93,7 @@ class HtbEmbeds {
 					false)
 				.setFooter(`ℹ️  Machines last updated ${F.timeSince(this.ds.LAST_UPDATE)}`)
 			if ("tags" in target) {
-				console.info(this.ds.MISC.MACHINE_TAGS, target.tags)
+				// console.info(this.ds.MISC.MACHINE_TAGS, target.tags)
 				var tagDict = {}
 				target.tags.map(tag => {
 					// console.info(tag)
@@ -121,7 +122,6 @@ class HtbEmbeds {
 			const hasOwns = (roots + users + challs > 0)
 			const hasBloods = (bloods.challenges.length + bloods.machines.length > 0)
 			const hasRespect = Boolean(respects)
-			console.log(hasRespect, respects)
 			embed.setAuthor(this.ds.tryDiscordifyUid(id, target.self) || target.name + "  " + F.rankSymbol(rank),
 				(team ? F.avatar2Url(team.avatar) : ""),
 				F.memberProfileUrl(target))
@@ -378,7 +378,6 @@ class HtbEmbeds {
 
 	filteredTargets(targets, sortend="release date", inf={}, message={}){
 		// console.warn(targets)
-		console.log(inf.targetFilterBasis, inf.targetFilterBasis.find(e => (e.cust || "").includes("complete")))
 		var isIncomplete = inf.targetFilterBasis.some(e => (e.cust || "").includes("incomplete"))
 		var filterRuleDescription = inf.targetFilterBasis.filter(e => (e.cust && !["complete", "incomplete"].includes(e.cust) ) || e.ccat || e.bpath || e.bsub || e.blang).map(e => Object.values(e)[0]).join(", ")
 		if (filterRuleDescription){
