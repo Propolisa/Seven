@@ -51,13 +51,14 @@ function genChart(name, type, term, series=false, dateRange=null){
 				height: 480,
 			},
 			legend: {
+				itemDistance: 14,
 				useHTML: true,
 				align: "center",
 				itemStyle: {
 					color: "#A4B1CD",
-					fontFamily: "Helvetica Narrow, Normal",
+					fontFamily: "Arial",
 					fontWeight: 500,
-					fontSize: "13px"
+					fontSize: "12px"
 				},
 				verticalAlign: "top",
 				layout: "horizontal",
@@ -88,7 +89,7 @@ function genChart(name, type, term, series=false, dateRange=null){
 						color: "#A4B1CD",
 						textTransform: "uppercase",
 						fontWeight: 600,
-						fontFamily: "Helvetica Narrow, Normal",
+						fontFamily: "Arial",
 						letterSpacing: "1px",
 						fontSize: "10px",
 					},
@@ -189,7 +190,7 @@ function genChart(name, type, term, series=false, dateRange=null){
 				align: "center",
 				itemStyle: {
 					color: "#A4B1CD",
-					fontFamily: "Helvetica Narrow, Normal",
+					fontFamily: "Arial",
 					fontWeight: 500,
 					fontSize: "13px"
 				},
@@ -222,7 +223,7 @@ function genChart(name, type, term, series=false, dateRange=null){
 						color: "#A4B1CD",
 						textTransform: "uppercase",
 						fontWeight: 600,
-						fontFamily: "Helvetica Narrow, Normal",
+						fontFamily: "Arial",
 						letterSpacing: "1px",
 						fontSize: "10px",
 					},
