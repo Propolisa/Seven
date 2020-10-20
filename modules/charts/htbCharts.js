@@ -1,5 +1,8 @@
 const { Format: F } = require("../../helpers/format")
 
+const fontString = process.env.HC_FONT_STRING || "Lato"
+const fontSize = process.env.HC_FONT_SIZE || "12px"
+
 function calcStartDateFromTerm(term){
 	const SEC = 1000
 	const MIN = 60 * SEC
@@ -56,9 +59,9 @@ function genChart(name, type, term, series=false, dateRange=null){
 				align: "center",
 				itemStyle: {
 					color: "#A4B1CD",
-					fontFamily: "Arial",
+					fontFamily: fontString,
 					fontWeight: 500,
-					fontSize: "12px"
+					fontSize: fontSize
 				},
 				verticalAlign: "top",
 				layout: "horizontal",
@@ -89,7 +92,7 @@ function genChart(name, type, term, series=false, dateRange=null){
 						color: "#A4B1CD",
 						textTransform: "uppercase",
 						fontWeight: 600,
-						fontFamily: "Arial",
+						fontFamily: fontString,
 						letterSpacing: "1px",
 						fontSize: "10px",
 					},
@@ -190,9 +193,9 @@ function genChart(name, type, term, series=false, dateRange=null){
 				align: "center",
 				itemStyle: {
 					color: "#A4B1CD",
-					fontFamily: "Arial",
+					fontFamily: fontString,
 					fontWeight: 500,
-					fontSize: "13px"
+					fontSize: fontSize
 				},
 				verticalAlign: "top",
 				layout: "horizontal",
@@ -223,7 +226,7 @@ function genChart(name, type, term, series=false, dateRange=null){
 						color: "#A4B1CD",
 						textTransform: "uppercase",
 						fontWeight: 600,
-						fontFamily: "Arial",
+						fontFamily: fontString,
 						letterSpacing: "1px",
 						fontSize: "10px",
 					},
