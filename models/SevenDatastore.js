@@ -19,6 +19,7 @@ const dFlowEnt = require("../helpers/dflow")
 const {
 	Helpers: H
 } = require("../helpers/helpers.js")
+const { resolve } = require("q")
 
 
 class SevenDatastore {
@@ -700,7 +701,7 @@ class SevenDatastore {
 	 * @param {number[]} memberIds - An array of HTB UIDs 
 	 * @returns {(string[]|"[Invalid ID]")}
 	 */
-	getMdLinksForUids(memberIds, showBothNames=true, customTextFieldBasis = null) { // Get markdown link to a HTB user's profile, based on UID.
+	getMdLinksForUids(memberIds, showBothNames=true, customTextFieldBasis = null, discordMessage=null) { // Get markdown link to a HTB user's profile, based on UID.
 		//console.log(memberIds)
 		if (memberIds) {
 			var screenNames = []
@@ -722,6 +723,21 @@ class SevenDatastore {
 				// console.log(screenNames)
 				return screenNames
 			}
+		} else {
+			return null
+		}
+	}
+
+	/**
+	 * Returns a set of markdown-formatted username links for a given list of HTB ids.
+	 * @param {number[]} memberIds - An array of HTB UIDs 
+	 * @returns {(string[]|"[Invalid ID]")}
+	 */
+	modernGetMdLinksForUids(memberIds, showBothNames=true, customTextFieldBasis = null, discordMessage=null) { // Get markdown link to a HTB user's profile, based on UID.
+		//console.log(memberIds)
+		if (memberIds.length) {
+			var screenNames = []
+			return memberIds.map(e => this.tryDiscordifyUid())
 		} else {
 			return null
 		}

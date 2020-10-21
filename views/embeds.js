@@ -4,7 +4,7 @@ const { Format: F } = require("../helpers/format.js")
 const { MessageEmbed, Message, MessageAttachment: Attachment } = require("discord.js")
 const { SevenDatastore } = require("../models/SevenDatastore.js")
 const { Helpers: H } = require("../helpers/helpers.js")
-
+const {	checkSelfName } = require("../helpers/nlp.js")
 const DFLT = null
 
 class HtbEmbeds {
@@ -405,10 +405,42 @@ class HtbEmbeds {
 
 	filteredTargets(targets, sortend="release date", inf={}, message={}){
 		// console.warn(targets)
-		var isIncomplete = inf.targetFilterBasis.some(e => (e.cust || "").includes("incomplete"))
+		var inc = inf.targetFilterBasis.some(e => (e.cust || "").includes("incomplete"))
+		var memCount = inf.memberName.length
+		var owners = F.andifyList(
+			inf.memberName.map(
+				e => F.memberToMdLink(
+					this.ds.resolveEnt(e,"member",false,message),	true,
+					(checkSelfName(e) ? "you" : this.ds.tryDiscordifyUid(this.ds.resolveEnt(e,"member",false,message))))),
+			null,inc)
 		var filterRuleDescription = inf.targetFilterBasis.filter(e => (e.cust && !["complete", "incomplete"].includes(e.cust) ) || e.ccat || e.bpath || e.bsub || e.blang).map(e => Object.values(e)[0]).join(", ")
 		if (filterRuleDescription){
 			filterRuleDescription = ` (${filterRuleDescription})`
+		}
+		if (targets.length == 0 && inf.limit !== 0){
+			var zeroEmbed = this.TARGET_INFO_BASE
+				.attachFiles(new Attachment(F.getIcon("complete"), "icon.png"))
+				.setAuthor("Filtered Targets", "attachment://icon.png", F.teamProfileUrl(this.ds.TEAM_STATS))
+				.setDescription("_"+`${F.toTitleCase(inf.targettype)} target${(targets.length != 1 ? "s" : "")} ${filterRuleDescription}`
+				+ ((inf.memberName.length && inf.targetFilterBasis.some(e => (e.cust || "").includes("complete"))) ? ( inc ? " not yet owned by ": " completed by ")+ owners : "")
+				+(sortend[0] ? `, sorted by ${inf.sortby[0]} ` : " ")+"_")
+			if (owners) {
+				if (inc) {
+					return zeroEmbed
+						.addField(H.any("Legendary!",
+							"Unbelievable!",
+							"Incredible!!!",
+							"Zany!", "Bonkers!!!", "😲", "🤯", "OMG!!!",
+							"What on earth..?!"), `Looks like ${owners} ${inf.memberName.length > 1 || (memCount ==1 && checkSelfName(inf.memberName[0]))? "have" : "has"} ${memCount > 1 ? "cumulatively " : ""}${H.any("dominated","owned", "beat", "hacked")} them all! 👑\n(Is that even possible???)`)
+				} else {
+					return zeroEmbed
+						.addField(H.any("Absolutely no matches found!",
+							"Nothing matched!",
+							"No results!!!",
+							"*crickets chirp*",
+							"Zero results whatsoever!"), `It appears ${owners} ${inf.memberName.length > 1 || (memCount ==1 && checkSelfName(inf.memberName[0])) ? "haven't" : "hasn't"} ${memCount > 1 ? (memCount == 2 ? "(both) " : "(all) ") : ""}${H.any("got","owned", "completed", "finished")} any of the matched targets!!! 😿`)
+				}
+			}
 		}
 		var embeds = []
 		var chunkedTargets = this.embedSubdivide(targets || [], this.filteredTargetString, 800, 5500, 15) || []
@@ -418,7 +450,7 @@ class HtbEmbeds {
 					.attachFiles(new Attachment(F.getIcon("complete"), "icon.png"))
 					.setAuthor("Filtered Targets", "attachment://icon.png", F.teamProfileUrl(this.ds.TEAM_STATS))
 					.setDescription(`📊 Showing ${targets.length}${filterRuleDescription} ${inf.targettype} target${(targets.length != 1 ? "s" : "")}`
-					+ ((inf.memberName.length && inf.targetFilterBasis.some(e => (e.cust || "").includes("complete"))) ? ( isIncomplete ? " not yet owned by ": " completed by ")+ F.andifyList(inf.memberName.map(e => F.memberToMdLink(this.ds.resolveEnt(e,"member",false,message))),", ",isIncomplete) : "")
+					+ ((inf.memberName.length && inf.targetFilterBasis.some(e => (e.cust || "").includes("complete"))) ? ( inc ? " not yet owned by ": " completed by ")+ owners : "")
 					+(sortend[0] ? `, sorted by ${inf.sortby[0]} ` : " "))
 					.addFields(embeddableGroup.map((e,idx) => ({inline: true, name:`${idx+1}/${embeddableGroup.length}`,value:`${e.map(x => x.str).join("\n")}`}))))
 			}

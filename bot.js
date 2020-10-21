@@ -544,6 +544,7 @@ async function admin_clearCached(message) {
 const checkIsSevenMsg = /[\t ]?seven\W?/g
 
 async function handleMessage(message) {
+	message.content = message.content.split("\n").filter(e => !e.startsWith("> ")).join("\n")
 	if (message.content.toLowerCase() != "seven" && (message.channel.type == "dm" || message.content.toLowerCase().includes("seven"))) {
 		if (!message.author.bot) {
 			if (message.content.toLowerCase().match(checkIsSevenMsg)) {
