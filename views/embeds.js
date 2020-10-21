@@ -417,6 +417,9 @@ class HtbEmbeds {
 		if (filterRuleDescription){
 			filterRuleDescription = ` (${filterRuleDescription})`
 		}
+		if (inf.limit === 0) {
+			return this.ERROR_BASE.setDescription(H.any("```css\n[ERROR: MALPRACTICE DETECTED]```", `\`\`\`css\nError: User ${F.STL(message.author.username,"bs")} appears to be broken.\`\`\``) +" Suspicious request specified **[0](http://0)** results...? " + H.any("👀","🙄","😂","👀"))
+		}
 		if (targets.length == 0 && inf.limit !== 0){
 			var zeroEmbed = this.TARGET_INFO_BASE
 				.attachFiles(new Attachment(F.getIcon("complete"), "icon.png"))
