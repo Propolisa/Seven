@@ -131,22 +131,22 @@ class Format {
 	}
 
 	static avatarFullUrl(item){
-		return `https://www.hackthebox.eu${item.avatar}`
+		return `https://hackthebox.eu${item.avatar}`
 	}
 	static avatar2Url(avatarLink){
-		return (avatarLink ? `https://www.hackthebox.eu${avatarLink}` : null)
+		return (avatarLink ? `https://hackthebox.eu${avatarLink}` : null)
 	}
 
 	static memberTeamAvatarUrl(member){
-		return `https://www.hackthebox.eu${member.team.avatar}`
+		return `https://hackthebox.eu${member.team.avatar}`
 	}
 
 	static teamProfileUrl(team){
-		return `https://www.hackthebox.eu/home/teams/profile/${team.id}`
+		return `https://hackthebox.eu/home/teams/profile/${team.id}`
 	}
 
 	static teamProfileUrlFromId(id){
-		return `https://www.hackthebox.eu/home/teams/profile/${id}`
+		return `https://hackthebox.eu/home/teams/profile/${id}`
 	}
 
 	static memberProfileUrl(member){
@@ -601,7 +601,7 @@ class Format {
 	}
 
 	static memberToMdLink(member, bold = true, customText=null) {
-		return (bold ? "**" : "") + `[${customText || member.name}](https://www.hackthebox.eu/home/users/profile/${member.id} 'View on HTB')` + (bold ? "**" : "")
+		return (bold ? "**" : "") + `[${customText || member.name}](https://hackthebox.eu/home/users/profile/${member.id} 'View on HTB')` + (bold ? "**" : "")
 	}
 
 	static shortDate(date){

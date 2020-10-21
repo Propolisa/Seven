@@ -278,6 +278,58 @@ class HtbLegacyConnector {
 			})
 		})
 	}
+
+	getUniversityProfile(session, universityId){
+		return new Promise(resolve => {
+			console.log(`Getting university profile for uni #${universityId}...`)
+			session.request(`/home/universities/profile/${Number(universityId)}`, function (error, response, body) {
+				var $ = require("jquery")(new JSDOM(body).window)
+				var teamInfo = {}
+				try {
+					var unis = $(".col-lg-6")[0].children[0].children[2].children
+					if (unis.length > 5) {
+						teamInfo.name = unis[0].textContent || null
+						teamInfo.country_name = unis[1].textContent.trim() || null 
+						teamInfo.country_code = unis[1].firstChild.classList[1].slice(5).toUpperCase() || null
+						teamInfo.url = unis[3].firstChild.href || null
+						teamInfo.joined_time_ago = unis[5].textContent.split(" ").slice(1,3).join(" ") || null
+						teamInfo.student_count = Number(unis[7].textContent.trim().split(" ")[0]) || null
+						teamInfo.respects = Number(unis[8].textContent.trim().split(" ")[0]) || null
+					}
+				} catch (error) {
+					console.error(error)
+				}
+				resolve(teamInfo)
+			})
+		})
+	}
+	
+
+	getUniversityMemberIds(session, universityId, ignored) {
+		return new Promise(resolve => {
+			console.log(`Enumerating HTB IDs for students of University #${universityId}...`)
+			session.request(`/home/universities/profile/${Number(universityId)}`, function (error, response, body) {
+				var universityIds = []
+				var $ = require("jquery")(new JSDOM(body).window)
+				var adminId = Number(Array.from($($(".fa-male")[0].parentNode.parentNode.children[1].childNodes[1].children[1]).find("tr"))[0].childNodes[1].children[2].toString().substring(45))
+				try {
+					Array.from($($(".fa-graduation-cap")[0].parentNode.parentNode.children[1].childNodes[1].children[1]).find("tr")).map(e => Number(e.childNodes[1].children[2].toString().substring(45))).forEach(uid => {
+						if (!ignored || !(uid in Object.keys(ignored))) {
+							universityIds.push(uid)
+						}
+					})
+				} catch (error) {
+					console.error(error)
+				}
+				const index = universityIds.indexOf(adminId)
+				if (index > -1) {
+					universityIds.splice(index, 1)
+				}
+				universityIds = [adminId, ...universityIds]
+				resolve(universityIds)
+			})
+		})
+	}
 	
 	getTeamStats(session, teamId) {
 		return new Promise(resolve => {

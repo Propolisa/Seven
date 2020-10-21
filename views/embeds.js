@@ -117,6 +117,7 @@ class HtbEmbeds {
 			const { id, name, rank, rank_text, points, ranking, rank_id, next_rank, respects, team, avatar, country_code: nat, country_name,
 				endgames, fortresses, prolabs, bloods, user_owns: users, system_owns: roots, challenge_owns, current_rank_progress: rankProgress,
 				user_bloods, system_bloods, description, university_name: uni, website, github, linkedin, twitter } = target
+
 			const challs = challenge_owns.solved
 			const challenge_bloods = bloods.challenges.length
 			const hasOwns = (roots + users + challs > 0)
@@ -125,12 +126,12 @@ class HtbEmbeds {
 			embed.setAuthor(this.ds.tryDiscordifyUid(id, target.self) || target.name + "  " + F.rankSymbol(rank),
 				(team ? F.avatar2Url(team.avatar) : ""),
 				F.memberProfileUrl(target))
-				.setDescription(F.getFlag(nat) + "⠀**[" + rank_text + ".]"
+				.setDescription(F.getFlag(nat) + "⠀**[" + (rank_text || rank) + ".]"
 						+ `(${F.memberProfileUrl(target)}`
-						+ ")**" + (team ? ` ${F.toTitleCase(target.role)} of the **[${team.name}](${F.teamProfileUrlFromId(team.id)} 'View on HTB')** team.\n` : "")
+						+ ")**" + (team ? ` ${(process.env.HTB_UNIVERSITY_ID ? "Member" : F.toTitleCase(target.role))} of the **[${team.name}](${F.teamProfileUrlFromId(team.id)} 'View on HTB')** team.\n` : "\n")
 						+ (rank_id < 7 && H.maybe(0.1) ? `(${name} often dreams about achieving the rank of ${next_rank}, but so far the goal has proved elusive.)` : "")
 						+ (description ? `\`\`\`fix\n${F.safe(description.trim().slice(0, 200))}\n\`\`\`` : "")
-						+ (uni ? "**" + F.safe(uni) + "**\n" : ""))
+						+ (uni ? (!process.env.HTB_UNIVERSITY_ID ? "Student at " : F.toTitleCase(target.role) + " for ") + "**" + F.safe(uni) + "**.\n" : ""))
 				.setThumbnail(F.avatar2Url(avatar))
 				.addField("`  " + `( 🌍 ${F.STL(F.nth(ranking), "bs")} | 👥 ${F.STL(F.nth(this.ds.getMemberTeamRankById(id)), "bs")} ) 🍕 [+${F.STL(points.toString(), "bs")}]`
 						+ "  `",
@@ -196,31 +197,57 @@ class HtbEmbeds {
 		}
 		default: break
 		}
-		// console.info(embed)
+		console.info(embed)
 		return embed
 	}
 
 	teamInfo() {
-		/** TEAM SUMMARY EMBED CONSTRUCTOR **/
-		const { id: tid, twitter,facebook,discord, motto, description, name:tname, country_code:cc, country_name:cn, rank, points, respects, captain, user_owns, system_owns, first_bloods, avatar_url: tavatar} = this.ds.TEAM_STATS
-		var leaderList = this.ds.getMdLinksForUids(this.ds.getTopMembers(15), "points")
-		var founder = this.ds.getMemberById(captain.id)
+
 		var TEAM_EMBED = this.TEAM_INFO_BASE
-			.setAuthor(`Group by ${founder.name}`, F.avatar2Url(founder.avatar), F.memberProfileUrl(founder))
-			.setTitle(`${F.getFlag(cc)}  ${tname}`)
-			.setThumbnail(tavatar)
-			.setDescription(`Team from ${F.STL(cn,"bs")}.\n\`\`\`fix\n${motto}\n\`\`\`` + (respects ? `\n⭐ The members of ${tname} have earned the ${H.any("deepest","profoundest","fullest","heartiest","most hearty of","dedicated", "sincere")} respect of ${F.STL(respects,"bs")} HTB users for their ${H.any("baudy","insane","ridiculously clever", "unbelievably dextrous", "haphazard string of", "mind-blowing")} accomplishments.`: ""))
-		if (this.teamSocialString(twitter,facebook,discord)) {
-			TEAM_EMBED.addField("Social", this.teamSocialString(twitter,facebook,discord), false)
+
+		/** TEAM SUMMARY EMBED CONSTRUCTOR **/
+		if (this.ds.TEAM_STATS.type == "team") {
+			const { id: tid, twitter,facebook,discord, motto, description, name:tname, country_code:cc, country_name:cn, rank, points, respects, captain, user_owns, system_owns, first_bloods, avatar_url: tavatar} = this.ds.TEAM_STATS
+			var leaderList = this.ds.getMdLinksForUids(this.ds.getTopMembers(15), false, "points")
+			var founder = this.ds.getMemberById(captain.id)
+			TEAM_EMBED
+				.setAuthor(`Group by ${founder.name}`, F.avatar2Url(founder.avatar), F.memberProfileUrl(founder))
+				.setTitle(`${F.getFlag(cc)}  ${tname}`)
+				.setThumbnail(tavatar)
+				.setDescription(`Team from ${F.STL(cn,"bs")}.\n\`\`\`fix\n${motto}\n\`\`\`` + (respects ? `\n⭐ The members of ${tname} have earned the ${H.any("deepest","profoundest","fullest","heartiest","most hearty of","dedicated", "sincere")} respect of ${F.STL(respects,"bs")} HTB users for their ${H.any("baudy","insane","ridiculously clever", "unbelievably dextrous", "haphazard string of", "mind-blowing")} accomplishments.`: ""))
+			if (this.teamSocialString(twitter,facebook,discord)) {
+				TEAM_EMBED.addField("Social", this.teamSocialString(twitter,facebook,discord), false)
+			}
+			TEAM_EMBED.addField("Ranking","Global: **[#" + rank + "](http://0)**", true)
+				.addField("Points","**[" + points + "](http://0)**", true)
+				.addField("0wnage",`Roots:** [${system_owns}](http://0)\n**Users:** [${user_owns}](http://0)**`, true)
+				.setImage(F.noncifyUrl(`https://hackthebox.eu/badge/team/image/${tid}`))
+				.setFooter("ℹ️  Team info last updated " + F.timeSince(this.ds.LAST_UPDATE))
+			var sections = H.chunk(leaderList.slice(0, 15), 5)
+			sections.forEach((e, i) => {
+				TEAM_EMBED.addField((i == 0 ? "MVP List" : 	`${i+1}/${sections.length}` ),`**${e.join("**\n**")}**`, true)
+			})
+		} else if (this.ds.TEAM_STATS.type == "university") {
+			const { name:uni_name, url, country:cc, rank, points, respects, captain, user_owns, root_owns, challenge_owns, fortress, endgame, user_bloods, root_bloods, challenge_bloods, avatar_url: avatar} = this.ds.TEAM_STATS
+			var uniLeaderList = this.ds.getMdLinksForUids(this.ds.getTopMembers(15), false, "points")
+			var uniAdmin = this.ds.getMemberById(captain.id)
+			TEAM_EMBED
+				.setAuthor(`University Profile monitored by ${uniAdmin.name}`, F.avatar2Url(uniAdmin.avatar), F.memberProfileUrl(uniAdmin))
+				.setTitle(`${F.getFlag(cc)}  ${uni_name}`)
+				.setThumbnail(avatar)
+				.setDescription((url ? F.mdLink("University Site", url, true, "Visit this university's homepage.") : "") + (respects ? `\n⭐ The members of ${uni_name} have earned the ${H.any("deepest","profoundest","fullest","heartiest","most hearty of","dedicated", "sincere")} respect of ${F.STL(respects,"bs")} HTB users for their ${H.any("baudy","insane","ridiculously clever", "unbelievably dextrous", "haphazard string of", "mind-blowing")} accomplishments.`: ""))
+			TEAM_EMBED.addField("0wnage",`Roots:** [${root_owns}](http://0)\n**Users:** [${user_owns}](http://0)**\nChallenge:** [${challenge_owns}](http://0)**\nEndgame:** [${endgame}](http://0)**\nFortress:** [${fortress}](http://0)**`, true)
+				.addField("Ranking","Global: **[#" + rank + "](http://0)**", true)
+				.addField("Points","**[" + points + "](http://0)**", true)
+				
+				.setFooter("ℹ️  University info last updated " + F.timeSince(this.ds.LAST_UPDATE))
+			var sections = H.chunk(uniLeaderList.slice(0, 15), 5)
+			sections.forEach((e, i) => {
+				TEAM_EMBED.addField((i == 0 ? "MVP List" : 	`${i+1}/${sections.length}` ),`**${e.join("**\n**")}**`, true)
+			})
+
 		}
-		TEAM_EMBED.addField("Ranking","Global: **[#" + rank + "](http://0)**", true)
-			.addField("Points","**[" + points + "](http://0)**", true)
-			.addField("0wnage",`Roots:** [${system_owns}](http://0)\n**Users:** [${user_owns}](http://0)**`, true)
-			.addField("MVP List",`**${leaderList.slice(0, 5).join("**\n**")}**`, true)
-			.addField("…",`**${leaderList.slice(5, 10).join("**\n**")}**`, true)
-			.addField("…",`**${leaderList.slice(10, 15).join("**\n**")}**`, true)
-			.setImage(F.noncifyUrl(`https://www.hackthebox.eu/badge/team/image/${tid}`))
-			.setFooter("ℹ️  Team info last updated " + F.timeSince(this.ds.LAST_UPDATE))
+		
 		return TEAM_EMBED
 	}
 
@@ -229,7 +256,7 @@ class HtbEmbeds {
 			.attachFiles(new Attachment("./static/img/ui/rank.png", "rank.png"))
 			.setAuthor(this.ds.TEAM_STATS.name, "attachment://rank.png", F.teamProfileUrl(this.ds.TEAM_STATS))
 			.setThumbnail(this.ds.TEAM_STATS.avatar_url)
-			.setDescription(`Global Rank: ${F.mdLink(this.ds.TEAM_STATS.globalRanking, F.teamProfileUrl(this.ds.TEAM_STATS))}`)
+			.setDescription(`Global Rank: ${F.mdLink(this.ds.TEAM_STATS.rank, F.teamProfileUrl(this.ds.TEAM_STATS))}`)
 			.setFooter(`ℹ️  Rank data last updated ${F.timeSince(this.ds.LAST_UPDATE)}`)
 	}
 

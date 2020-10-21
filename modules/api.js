@@ -214,7 +214,7 @@ class HtbApiConnector {
 		return Promise.all([this.getTeamProfile(teamId),
 			this.getTeamOwnStats(teamId),
 			this.getTeamStatsGraphForDuration(teamId,"1W").then(res => ({respects: res.respect.pop()}))]
-		).then(res => H.combine(res))
+		).then(res => H.combine([...res,{type:"team"}]))
 	}
 
 	getTeamMembers(teamId, excludedIds=[]) {
@@ -256,6 +256,17 @@ class HtbApiConnector {
 	getTopHundredTeams() {
 		return this.htbApiGet("rankings/teams").then(res => res.data)
 	}
+
+
+	/**
+	 * UNIVERSITY DATA GETTERS (USE AT YOUR OWN RISK!!)
+	 */
+
+	getUniversityProfile(universityId) {
+		return this.htbApiGet("rankings/universities").then(e => Object.values(e.data).find(uni => uni.id == universityId) || null)
+	}
+
+	// Array.from($($('.fa-graduation-cap')[0].parentNode.parentNode.children[1].childNodes[1].children[1]).find('tr')).map(e => Number(e.childNodes[1].children[1].toString().substring(45)))
 
 	/**
 	 * MEMBER DATA GETTERS

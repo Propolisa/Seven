@@ -142,11 +142,22 @@ class SevenDatastore {
 				console.warn(`Got ${Object.keys(this.MISC.MACHINE_TAGS).length} machine tag categories...`)
 
 
-				this.TEAM_STATS = await this.V4API.getCompleteTeamProfile(process.env.HTB_TEAM_ID)
-				
-				var TEAM_MEMBERS_BASE = await this.V4API.getTeamMembers(process.env.HTB_TEAM_ID, Object.keys(this.TEAM_MEMBERS_IGNORED))
-				this.TEAM_MEMBERS = await this.V4API.getCompleteMemberProfilesByMemberPartials(TEAM_MEMBERS_BASE)
-
+				if (process.env.HTB_TEAM_ID) {
+					this.TEAM_STATS = await this.V4API.getCompleteTeamProfile(process.env.HTB_TEAM_ID)
+					var TEAM_MEMBERS_BASE = await this.V4API.getTeamMembers(process.env.HTB_TEAM_ID, Object.keys(this.TEAM_MEMBERS_IGNORED))
+					this.TEAM_MEMBERS = await this.V4API.getCompleteMemberProfilesByMemberPartials(TEAM_MEMBERS_BASE)
+				}
+				else if (process.env.HTB_UNIVERSITY_ID) {
+					var UNI_MEMBER_IDS = await this.V3API.getUniversityMemberIds(SESH, process.env.HTB_UNIVERSITY_ID, Object.keys(this.TEAM_MEMBERS_IGNORED))
+					var UNI_MEMBERS = await this.V4API.getCompleteMemberProfilesByIds(UNI_MEMBER_IDS)
+					Object.values(UNI_MEMBERS).forEach(e => e.role = (e.id == (UNI_MEMBER_IDS[0] || null) ? "admin" : "student"))
+					this.TEAM_MEMBERS = UNI_MEMBERS
+					var captain = this.TEAM_MEMBERS[UNI_MEMBER_IDS[0]]
+					this.TEAM_STATS = Object.assign(await this.V3API.getUniversityProfile(SESH, process.env.HTB_UNIVERSITY_ID), await this.V4API.getUniversityProfile(process.env.HTB_UNIVERSITY_ID) || {}, {avatar_url: `https://www.hackthebox.eu/storage/universities/${Number(process.env.HTB_UNIVERSITY_ID)}.png`, type:"university", captain: {id: captain.id, name: captain.name}})
+					// this.TEAM_MEMBERS = await this.V4API.getCompleteMemberProfilesByMemberPartials(TEAM_MEMBERS_BASE)
+				} else {
+					console.warn("No ID (Team or University) was specified!! Please add a definition for either 'HTB_UNIVERSITY_ID' or 'HTB_TEAM_ID' in your environment variables.")
+				}
 				console.warn(`Got ${Object.keys(this.TEAM_MEMBERS).length} team member profiles...`)
 				this.CHALLENGES = await this.V4API.getAllCompleteChallengeProfiles()
 				this.MISC.CHALLENGE_CATEGORIES = await this.V4API.getChallengeCategories()
@@ -796,7 +807,7 @@ class SevenDatastore {
 			boxIds.forEach(boxId => {
 				if (boxId in this.MACHINES) {
 					var box = this.MACHINES[boxId]
-					boxLinks.push("**[" + box.name + "](" + "https://www.hackthebox.eu/home/machines/profile/" + box.id + " 'Goto HTB page')**")
+					boxLinks.push("**[" + box.name + "](" + "https://app.hackthebox.eu/machines/" + box.id + " 'Goto HTB page')**")
 				}
 			})
 			// console.log(boxLinks)
