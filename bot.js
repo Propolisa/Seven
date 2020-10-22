@@ -244,10 +244,8 @@ async function main() {
 					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherOwn(DAT.resolveEnt(message.uid,"member",true,null,true), message.target, message.flag || message.type))
 				}
 				if (DAT.TEAM_MEMBERS[message.uid]) {
-					console.warn("Integrating pusher own: ")
-					console.warn(message)
-					var affected = DAT.integratePusherOwn(message.uid, message.time, message.type, message.target, null, true)
-					console.info(affected ? "Own was added successfully." : "No new owns added.")
+					console.warn("RELEVANT PUSHER OWN INCOMING::: ")
+					DAT.integratePusherOwn(message.uid, message.time, message.type, message.target, message.flag, true)
 				}
 				break
 			default:
@@ -275,8 +273,8 @@ async function main() {
 		DISCORD_ANNOUNCE_CHAN = await client.channels.fetch(process.env.DISCORD_ANNOUNCE_CHAN_ID.toString())
 
 		/** Test the Pusher owns functionality */
-		// var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
-		// PUSHER_DUMMY_DATA.slice(0,10).forEach(e => {console.info(e); HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel:"owns-channel"})})
+		var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
+		PUSHER_DUMMY_DATA.slice(0,10).forEach(e => {HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel:"owns-channel"})})
 		console.log("Discord account associations:", Object.values(DAT.DISCORD_LINKS).length)
 		setInterval(() => updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString()), 30 * 60 * 1000)   // UPDATE OWNAGE DATA BY PARSING, EVERY 30 MINUTES
 	})

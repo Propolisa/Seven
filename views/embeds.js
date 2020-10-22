@@ -699,7 +699,7 @@ class HtbEmbeds {
 
 	pusherOwn(member, target, sub) {
 		target = this.ds.resolveEnt(target)
-		console.log(member, target)
+		// console.log(member, target)
 		if (!member || !target){
 			return this.ENTITY_UNFOUND
 		}

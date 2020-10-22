@@ -601,7 +601,7 @@ class Format {
 	}
 
 	static memberToMdLink(member, bold = true, customText=null) {
-		return (bold ? "**" : "") + `[${customText || member.name}](https://hackthebox.eu/home/users/profile/${member.id} 'View on HTB')` + (bold ? "**" : "")
+		return (bold ? "**" : "") + `[${customText || member.name}](https://app.hackthebox.eu/users/${member.id} 'View on HTB')` + (bold ? "**" : "")
 	}
 
 	static shortDate(date){

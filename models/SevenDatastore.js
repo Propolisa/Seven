@@ -154,7 +154,8 @@ class SevenDatastore {
 					Object.values(UNI_MEMBERS).forEach(e => e.role = (e.id == (UNI_MEMBER_IDS[0] || null) ? "admin" : "student"))
 					this.TEAM_MEMBERS = UNI_MEMBERS
 					var captain = this.TEAM_MEMBERS[UNI_MEMBER_IDS[0]]
-					this.TEAM_STATS = Object.assign(await this.V3API.getUniversityProfile(SESH, process.env.HTB_UNIVERSITY_ID), await this.V4API.getUniversityProfile(process.env.HTB_UNIVERSITY_ID) || {}, {avatar_url: `https://www.hackthebox.eu/storage/universities/${Number(process.env.HTB_UNIVERSITY_ID)}.png`, type:"university", captain: {id: captain.id, name: captain.name}})
+					this.TEAM_STATS = Object.assign(await this.V3API.getUniversityProfile(SESH, process.env.HTB_UNIVERSITY_ID) || {}, await this.V4API.getUniversityProfile(process.env.HTB_UNIVERSITY_ID) || {}, {avatar_url: `https://www.hackthebox.eu/storage/universities/${Number(process.env.HTB_UNIVERSITY_ID)}.png`, type:"university", captain: {id: captain.id, name: captain.name}})
+					delete this.TEAM_STATS.weekly
 					// this.TEAM_MEMBERS = await this.V4API.getCompleteMemberProfilesByMemberPartials(TEAM_MEMBERS_BASE)
 				} else {
 					console.warn("No ID (Team or University) was specified!! Please add a definition for either 'HTB_UNIVERSITY_ID' or 'HTB_TEAM_ID' in your environment variables.")
@@ -402,7 +403,7 @@ class SevenDatastore {
 			var result = {}
 			const isSelf = checkSelfName(kwd)
 			kwd = (targetType == "member" && checkSelfName(kwd) ? discordMessage.author.username : kwd)
-			console.log("Resolving '" + kwd + "'...")
+			// console.log("Resolving '" + kwd + "'...")
 			if (targetType) {
 				switch (targetType) {
 				case "member":
@@ -748,19 +749,19 @@ class SevenDatastore {
 	 * Takes information about a new own achievement and adds it to our records.
 	 * @param {number} uid - The ID of the user associated with the achievement.
 	 * @param {string} type - A string value describing the thing / milestone owned, e.g. "root", "user", "challenge", "endgame", "akerva" etc.
-	 * @param {(number|string)} target - If a machine user/system own, use the numeric machine ID (e.g. 238). If a challenge or fortress own, use the title.
+	 * @param {(number|string)} targetName - If a machine user/system own, use the numeric machine ID (e.g. 238). If a challenge or fortress own, use the title.
 	 * @param {string} flag - For pro labs and fortresses with multiple flags, use this field to specify the milestone title.
 	 */
-	integratePusherOwn(uid, time, type, target, flag = null, isPusher = false) {
+	integratePusherOwn(uid, time, type, targetName, flag = null, isPusher = false) {
 		var member = this.getMemberById(uid)
-		var targetResolved = this.resolveEnt(target, type)
-		console.log(`Resolved member ${member.name} [${member.id}] and target ${targetResolved.name} [${targetResolved.type}]`)
+		var target = this.resolveEnt(targetName, type)
+		console.log(`[PUSHER INTEGRATION]::: Resolved member ${member.name} [${member.id}] and target ${target.name} [${target.type}]`)
 		var entriesAffected = false
-		if (member && targetResolved) {
+		if (member && target) {
 			try {
 				switch (flag || type) {
 				case "user":
-					var userOwn = member.activity.find(own => own.type == "user" && (own.name == targetResolved.name || own.id == targetResolved.id))
+					var userOwn = member.activity.find(own => own.type == "user" && (own.name == target.name || own.id == target.id))
 					if (!userOwn) {
 						member.activity.push({
 							"date": (new Date(time)).toISOString(),
@@ -780,7 +781,7 @@ class SevenDatastore {
 					break
 
 				case "root":
-					var rootOwn = member.activity.find(own => own.type == "root" && (own.name == targetResolved.name || own.id == targetResolved.id))
+					var rootOwn = member.activity.find(own => own.type == "root" && (own.name == target.name || own.id == target.id))
 					if (!rootOwn) {
 						member.activity.push({
 							"date": (new Date(time)).toISOString(),
@@ -800,7 +801,7 @@ class SevenDatastore {
 					break
 
 				case "challenge":
-					var challOwn = member.activity.find(own => own.type == "root" && (own.name == targetResolved.name || own.id == targetResolved.id))
+					var challOwn = member.activity.find(own => own.type == "root" && (own.name == target.name || own.id == target.id))
 					if (!challOwn) {
 						member.activity.push({
 							"date": (new Date(time)).toISOString(),
