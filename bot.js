@@ -574,7 +574,7 @@ async function handleMessage(message) {
 						case "admin.setStatus":  admin_setStatus(message, inf); break
 						case "admin.clearEmoji":  E.clearCustEmoji(client).then(SEND.human(message, "Successfully purged Seven-related emoji from supporting channel.", false)); break
 						case "admin.setupEmoji":  E.initCustEmoji(client).then(SEND.human(message, "Successfully initialized Seven-related emoji on supporting channel.", false)); break
-						case "agent.getPickled":  if (!SEND.GET_PICKLED) {SEND.pickleOn(); SEND.human(message,"Alright, getting pickled!")} else { SEND.human(message, "` ERROR: circuits already scrambled... `")} break
+						case "agent.getPickled":  if (!SEND.GET_PICKLED) {await SEND.human(message, result.fulfillmentText, true); SEND.human(message,"```css\n[PICKLE MODE ACTIVATED]```",true) ; SEND.pickleOn()} else { SEND.human(message, "` ERROR: circuits already scrambled... `")} break
 						case "agent.getUnpickled":  if (SEND.GET_PICKLED) {SEND.pickleOff(); SEND.human(message,"Fine then...\nThat was kinda fun though. 😏")} else { SEND.human(message, "I'm already talking normally!!!")} break
 						case "forgetMe.htbIgnore.getUserID":  forgetHtbDataFlow(message, "htb", params.uid); break
 						case "forgetMe.discordUnlink.getUserID":  forgetHtbDataFlow(message, "discord", params.uid); break

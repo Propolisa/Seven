@@ -10,7 +10,7 @@ class Send {
 
 	constructor() {
 		this.GET_PICKLED = false
-		this.KEYSTROKE_TIME = 24
+		this.KEYSTROKE_TIME = 18
 	}
 
 	pickleOn(){
@@ -60,7 +60,7 @@ class Send {
 						}
 					} else {
 						message.channel.startTyping()
-						await wait(Math.min(500 + ln.length * this.KEYSTROKE_TIME, 800))
+						await wait(Math.min(250 + (ln.length * this.KEYSTROKE_TIME), 1200))
 						if (firstline) {
 							await message.reply(ln)
 						} else {
@@ -80,8 +80,8 @@ class Send {
 					firstline = false
 				}
 				message.channel.stopTyping()
-				resolve()
 			})
+			resolve()
 		})
 		//console.log('finished sending message')
 	}

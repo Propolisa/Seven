@@ -145,6 +145,7 @@ class SevenDatastore {
 
 				if (process.env.HTB_TEAM_ID) {
 					this.TEAM_STATS = await this.V4API.getCompleteTeamProfile(process.env.HTB_TEAM_ID)
+					delete this.TEAM_STATS.weekly
 					var TEAM_MEMBERS_BASE = await this.V4API.getTeamMembers(process.env.HTB_TEAM_ID, Object.keys(this.TEAM_MEMBERS_IGNORED))
 					this.TEAM_MEMBERS = await this.V4API.getCompleteMemberProfilesByMemberPartials(TEAM_MEMBERS_BASE)
 				}
@@ -155,11 +156,11 @@ class SevenDatastore {
 					this.TEAM_MEMBERS = UNI_MEMBERS
 					var captain = this.TEAM_MEMBERS[UNI_MEMBER_IDS[0]]
 					this.TEAM_STATS = Object.assign(await this.V3API.getUniversityProfile(SESH, process.env.HTB_UNIVERSITY_ID) || {}, await this.V4API.getUniversityProfile(process.env.HTB_UNIVERSITY_ID) || {}, {avatar_url: `https://www.hackthebox.eu/storage/universities/${Number(process.env.HTB_UNIVERSITY_ID)}.png`, type:"university", captain: {id: captain.id, name: captain.name}})
-					delete this.TEAM_STATS.weekly
 					// this.TEAM_MEMBERS = await this.V4API.getCompleteMemberProfilesByMemberPartials(TEAM_MEMBERS_BASE)
 				} else {
 					console.warn("No ID (Team or University) was specified!! Please add a definition for either 'HTB_UNIVERSITY_ID' or 'HTB_TEAM_ID' in your environment variables.")
 				}
+				
 				console.warn(`Got ${Object.keys(this.TEAM_MEMBERS).length} team member profiles...`)
 				this.CHALLENGES = await this.V4API.getAllCompleteChallengeProfiles()
 				this.MISC.CHALLENGE_CATEGORIES = await this.V4API.getChallengeCategories()
