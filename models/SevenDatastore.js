@@ -120,7 +120,7 @@ class SevenDatastore {
 				/* LEGACY STUFF FOR PARSING / PUSHER CONNECT / DATA ABT TEAMS: */
 				await this.V3API.init()
 				var SESH = this.V3API.SESSION
-				console.log("Got a logged in session.")
+				if (SESH) console.warn("Got a logged in V3 session.")
 
 				/* API v4 DATA COLLECTION (Who's feeling sexy now..?!) */
 				var MACHINES_V3 = await this.V3API.getMachines(SESH)
