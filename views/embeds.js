@@ -610,7 +610,7 @@ class HtbEmbeds {
 	}
 
 	memberRank(member) {
-		console.log(member)
+		// console.log(member)
 		if (member) {
 			return this.MEMBER_RANK_BASE.setTitle(this.ds.tryDiscordifyUid(member.id, member.self))
 				.setAuthor("Member Rank", F.memberTeamAvatarUrl(member), "")

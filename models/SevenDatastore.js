@@ -552,7 +552,7 @@ class SevenDatastore {
 			}
 		}
 		const member = this.getMemberById(memberId)
-		console.log(member)
+		// console.log(member)
 		var owns = (targetType ? [...member.activity].filter(e => e.object_type == targetType) : [...member.activity])
 		const filteredOwns = process(owns, sortOrder, sortBy, limit)
 		return filteredOwns || null
