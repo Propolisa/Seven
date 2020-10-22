@@ -273,7 +273,10 @@ async function main() {
 		DISCORD_ANNOUNCE_CHAN = await client.channels.fetch(process.env.DISCORD_ANNOUNCE_CHAN_ID.toString())
 
 		/** Test the Pusher owns functionality */
-		// var PUMMY_DATA.slice(0,10).forEach(e => {HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel:"owns-channel"})})
+		var propOwns = ["<a href=\"https://www.hackthebox.eu/home/users/profile/254747\">Propolis</a> owned user on <a href=\"https://www.hackthebox.eu/home/machines/profile/260\">RopeTwo</a> <a class=\"nohover\" href=\"https://twitter.com/intent/tweet?text=Propolis just owned user on RopeTwo !&amp;url=https://www.hackthebox.eu&amp;via=hackthebox_eu\"><span class=\"text-info\">[<i class=\"fab fa-twitter\"></i>Tweet]</span></a>",
+			"<a href=\"https://www.hackthebox.eu/home/users/profile/254747\">Propolis</a> owned root on <a href=\"https://www.hackthebox.eu/home/machines/profile/260\">RopeTwo</a> <a class=\"nohover\" href=\"https://twitter.com/intent/tweet?text=Propolis just owned user on RopeTwo !&amp;url=https://www.hackthebox.eu&amp;via=hackthebox_eu\"><span class=\"text-info\">[<i class=\"fab fa-twitter\"></i>Tweet]</span></a>"]
+		propOwns.slice(0,10).forEach(e => {HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel:"owns-channel"})})
+		// PUSHER_DUMMY_DATA.slice(0,10).forEach(e => {HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel:"owns-channel"})})
 		console.log("Discord account associations:", Object.values(DAT.DISCORD_LINKS).length)
 		setInterval(() => updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString()), 30 * 60 * 1000)   // UPDATE OWNAGE DATA BY PARSING, EVERY 30 MINUTES
 	})
