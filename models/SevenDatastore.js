@@ -754,6 +754,8 @@ class SevenDatastore {
 	integratePusherOwn(uid, time, type, target, flag = null, isPusher = false) {
 		var member = this.getMemberById(uid)
 		var targetResolved = this.resolveEnt(target, type)
+		console.log(`Resolved member ${member.name} [${member.id}] and target ${targetResolved.name} [${targetResolved.type}]`)
+		var entriesAffected = false
 		if (member && targetResolved) {
 			try {
 				switch (flag || type) {
@@ -770,7 +772,10 @@ class SevenDatastore {
 							"points": target.points,
 							"machine_avatar": target.avatar
 						})
+						entriesAffected = true
 						console.log((isPusher ? "Added user own for " + member.name : ""))
+					} else {
+						console.warn(`${member.name} already had a '${flag || type}' own registered for ${target.name}...`)
 					}
 					break
 
@@ -787,7 +792,10 @@ class SevenDatastore {
 							"points": target.points,
 							"machine_avatar": target.avatar
 						})
+						entriesAffected = true
 						console.log((isPusher ? "Added root own for " + member.name : ""))
+					} else {
+						console.warn(`${member.name} already had a '${flag || type}' own registered for ${target.name}...`)
 					}
 					break
 
@@ -804,7 +812,10 @@ class SevenDatastore {
 							"points": target.points,
 							"challenge_category": target.category_name
 						})
+						entriesAffected = true
 						console.log((isPusher ? "Added challenge own for " + member.name : ""))
+					} else {
+						console.warn(`${member.name} already had a '${flag || type}' own registered for ${target.name}...`)
 					}
 					break
 				default:
@@ -814,6 +825,7 @@ class SevenDatastore {
 				console.error(error)
 			}
 		}
+		return entriesAffected
 	}
 
 	mdLinksFromBoxIds(boxIds) { // Get markdown links to a HTB user's profile, based on UID.

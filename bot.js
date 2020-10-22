@@ -244,7 +244,10 @@ async function main() {
 					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherOwn(DAT.resolveEnt(message.uid,"member",true,null,true), message.target, message.flag || message.type))
 				}
 				if (DAT.TEAM_MEMBERS[message.uid]) {
-					DAT.integratePusherOwn(message.uid, message.time, message.type, message.target, null, true)
+					console.warn("Integrating pusher own: ")
+					console.warn(message)
+					var affected = DAT.integratePusherOwn(message.uid, message.time, message.type, message.target, null, true)
+					console.info(affected ? "Own was added successfully." : "No new owns added.")
 				}
 				break
 			default:
@@ -407,6 +410,7 @@ async function sendHelpMsg(message, note) {
 }
 
 async function linkDiscord(message, idType, id) {
+	Object.entries(DAT.DISCORD_LINKS).filter(e => e[1].id == message.author.id).forEach(e => delete DAT.DISCORD_LINKS[e[0]])
 	switch (idType) {
 	case "uid":
 		try {
@@ -418,9 +422,8 @@ async function linkDiscord(message, idType, id) {
 		break
 
 	case "uname": try {
-		console.log("ID:", id)
 		DAT.DISCORD_LINKS[DAT.getMemberByName(id).id] = message.author
-		await SEND.human(message, H.any("Associated HTB user " + DAT.getMemberByName(id).name + " (" + id + ")", "HTB user " + DAT.getMemberByName(id).name + " (" + DAT.getMemberByName(id).id + ") has been linked") + " to your Discord account (" + message.author.tag + ")", true)
+		await SEND.human(message, H.any("Associated HTB user " + DAT.getMemberByName(id).name, "HTB user " + DAT.getMemberByName(id).name + " (" + DAT.getMemberByName(id).id + ") has been linked") + " to your Discord account (" + message.author.tag + ")", true)
 		updateCache(["discord_links"])
 		// exportData(DISCORD_LINKS, "discord_links.json")
 	} catch (error) { console.log(error) }
@@ -579,7 +582,7 @@ async function handleMessage(message) {
 						case "forgetMe.htbIgnore.getUserID":  forgetHtbDataFlow(message, "htb", params.uid); break
 						case "forgetMe.discordUnlink.getUserID":  forgetHtbDataFlow(message, "discord", params.uid); break
 						case "forgetMe.all.getUserID":  forgetHtbDataFlow(message, "all", params.uid); break
-						case "linkDiscord":  linkDiscord(message, params.uid ? "uid" : "uname"), (params.uid ? params.uid : params.username); break
+						case "linkDiscord":  linkDiscord(message, (params.uid ? "uid" : "uname"), (params.uid ? params.uid : params.username)); break
 						case "unforgetMe":  unignoreMember(params.uid); SEND.human(message, result.fulfillmentText, true); break
 						case "getTeamBadge":  SEND.human(message,F.noncifyUrl(`https://www.hackthebox.eu/badge/team/image/${DAT.TEAM_STATS.id}`),true).then(() => SEND.human(message, result.fulfillmentText, true)); break
 						case "getTeamInfo": SEND.embed(message, EGI.teamInfo()); break

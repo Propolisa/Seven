@@ -1,4 +1,6 @@
 const LH = "DialogFlow:::"
+const fs = require("fs")
+
 
 // Loads in our node.js client library which we will use to make API calls.
 const dialogflow = require("dialogflow")
@@ -7,8 +9,17 @@ const entitiesClient = new dialogflow.EntityTypesClient({
 	credentials: credentials,
 })
 
+// const agentsClient = new dialogflow.AgentsClient({
+// 	credentials: credentials,
+// })
+
+
 const projectId = process.env.GOOGLE_CLOUD_PROJECT
 const agentPath = entitiesClient.projectAgentPath(projectId)
+// console.log(agentPath)
+// agentsClient.exportAgent({parent: `projects/${projectId}/locations/global`, agentUri: null}).then(res => {console.log(res); fs.writeFileSync("agent_latest.zip", res[0].result.agentContent)})
+
+
 
 function addSingleEntity(displayName, newFieldName){
 
