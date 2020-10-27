@@ -297,7 +297,7 @@ class HtbApiConnector {
 			this.getMemberFortressProgress(member.id),
 			this.getMemberProlabProgress(member.id),
 			this.getMemberBloods(member.id)
-		]).then((results) => H.combine(results.map(e => e.profile).concat(member)))
+		]).then((results) => H.combine([member, ...results.map(e => e.profile)]))
 		return memberData
 	}
 

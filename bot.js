@@ -382,19 +382,7 @@ function understand(message) {
 
 	return dflow.detectIntent(request).then(
 		responses => {
-			console.log("Detected intent")
-			const result = responses[0].queryResult
-			console.log("  Full response:")
-			// console.log(result)
-			console.warn(`  Query: ${result.queryText}`)
-			console.info(`  Response: ${result.fulfillmentText}`)
-
-			if (result.intent) {
-				console.log(`  Intent: ${result.intent.displayName}`)
-			} else {
-				console.log("  No intent matched.")
-			}
-			return result
+			return responses[0].queryResult
 		}
 	)
 }

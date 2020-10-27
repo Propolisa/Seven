@@ -140,9 +140,8 @@ class SevenDatastore {
 
 				this.MACHINES = Object.assign(COMBINED_MACHINES,mSObj)
 				console.warn(`Got ${Object.keys(this.MACHINES).length} machines...`)
-
+				
 				var mt = await this.V4API.getMachineTags()
-				this.MISC = {}
 				this.MISC.MACHINE_TAGS = mt
 				console.warn(`Got ${Object.keys(this.MISC.MACHINE_TAGS).length} machine tag categories...`)
 
