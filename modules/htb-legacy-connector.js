@@ -1,11 +1,12 @@
 const rp = require("request-promise")
 const { JSDOM } = require("jsdom")
 const { Helpers: H } = require("../helpers/helpers.js")
-const { HtbMachine, HtbChallenge, TeamMember } = require("../helpers/classes.js")
+const { LegacyHtbMachine, LegacyHtbChallenge, LegacyTeamMember } = require("../helpers/classes_legacy.js")
+const { HtbMachine, HtbMaker } = require("../helpers/classes.js")
 const jp = require("jsonpath")
 const { Format: F } = require("../helpers/format.js")
 const csrfLogin = require("../helpers/csrf-login/csrf-login-override")
-const { resolve } = require("q")
+const { id } = require("date-fns/locale")
 
 function parseSingleDate(date,) { // Parse date to timestamp (millis) for various formats used on HTB site, based on length
 	if (date) {
@@ -80,7 +81,7 @@ class HtbLegacyConnector {
 					machineReleases = parseDateArray(machineReleases)
 					machineRetireDates = parseDateArray(machineRetireDates)
 					for (let i = 0; i < machineIds.length; i++) {
-						machineSet[machineIds[i].toString()] = new HtbMachine(machineNames[i],
+						machineSet[machineIds[i].toString()] = new LegacyHtbMachine(machineNames[i],
 							Number(machineIds[i]),
 							machineThumbs[i],
 							machineIsRetireds[i],
@@ -104,10 +105,42 @@ class HtbLegacyConnector {
 		})
 	}
 
-	async getUnreleasedMachine(session) {
+
+	getMachineSubmissions() {
+		return this.SESSION.requestAsync("/home/machines/submissions").then(response => {
+			var $ = require("jquery")(new JSDOM(response.body).window)
+			var trs = Array.from($($(".table-responsive")[0]).find("table tr")).slice(1)
+			var submissionItems = []
+			if (trs.length) {
+				trs.forEach((tr, idx) => {
+					var submissionItem = {
+						id: idx+3141592,
+						name: (H.sAcc(tr,"cells",0,"textContent") || "[Unknown Name]").trim() || null,
+						avatar: (H.sAcc(tr,"cells",0,"children",0,"attributes","data-cfsrc","value") || "").substring(25) || null,
+						maker: {name: (H.sAcc(tr,"cells",1,"children",2,"textContent") || "").trim() || null,
+							id: Number((H.sAcc(tr,"cells",1,"children",2,"href") || "").substring(45)) || null,
+							avatar: (H.sAcc(tr,"cells",1,"children",0,"attributes","data-cfsrc","value") || "").substring(25) || null
+						},
+						os: (H.sAcc(tr,"cells",2,"textContent") || "").trim() || null,
+						difficultyText: (H.sAcc(tr,"cells",3,"textContent") || "").trim(),
+						tester: {name: (H.sAcc(tr,"cells",4,"children",2,"textContent") || "").trim() || null,
+							id: Number((H.sAcc(tr,"cells",4,"children",2,"href") || "").substring(45)) || null,
+							avatar: (H.sAcc(tr,"cells",4,"children",0,"attributes","data-cfsrc","value") || "").substring(25) || null
+						},
+						status: (H.sAcc(tr,"cells",5,"textContent") || "").trim() || null,
+						submission: true
+					}
+					submissionItems.push(Object.assign(new HtbMachine(), submissionItem))
+				})
+			}
+			return submissionItems
+		})	
+	}
+
+	async getUnreleasedMachine() {
 		return new Promise(async resolve => {
 			//for (var i = 0; i < members.length; i++) {
-			response = await session.requestAsync("/home/machines/unreleased")
+			response = await this.SESSION.requestAsync("/home/machines/unreleased")
 			var $ = require("jquery")(new JSDOM(response.body).window)
 			if ($("tbody")[0].childElementCount > 0) {
 				var trs = $($(".table tr")[1])
@@ -133,7 +166,7 @@ class HtbLegacyConnector {
 				var points = Number($("td span")[1].innerHTML)
 				var difficulty = $("td span")[0].innerHTML
 				var os = $("td")[1].innerHTML.substring($("td")[1].innerHTML.lastIndexOf(">") + 1).replace(" ", "")
-				var unreleasedBox = new HtbMachine(name,
+				var unreleasedBox = new LegacyHtbMachine(name,
 					urmid,
 					thumb,
 					false,
@@ -237,7 +270,7 @@ class HtbLegacyConnector {
 					var rateSucks = Number($(spans[3]).text())
 					// console.log("GOT CHALLENGE. Datestring:", dateString, "|", "name:", name, "| maker:", maker.name, "| maker2:", (maker2 ? maker2.name : "None"), "| points:", points, "| active:", isActive, "| solvercount:", solverCount, "| ratings:", ratePro, rateSucks * -1)
 					// console.log("Got challenge", name + " ...")
-					var thisChallenge = new HtbChallenge(name, category, releaseDate, description, isActive, points, maker, maker2, solverCount, ratePro, rateSucks)
+					var thisChallenge = new LegacyHtbChallenge(name, category, releaseDate, description, isActive, points, maker, maker2, solverCount, ratePro, rateSucks)
 					thisCategoryChallenges.push(thisChallenge)
 					if (!this.getChallengeByName(thisChallenge.name)) {
 						// dFlowEnt.updateEntity('challenge', thisChallenge.name)
@@ -416,7 +449,7 @@ class HtbLegacyConnector {
 						var userCol = $(stats[1]).children()[0]
 						var uName = userCol.innerHTML
 						var uid = userCol.href.substring(45)
-						var user = new TeamMember(uName, uid, { "user": Number(stats[4].innerHTML), "root": Number(stats[3].innerHTML) }, siterank, userpoints)
+						var user = new LegacyTeamMember(uName, uid, { "user": Number(stats[4].innerHTML), "root": Number(stats[3].innerHTML) }, siterank, userpoints)
 						teamUsers[uid] = user
 						// console.log(user)
 						//console.log('username: ' + uName + ' uid: ' + uid + ' uOwns: ' + uOwns)

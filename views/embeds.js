@@ -68,26 +68,27 @@ class HtbEmbeds {
 		case "machine": {
 			/** MACHINE EMBED CONSTRUCTOR **/
 			const { id, os, name, ip = "10.10.10.[?]", avatar, maker, maker2, userBlood, rootBlood,
-				difficultyText: difficulty, points, retired, retiredate, release, stars, user_owns_count: users,
-				root_owns_count: roots } = target
+				difficultyText: difficulty, points = 0, retired, retiredate, release, stars=false, user_owns_count: users,
+				root_owns_count: roots, submission = false, status = "", tester} = target
 			embed.attachFiles(new Attachment(`./static/img/${F.osNameToIconFile(os)}`, "os.png"))
 				.setAuthor(name, "attachment://os.png", F.machineProfileUrl(target))
 				.setDescription(
-					(os == "Other" ? "A kind of weird" : `${F.aOrAn(os)} ${os}`) + ` box by **${F.memberToMdLink(maker)}` +
+					(os == "Other" ? "A kind of weird" : `${F.aOrAn(os)} ${os}`) + ` box ${(submission ? "submission " : "")}by **${F.memberToMdLink(maker,true,this.ds.tryDiscordifyUid(maker.id))}` +
 						`${(maker2 ? "** & **" + F.memberToMdLink(maker2) : "")}**.` +
 						`\nIP Address: **[${ip || "Unknown"}](http://${ip || "Unknown"}/)**`)
 				.setThumbnail(F.avatar2Url(avatar))
 				.addField("`  " + `${F.difficultySymbol(difficulty)} ${F.STL(difficulty + " [+" + points + "pt]", "bs")}` + "  `",
 					"```diff\n" +
-						`${(retired ? "-  " : "   ") + "Status   :"} ${(retired ? "🧟 Retired" : (H.isPastDate(release) ? "👾 Active" : "🔥 𝗨𝗡𝗥𝗘𝗟𝗘𝗔𝗦𝗘𝗗"))}\n`
-						+ `+  Rating   : ${F.ratingString(stars)}\n`
+						`${(retired ? "-  " : "   ") + "Status   :"} ${(retired ? "🧟 Retired" : (H.isPastDate(release) ? "👾 Active" : (submission ? `🆕 ${F.STL(status,"bs")}` : "🔥 𝗨𝗡𝗥𝗘𝗟𝗘𝗔𝗦𝗘𝗗")))}\n`
+						+ `+  Rating   : ${(stars != false ? F.ratingString(stars) : "Unrated")}\n`
+						+ (tester ? `-  Tester   : ${(tester.name? F.STL(tester.name,"bs") : "None assigned")}\n` : "")
 						+ (roots + users > 0 ? "+  Owns     : " : "")
 						+ (users ? "💻 " + users : "") + (users && roots ? " " : "")
 						+ (roots ? "👩‍💻 " + roots : "") + (roots + users > 0 ? "\n" : "")
-						+ (roots + users > 0 ? "-  Bloods   : " : `-  Bloods   : ${F.STL("None taken!", "bs")}`)
-						+ (userBlood ? "🔹 " + userBlood.user.name : (roots + users > 0 ? "(No [U] blood!)" : "")) + " "
-						+ (rootBlood ? "🔸 " + rootBlood.user.name : (roots + users > 0 ? "(No [R] blood!)" : "")) + "\n"
-						+ `+  ${(H.isPastDate(release) ? "Released" : "Release ")} : ${new Date(release).getUTCFullYear()} (${F.fuzzyAge(new Date(release))})\n`
+						+ (!submission ? (roots + users > 0 ? "-  Bloods   : " : `-  Bloods   : ${F.STL("None taken!", "bs")}`) : "")
+						+ (userBlood ? "🔹 " + userBlood.user.name : (roots + users > 0 ? "(No [U] blood!)" : "")) + (userBlood && rootBlood ? " " : "")
+						+ (rootBlood ? "🔸 " + rootBlood.user.name : (roots + users > 0 ? "(No [R] blood!)" : "")) + (userBlood || rootBlood ? "\n" : "")
+						+ `+  ${(H.isPastDate(release) ? "Released" : "Release ")} : ${(submission ? "Unannounced" : `${new Date(release).getUTCFullYear()} (${F.fuzzyAge(new Date(release))})`)}\n`
 						+ (retired ? `-  Retired  : ${F.timeSince(new Date(retiredate))}\n` : "")
 						+ "```",
 					false)
@@ -177,7 +178,7 @@ class HtbEmbeds {
 			embed.attachFiles(new Attachment(`./static/img/${F.challengeCategoryNameToIconFile(cat)}`, "os.png"))
 				.setAuthor(name, "attachment://os.png", F.challengeProfileUrl(target))
 				.setDescription(
-					`${F.aOrAn(cat)} ${cat} challenge by **${F.memberToMdLink({id:cid,name:cname})}**.` +
+					`${F.aOrAn(cat)} ${cat} challenge by **${F.memberToMdLink({id:cid,name:cname},true,this.ds.tryDiscordifyUid(cid))}**.` +
 						`\n> ${description}`)
 				.setThumbnail(F.avatar2Url(cimage))
 				.addField("`  " + `${F.difficultySymbol(difficulty)} ${F.STL(difficulty + " [+" + points + "pt]", "bs")}` + "  `",
@@ -197,7 +198,7 @@ class HtbEmbeds {
 		}
 		default: break
 		}
-		console.info(embed)
+		// console.info(embed)
 		return embed
 	}
 
@@ -703,12 +704,16 @@ class HtbEmbeds {
 		if (!member || !target){
 			return this.ENTITY_UNFOUND
 		}
-		return this.PUSHER_BASE
+		var pb =  this.PUSHER_BASE
 			.setAuthor(F.toTitleCase(target.type || "Unknown") + (["root", "user"].includes(sub) ? ` ${sub} ` : " ") + "own", F.avatarFullUrl(member), "")
 			.setThumbnail(F.avatar2Url(target.avatar) || (member.team? F.avatar2Url(member.team.avatar) : F.avatar2Url(member.avatar)))
 			.setColor(H.any(...Object.values(F.COL)))
 			.setDescription(`${F.memberToMdLink(member,true,this.ds.tryDiscordifyUid(member.id))} owned ${(["root", "user"].includes(sub)? sub + " on" : "")} ${F.mdLink(target.name, F.profileUrl(target))}${(target.type == "challenge" ? " from the *"+target.category_name+"* category":"")}${(H.maybe(0.2) ? H.any(". Nice work! 🙂", ". **Why is all the RUM GONE!!!!**", ", woohoo!!", "!", ". Congrats! 🥳") : "")}` )
 			.setFooter(`ℹ️  Source: ${F.STL("Shoutbox", "bs")}`)
+		if (target.type == "challenge") {
+			pb.attachFiles(new Attachment(`./static/img/${F.challengeCategoryNameToIconFile(target.category_name)}`, "cat.png"))
+				.setThumbnail("attachment://cat.png")
+		}
 	}
 
 	pusherNotif(md) {

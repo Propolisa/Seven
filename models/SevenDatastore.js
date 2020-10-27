@@ -8,7 +8,7 @@ const {
 	HtbMachine,
 	HtbChallenge,
 	TeamMember
-} = require("../helpers/classes.js")
+} = require("../helpers/classes_legacy.js")
 const {
 	HtbApiConnector: V4
 } = require("../modules/api.js")
@@ -123,23 +123,27 @@ class SevenDatastore {
 				if (SESH) console.warn("Got a logged in V3 session.")
 
 				/* API v4 DATA COLLECTION (Who's feeling sexy now..?!) */
-				var MACHINES_V3 = await this.V3API.getMachines(SESH)
+				var MACHINES_V3 = await this.V3API.getMachines()
 				var urmachine = false
-				urmachine = await this.V3API.getUnreleasedMachine(SESH)
+				urmachine = await this.V3API.getUnreleasedMachine()
 				console.warn(urmachine ? "INFO: Got unreleased machine " + urmachine.name + "..." : "INFO: There are currently no machines in unreleased section.")
 				if (urmachine) {
 					MACHINES_V3[urmachine.id] = urmachine
 				}
+				var machineSubmissions = await this.V3API.getMachineSubmissions()
+				var mSObj = (machineSubmissions.length ? H.arrToObj(machineSubmissions,"id") : {})
 				var MACHINES_V4 = await this.V4API.getAllCompleteMachineProfiles()
 				var COMBINED_MACHINES = {}
 				Object.keys(MACHINES_V3).map(e => COMBINED_MACHINES[e] = H.combine([MACHINES_V3[e], MACHINES_V4[e]]) || (Object.assign({}, MACHINES_V3[e], {
 					type: "machine"
 				})) || MACHINES_V4[e])
 
-				this.MACHINES = COMBINED_MACHINES
+				this.MACHINES = Object.assign(COMBINED_MACHINES,mSObj)
 				console.warn(`Got ${Object.keys(this.MACHINES).length} machines...`)
+
+				var mt = await this.V4API.getMachineTags()
 				this.MISC = {}
-				this.MISC.MACHINE_TAGS = await this.V4API.getMachineTags()
+				this.MISC.MACHINE_TAGS = mt
 				console.warn(`Got ${Object.keys(this.MISC.MACHINE_TAGS).length} machine tag categories...`)
 
 

@@ -273,7 +273,7 @@ async function main() {
 		DISCORD_ANNOUNCE_CHAN = await client.channels.fetch(process.env.DISCORD_ANNOUNCE_CHAN_ID.toString())
 
 		/** Test the Pusher owns functionality */
-		// PUSHER_DUMMY_DATA.slice(0,10).forEach(e => {HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel:"owns-channel"})})
+		// var PUMMY_DATA.slice(0,10).forEach(e => {HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel:"owns-channel"})})
 		console.log("Discord account associations:", Object.values(DAT.DISCORD_LINKS).length)
 		setInterval(() => updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString()), 30 * 60 * 1000)   // UPDATE OWNAGE DATA BY PARSING, EVERY 30 MINUTES
 	})
@@ -321,6 +321,7 @@ async function sendTeamLeaderMsg(message) {
 }
 
 async function sendMemberChartMsg(message, username, term) {
+	message.channel.startTyping()
 	var member = DAT.resolveEnt(username, "member", false, message)
 	var chartData = await DAT.V4API.getMemberAchievementChart(member.id, term)
 	var chartImageB64 = await CHART_RENDERER.renderChart(member, chartData, term, "userProgress")
@@ -331,6 +332,7 @@ async function sendMemberChartMsg(message, username, term) {
 
 async function sendActivityMsg(message, member, targetType=undefined, sortBy=undefined, sortOrder=undefined, limit=40) {
 	var series = []
+	message.channel.startTyping()
 	var owns = await DAT.filterMemberOwns(member.id,targetType,"date","asc",limit)
 	owns.sort((a, b) => Date.parse(b) - Date.parse(a))
 	var orderedDates = owns.map(e => e.date).sort((a, b) => Date.parse(a) - Date.parse(b))
@@ -564,8 +566,8 @@ async function handleMessage(message) {
 					var job = result.intent.displayName
 					var inf = result.parameters.fields
 					var params = struct.decode(result.parameters)
-					if (Object.keys(params)) console.log(params)
-					console.log("[DF] Query returned: " + job + " | " + JSON.stringify(inf))
+					console.log("[DF] Detected intent: " + F.STL(job,"bs"))
+					if (Object.keys(params).length) console.log(params)
 					try {
 						switch (job) {
 						case "help": sendHelpMsg(message); break

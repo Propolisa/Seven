@@ -3,16 +3,6 @@ const Throttle = require("superagent-throttle")
 const superdebug = require("superdebug")
 const { Helpers: H } = require("../helpers/helpers.js")
 
-const arrToObj = (array, key) => {
-	const initialValue = {}
-	return array.reduce((obj, item) => {
-		return {
-			...obj,
-			[item[key]]: item,
-		}
-	}, initialValue)
-}
-
 const setTypeForValues = (type, objectMap) => {
 	Object.keys(objectMap).map( key => ( objectMap[key].type = type ))
 	return objectMap // Add object type specifier for easier introspection
@@ -90,7 +80,7 @@ class HtbApiConnector {
 	
 	async getMachineTags() {
 		var tagsArray = (await this.htbApiGet("machine/tags/list", this.API_TOKEN)).info
-		return (arrToObj(tagsArray, "id"))
+		return (H.arrToObj(tagsArray, "id"))
 	}
 	
 	/**
@@ -103,11 +93,11 @@ class HtbApiConnector {
 	
 
 	async getCurrentMachines() {
-		return setTypeForValues("machine", arrToObj((await this.htbApiGet("machine/list")).info, "id"))
+		return setTypeForValues("machine", H.arrToObj((await this.htbApiGet("machine/list")).info, "id"))
 	}
 	
 	async getRetiredMachines() {
-		return setTypeForValues("machine", arrToObj((await this.htbApiGet("machine/list/retired")).info, "id"))
+		return setTypeForValues("machine", H.arrToObj((await this.htbApiGet("machine/list/retired")).info, "id"))
 	}
 
 	getRecommendedMachineCards() {
@@ -126,7 +116,7 @@ class HtbApiConnector {
 				var newMachineCard = cards.find(card => card.state == "coming")
 				if (newMachineCard) {
 					delete newMachineCard.state
-					return setTypeForValues("machine", arrToObj([newMachineCard], "id"))
+					return setTypeForValues("machine", H.arrToObj([newMachineCard], "id"))
 				} else {
 					return {}
 				}
@@ -154,7 +144,7 @@ class HtbApiConnector {
 
 	getCompleteMachineProfilesByIds(machineIds) {
 		return Promise.all(machineIds.map(id => this.getCompleteMachineProfileById(id)))
-			.then(machines => setTypeForValues("machine", arrToObj(machines.map(e => e.info), "id")))
+			.then(machines => setTypeForValues("machine", H.arrToObj(machines.map(e => e.info), "id")))
 	}
 	
 	/**
@@ -166,11 +156,11 @@ class HtbApiConnector {
 	}
 	
 	async getCurrentChallenges() {
-		return setTypeForValues("challenge", arrToObj((await this.htbApiGet("challenge/list", this.API_TOKEN)).challenges, "id"))
+		return setTypeForValues("challenge", H.arrToObj((await this.htbApiGet("challenge/list", this.API_TOKEN)).challenges, "id"))
 	}
 	
 	async getRetiredChallenges() {
-		return setTypeForValues("challenge", arrToObj((await this.htbApiGet("challenge/list/retired", this.API_TOKEN)).challenges, "id"))
+		return setTypeForValues("challenge", H.arrToObj((await this.htbApiGet("challenge/list/retired", this.API_TOKEN)).challenges, "id"))
 	}
 	
 	async getAllChallengesFast() {
@@ -187,7 +177,7 @@ class HtbApiConnector {
 
 	getCompleteChallengeProfilesByIds(challengeIds) {
 		return Promise.all(challengeIds.map(id => this.getCompleteChallengeProfileById(id)))
-			.then(challenges => setTypeForValues("challenge", arrToObj(challenges.map(e => e.challenge), "id")))
+			.then(challenges => setTypeForValues("challenge", H.arrToObj(challenges.map(e => e.challenge), "id")))
 	}
 	
 	async getAllCompleteChallengeProfiles() {
@@ -200,7 +190,7 @@ class HtbApiConnector {
 	}
 
 	getChallengeCategories() {
-		return this.htbApiGet("challenge/categories/list").then(res => arrToObj(res.info, "id"))
+		return this.htbApiGet("challenge/categories/list").then(res => H.arrToObj(res.info, "id"))
 	}
 	/**
 	 * TEAM DATA GETTERS
@@ -313,13 +303,13 @@ class HtbApiConnector {
 
 	getCompleteMemberProfilesByIds(memberIds) {
 		const promises = memberIds.map(id => this.getCompleteMemberProfileById(id))
-		const combinedData = Promise.all(promises).then(results => setTypeForValues("member", arrToObj(results, "id")))
+		const combinedData = Promise.all(promises).then(results => setTypeForValues("member", H.arrToObj(results, "id")))
 		return combinedData
 	}
 
 	getCompleteMemberProfilesByMemberPartials(members) {
 		const promises = members.map(member => this.getCompleteMemberProfileByMemberPartial(member))
-		const combinedData = Promise.all(promises).then(results => setTypeForValues("member", arrToObj(results, "id")))
+		const combinedData = Promise.all(promises).then(results => setTypeForValues("member", H.arrToObj(results, "id")))
 		return combinedData
 	}
 	

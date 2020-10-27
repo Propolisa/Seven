@@ -100,7 +100,7 @@ class Send {
 				if (noMention){ message.channel.send(content) }
 				else { message.reply(content)}
 			}
-		})
+		}).then(message.channel.stopTyping())
 		//console.log('finished sending message')
 	}
 

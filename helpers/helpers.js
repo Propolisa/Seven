@@ -2,10 +2,20 @@
  @module Helpers
 */
 
-
 class Helpers {
 
 	constructor(){}
+
+
+	static arrToObj (array, key) {
+		const initialValue = {}
+		return array.reduce((obj, item) => {
+			return {
+				...obj,
+				[item[key]]: item,
+			}
+		}, initialValue)
+	}
 
 	/**
 	 * [Safe Access] - Tries to resolve a nested object without errors (for unknown structures and third party objects).
@@ -33,7 +43,7 @@ class Helpers {
 	}
 
 	static sortByZuluDatestring(a,b, comparator, ascending=true){
-		return (a[comparator] < b[comparator]) ? (ascending? -1: 1) : ((a[comparator] > b[comparator]) ? (ascending? 1: -1) : 0);
+		return (a[comparator] < b[comparator]) ? (ascending? -1: 1) : ((a[comparator] > b[comparator]) ? (ascending? 1: -1) : 0)
 	}
 
 	static deduplicateMachineOwns (ownList = []){
