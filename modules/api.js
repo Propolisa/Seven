@@ -8,8 +8,6 @@ const setTypeForValues = (type, objectMap) => {
 	return objectMap // Add object type specifier for easier introspection
 }
 
-
-
 class HtbApiConnector {
 
 	constructor() {
@@ -256,7 +254,6 @@ class HtbApiConnector {
 		return this.htbApiGet("rankings/universities").then(e => Object.values(e.data).find(uni => uni.id == universityId) || null)
 	}
 
-	// Array.from($($('.fa-graduation-cap')[0].parentNode.parentNode.children[1].childNodes[1].children[1]).find('tr')).map(e => Number(e.childNodes[1].children[1].toString().substring(45)))
 
 	/**
 	 * MEMBER DATA GETTERS
@@ -381,8 +378,6 @@ class HtbApiConnector {
 					memberProfile.profile.activity)
 		)
 		return TEAM_MEMBERS_ACTIVITIES
-		// results.forEach(memberActivity => TEAM_MEMBERS_ACTIVITIES[Number(memberActivity.profile.id)] = memberActivity.profile)
-		// return TEAM_MEMBERS_ACTIVITIES
 	}
 
 	async getMemberActivity(memberId) {
@@ -391,32 +386,12 @@ class HtbApiConnector {
 	}
 	
 	checkTokenExpiring(token) {
-		// console.log(new Date(parseJwt(token).exp * 1000))
-		// console.log(new Date((Math.floor(Date.now() / 1000) - 60) * 1000))
 		return parseJwt(token).exp < Math.floor(Date.now() / 1000) - 120
 			? true
 			: false // Returns true if token is valid for at least two more minutes.
 		// return (token.exp)
 	}
-
 }
-
-
-
-// const varToString = (varObj) => Object.keys(varObj)[0]
-
-// function jsonOut(object, name) {
-// 	try {
-// 		objectJson = JSON.stringify(object, null, 4)
-// 		fs.writeFileSync(`${name}.json`, objectJson)
-// 		console.log(`${name}.json`)
-// 		console.log("JSON data is saved.")
-// 	} catch (error) {
-// 		console.error(err)
-// 	}
-// }
-
-
 
 
 function parseJwt(token) {
@@ -437,166 +412,6 @@ function parseJwt(token) {
 	}
 }
 
-// async function getV4AccessToken(email, password) {
-// 	return new Promise(function(resolve, reject) {
-// 		const agent = request.agent()
-// 		agent
-// 			.post("https://www.hackthebox.eu/api/v4/login")
-// 			.set({ "Content-Type": "application/json;charset=utf-8" })
-// 			.send({ email: email, password: password, remember: true })
-// 			.then((response) => {
-// 				console.warn(
-// 					`Acquired API v4 Session (Valid until ${new Date(parseJwt(response.body.message.access_token).exp * 1000).toLocaleString()})`
-// 				)
-// 				resolve(response.body.message.access_token)
-// 			})
-// 			.catch((err) => {
-// 				console.warn(err.response.request)
-// 				console.warn("Could not get session:", err.status)
-// 			})
-// 	})
-// }
-
-// async function this.htbApiGet(endpointPath, token = this.API_TOKEN) {
-// 	console.log(this.API_TOKEN)
-// 	return new Promise((resolve, reject) => {
-// 		const agent = request.agent()
-// 		agent
-// 			.get("https://www.hackthebox.eu/api/v4/" + endpointPath)
-// 			.set({ Accept: "application/json, text/plain, */*" })
-// 			.set({ Authorization: "Bearer " + token })
-// 			.use(throttle.plugin())
-// 			.then((response) => resolve(response.body))
-// 			.catch((err) => {
-// 				console.warn("Could not access '" + endpointPath + "':", err)
-// 				reject(false)
-// 			})
-// 	})
-// }
-
-// async function init(email, password){
-// 	this.API_TOKEN = await getV4AccessToken(email, password)
-// }
-
-// async function getMachineTags() {
-// 	const uri = "machine/tags/list"
-// }
-
-// /**
-//  * MACHINE DATA GETTERS
-//  */
-
-// async function getCurrentMachines() {
-// 	return (await this.htbApiGet("machine/list", this.API_TOKEN)).info
-// }
-
-// async function getRetiredMachines() {
-// 	return (await this.htbApiGet("machine/list/retired", this.API_TOKEN)).info
-// }
-
-// async function getAllMachines() {
-// 	var retired = await getRetiredMachines()
-// 	var current = await getCurrentMachines()
-// 	return retired.concat(current)
-// }
-
-// /**
-//  * CHALLENGE DATA GETTERS
-//  */
-
-// async function getCurrentChallenges() {
-// 	return (await this.htbApiGet("challenge/list", this.API_TOKEN)).challenges
-// }
-
-// async function getRetiredChallenges() {
-// 	return (await this.htbApiGet("challenge/list/retired", this.API_TOKEN)).challenges
-// }
-
-// async function getAllChallenges() {
-// 	var retired = await getRetiredChallenges()
-// 	console.log(retired)
-// 	var current = await getCurrentChallenges()
-// 	return retired.concat(current)
-// }
-
-// /**
-//  * MEMBER DATA GETTERS
-//  */
-
-// async function getMemberProfile(memberId) {
-// 	const uri = "user/profile/basic/"
-// 	var TEAM_MEMBERS_TEMP = {}
-// 	result = await this.htbApiGet(uri + memberId, this.API_TOKEN)
-// 	return result.profile
-// }
-
-// async function getMemberAchievementChart(memberId, term){
-// 	return this.htbApiGet(`user/profile/graph/${term}/${memberId}`)
-// }
-
-// async function getMemberProfiles(memberIds) {
-// 	const uri = "user/profile/basic/"
-// 	var TEAM_MEMBERS_TEMP = {}
-// 	var memberPromises = []
-
-// 	memberIds.forEach((memberId) => {
-// 		memberPromises.push(htbApiGet(uri + memberId, this.API_TOKEN))
-// 	})
-
-// 	results = await Promise.all(memberPromises)
-// 	results.forEach(
-// 		(memberProfile) =>
-// 			(TEAM_MEMBERS_TEMP[Number(memberProfile.profile.id)] =
-//         memberProfile.profile)
-// 	)
-// 	return TEAM_MEMBERS_TEMP
-// }
-
-// async function getMemberActivities(memberIds) {
-// 	const uri = "user/profile/activity/"
-// 	var TEAM_MEMBERS_ACTIVITIES = {}
-// 	var memberPromises = []
-// 	memberIds.forEach((memberId) => {
-// 		memberPromises.push(htbApiGet(uri + memberId, this.API_TOKEN))
-// 	})
-// 	results = await Promise.all(memberPromises)
-// 	results.forEach(
-// 		(memberProfile, idx) =>
-// 			(TEAM_MEMBERS_ACTIVITIES[Number(memberIds[idx])] =
-//         memberProfile.profile.activity)
-// 	)
-// 	return TEAM_MEMBERS_ACTIVITIES
-// 	// results.forEach(memberActivity => TEAM_MEMBERS_ACTIVITIES[Number(memberActivity.profile.id)] = memberActivity.profile)
-// 	// return TEAM_MEMBERS_ACTIVITIES
-// }
-
-// function checkTokenExpiring(token) {
-// 	console.log(new Date(parseJwt(token).exp * 1000))
-// 	console.log(new Date((Math.floor(Date.now() / 1000) - 60) * 1000))
-// 	return parseJwt(token).exp < Math.floor(Date.now() / 1000) - 120
-// 		? true
-// 		: false // Returns true if token is valid for at least two more minutes.
-// 	// return (token.exp)
-// }
-
-// async function main() {
-// 	var id = 254747
-// 	var term = "1Y"
-
-
-// 	var members = await Promise.all([
-// 		getMemberProfile(254747),
-// 		getMemberProfile(5833),
-// 		getMemberProfile(9267),
-// 		getMemberProfile(73268),
-// 	])
-
-// 	for (let i = 0; i < members.length; i++) {
-// 		const member = members[i]
-// 		var chart = await getMemberAchievementChart(member.id, term)
-// 		console.log(await CHART_RENDERER.renderChart(member, chart, term, "userProgress"))
-// 	}
-// }
 module.exports = {
 	HtbApiConnector:HtbApiConnector
 }
