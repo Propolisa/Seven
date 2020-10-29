@@ -203,7 +203,15 @@ class HtbEmbeds {
 			embed.attachFiles(new Attachment(F.getIcon(type), `${type}.png`))
 				.setAuthor(`${name} ${F.special2Proper(type)}`, `attachment://${type}.png`, F.profileUrl(target))
 				.setDescription(`${F.aOrAn(type)} ${F.special2Proper(type)} by ${(company? F.mdLink(company, F.profileUrl(target)) : false) || F.andifyList(makers.map(m => F.mdLink(m.username,F.memberProfileUrl({id:m.id}))))}.` +
-				`\n> ${description.split("\n").join("\n> ")}`)
+				(description? `\n> ${description.split("\n").join("\n> ")}` : ""))
+				
+			if (entries && entries.length) {
+				embed.addField(`${(entries.length != 1? "Entry Points": "Entry Point")}`, `${entries.map(e => `[\`${F.STL(e,"s")}\`](https://0)`).join("\n")}`)
+			}
+			if (flags && Object.keys(flags).length) {
+				embed.addField(`${(flags.length != 1? "Flags": "Flag")}`, `\`\`\`js\n${Object.entries(flags).map(e => `${e[0].toString().padStart(2,"0")} ${F.STL(e[1],"m")}`).join("\n")}\`\`\``)
+			}
+				
 			break
 		}
 		default: break
@@ -728,6 +736,7 @@ class HtbEmbeds {
 			pb.attachFiles(new Attachment(`./static/img/${F.challengeCategoryNameToIconFile(target.category_name)}`, "cat.png"))
 				.setThumbnail("attachment://cat.png")
 		}
+		return pb
 	}
 
 	pusherNotif(md) {

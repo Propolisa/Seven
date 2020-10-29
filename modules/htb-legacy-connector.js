@@ -222,10 +222,10 @@ class HtbLegacyConnector {
 							if (ele.textContent && !$(ele).children("code, a").length) { return ($(ele).is("li") ? ` • ${ele.textContent}` : ele.textContent + "\n") }
 						}).get().join("\n").replace(/\n\s*\n/g, "\n\n").trim()
 						if (specialKey == "Endgame") {
-							specialChallenge["makers"] = []
 							specialChallenge["entries"] = $("#descriptionTab").find("code").map((idx, ele) => ele.textContent).get()
 						}
 						if (specialKey == "Fortress"){
+							specialChallenge["makers"] = []
 							specialChallenge["company"] = $(".col-lg-6").find($("span.c-white"))[0].textContent.trim()
 							specialChallenge["entries"] = $(".fab.fa-fort-awesome").parent().parent().find("code").map((idx, ele) => ele.textContent).get()
 						}
