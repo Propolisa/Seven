@@ -106,7 +106,6 @@ class SevenDatastore {
 
 
 	init() {
-		dFlowEnt.addMissingFieldsToEntity(Object.values(this.MISC.SPECIALS).map(specialType => specialType.map(s => s.name)).flat(), "specialTargetName")
 		return this.V4API.init(process.env.HTB_EMAIL, process.env.HTB_PASS)
 			.then(this.V3API.init())
 			
