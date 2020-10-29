@@ -199,7 +199,7 @@ class HtbEmbeds {
 		case "endgame": case "fortress": case "prolab":{
 			/** SPECIAL (ENDGAME, FORTRESS, PRO LAB) EMBED CONSTRUCTOR **/
 			const { name, description, type, makers, company, entries, retired, flags} = target
-			
+			 
 			embed.attachFiles(new Attachment(F.getIcon(type), `${type}.png`))
 				.setAuthor(`${name} ${F.special2Proper(type)}`, `attachment://${type}.png`, F.profileUrl(target))
 				.setDescription(`${F.aOrAn(type)} ${F.special2Proper(type)} by ${(company? F.mdLink(company, F.profileUrl(target)) : false) || F.andifyList(makers.map(m => F.mdLink(m.username,F.memberProfileUrl({id:m.id}))))}.` +
