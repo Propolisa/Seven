@@ -34,7 +34,7 @@ class Send {
 			await asyncForEach(msgLines, async (ln) => {
 				message.channel.startTyping()
 				//console.log(ln)
-				if (Math.random() < 0.1) {
+				if (Math.random() < 0.05) {
 					// random chance we'll try to generate a typo
 					var typoData = typoify.typo(ln)
 					if (typoData) {

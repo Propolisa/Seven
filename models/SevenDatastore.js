@@ -19,8 +19,6 @@ const dFlowEnt = require("../helpers/dflow")
 const {
 	Helpers: H
 } = require("../helpers/helpers.js")
-const { resolve } = require("q")
-
 
 class SevenDatastore {
 
@@ -108,8 +106,10 @@ class SevenDatastore {
 
 
 	init() {
+		dFlowEnt.addMissingFieldsToEntity(Object.values(this.MISC.SPECIALS).map(specialType => specialType.map(s => s.name)).flat(), "specialTargetName")
 		return this.V4API.init(process.env.HTB_EMAIL, process.env.HTB_PASS)
 			.then(this.V3API.init())
+			
 	}
 
 	async update() {
@@ -121,7 +121,8 @@ class SevenDatastore {
 				await this.V3API.init()
 				var SESH = this.V3API.SESSION
 				if (SESH) console.warn("Got a logged in V3 session.")
-
+				this.MISC.SPECIALS = await this.V3API.getSpecials()
+				console.log(this.MISC.SPECIALS)
 				/* API v4 DATA COLLECTION (Who's feeling sexy now..?!) */
 				var MACHINES_V3 = await this.V3API.getMachines()
 				var urmachine = false
@@ -144,7 +145,7 @@ class SevenDatastore {
 				var mt = await this.V4API.getMachineTags()
 				this.MISC.MACHINE_TAGS = mt
 				console.warn(`Got ${Object.keys(this.MISC.MACHINE_TAGS).length} machine tag categories...`)
-
+				
 
 				if (process.env.HTB_TEAM_ID) {
 					this.TEAM_STATS = await this.V4API.getCompleteTeamProfile(process.env.HTB_TEAM_ID)
@@ -170,7 +171,7 @@ class SevenDatastore {
 				console.warn(`Got ${this.kC.length} challenges spanning ${Object.keys(this.MISC.CHALLENGE_CATEGORIES).length} categories...`)
 				console.log("Team stats:")
 				console.info(this.TEAM_STATS)
-
+				dFlowEnt.addMissingFieldsToEntity(Object.values(this.MISC.SPECIALS).map(specialType => specialType.map(s => s.name)).flat(), "specialTargetName")
 				dFlowEnt.addMissingFieldsToEntity(Object.values(this.MISC.CHALLENGE_CATEGORIES).map(category => category.name), "challengeCategoryName")
 				dFlowEnt.addMissingFieldsToEntity(this.MISC.MACHINE_TAGS["7" ].tags.map(attackPath => attackPath.name), "boxAttackPath")
 				dFlowEnt.addMissingFieldsToEntity(this.MISC.MACHINE_TAGS["11" ].tags.map(attackSub  => attackSub.name ), "boxAttackSub")
@@ -416,6 +417,8 @@ class SevenDatastore {
 					return (isIdLookup ? this.getMachineById(kwd) : this.getMachineByName(kwd))
 				case "challenge":
 					return (isIdLookup ? this.getChallengeById(kwd) : this.getChallengeByName(kwd))
+				case "endgame":	case "fortress": case "prolab":
+					return this.getSpecialByName(kwd, targetType)
 				default:
 					console.warn(`Resolving datastore entity ${(isIdLookup ? "by ID" : "")} from '${kwd}' failed. ${(targetType ? "(Target type '" + targetType + " specified.)" : "")}`)
 				}
@@ -431,11 +434,12 @@ class SevenDatastore {
 				result["member"] = this.getMemberByName(kwd, isSelf)
 				result["machine"] = this.getMachineByName(kwd)
 				result["challenge"] = this.getChallengeByName(kwd)
+				result["special"] = this.getSpecialByName(kwd)
 				if (lookup && !/\s/.test(kwd) && !Object.values(result).some(e => e)) {
 					result["member"] = this.resolveExternalMember((isIdLookup ? kwd : null), (!isIdLookup ? kwd : null))
 				}
 			}
-			return result["member"] || result["machine"] || result["challenge"]
+			return result["member"] || result["machine"] || result["challenge"] || result["special"]
 		} catch (error) {
 			console.error(error)
 			console.warn(`Resolving datastore entity ${(isIdLookup ? "[by ID] " : "")}from '${kwd}' failed. ${(targetType ? "(Target type '" + targetType + "' specified.)" : "")}`)
@@ -477,7 +481,7 @@ class SevenDatastore {
 	 * @returns {HtbMachine} - The latest / unreleased machine
 	 */
 	getNewestOrUnreleasedBox() {
-		return Object.values(this.MACHINES).reduce(function (prev, current) {
+		return Object.values(this.MACHINES).filter(e => !e.submission).reduce(function (prev, current) {
 			return (prev.id > current.id ? prev : current)
 		})
 	}
@@ -487,7 +491,7 @@ class SevenDatastore {
 	 * @returns {number} - The latest / unreleased machine id
 	 */
 	getNewBoxId() {
-		return Object.values(this.MACHINES).reduce(function (prev, current) {
+		return Object.values(this.MACHINES).filter(e => !e.submission).reduce(function (prev, current) {
 			return (prev.id > current.id ? prev : current)
 		}).id || null
 	}
@@ -499,6 +503,16 @@ class SevenDatastore {
 	 */
 	getChallengeByName(name) { // Return machine object with name matching parameter string
 		return Object.values(this.CHALLENGES).find(challenge => challenge.name.toLowerCase() == name.toLowerCase())
+	}
+
+	/**
+	 * Get the challenge object whose name matches the parameter string.
+	 * @param {string} name - The challenge name.
+	 * @returns {(HtbChallenge|null)}
+	 */
+	getSpecialByName(name, type=null) { // Return endgame, fortress or pro lab with name matching parameter string
+		if (!type) {return Object.values(this.MISC.SPECIALS).map(e => e.find(s => s.name.toLowerCase() == name.toLowerCase())).flat().filter(e => e)[0] || null}
+		else {return Object.values(this.MISC.SPECIALS).map(e => e.find(s => s.name.toLowerCase() == name.toLowerCase() && s.type == type)).flat()}
 	}
 
 	/**

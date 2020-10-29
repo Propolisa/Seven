@@ -161,12 +161,22 @@ class Format {
 		return `https://app.hackthebox.eu/challenges/${challenge.id}`
 	}
 
+	static special2Proper(specialName){
+		switch (specialName){
+		case "endgame": return "Endgame"
+		case "fortress": return "Fortress"
+		case "prolab": return "Pro Lab"
+		default: break
+		}
+	}
+
 	static profileUrl(target){
 		var kwd = "user"
 		switch (target.type) {
 		case "member": kwd = "users";			  	break
 		case "machine":	kwd = "machines";			break
 		case "challenge": kwd = "challenges";	break
+		case "endgame":	case "fortress": case "prolab": return `https://www.hackthebox.eu${target.id}`
 		default:	break
 		}
 		return `https://app.hackthebox.eu/${kwd}/${target.id}`
@@ -242,16 +252,16 @@ class Format {
 	
 	static challengeCategoryNameToIconFile(challengeCategoryName) {
 		switch (challengeCategoryName.toLowerCase()) {
-		case "Crypto":    return "crypto.png"
-		case "Forensics": return "forensics.png"
-		case "Hardware":  return "hardware.png"
-		case "Misc":      return "misc.png"
-		case "Mobile":    return "mobile.png"
-		case "OSINT":     return "osint.png"
-		case "Pwn":       return "pwn.png"
-		case "Reversing": return "reversing.png"
-		case "Stego":     return "stego.png"
-		case "Web":       return "web.png"
+		case "crypto":    return "crypto.png"
+		case "forensics": return "forensics.png"
+		case "hardware":  return "hardware.png"
+		case "misc":      return "misc.png"
+		case "mobile":    return "mobile.png"
+		case "osint":     return "osint.png"
+		case "pwn":       return "pwn.png"
+		case "reversing": return "reversing.png"
+		case "stego":     return "stego.png"
+		case "web":       return "web.png"
 		default:
 			return "challenge_cat/other_c.png"
 		}
@@ -263,7 +273,7 @@ class Format {
 			return `${IMG_DIR}${name}.png`
 		} else {
 			// console.warn(`Invalid icon name '${name}' specified`)
-			return undefined
+			return `${IMG_DIR}other.png`
 		}
 	}
 
@@ -597,7 +607,7 @@ class Format {
 	}
 
 	static aOrAn(noun) {
-		return ("AEIOU".includes(noun.charAt(0)) ? "An" : "A")
+		return ("AEIOUaeiou".includes(noun.charAt(0)) ? "An" : "A")
 	}
 
 	static memberToMdLink(member, bold = true, customText=null) {

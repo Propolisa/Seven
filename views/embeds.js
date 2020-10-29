@@ -62,7 +62,7 @@ class HtbEmbeds {
 		if (target.country_name) { // A living, breathing human being
 			target.type = "member"
 		}
-		// console.log(target.name)
+		console.log(target)
 		var embed = this.TARGET_INFO_BASE
 		switch (target.type) {
 		case "machine": {
@@ -85,9 +85,9 @@ class HtbEmbeds {
 						+ (roots + users > 0 ? "+  Owns     : " : "")
 						+ (users ? "💻 " + users : "") + (users && roots ? " " : "")
 						+ (roots ? "👩‍💻 " + roots : "") + (roots + users > 0 ? "\n" : "")
-						+ (!submission ? (roots + users > 0 ? "-  Bloods   : " : `-  Bloods   : ${F.STL("None taken!", "bs")}`) : "")
+						+ (!submission ? (roots + users > 0 ? "-  Bloods   : " : `-  Bloods   : ${F.STL("None taken!\n", "bs")}`) : "")
 						+ (userBlood ? "🔹 " + userBlood.user.name : (roots + users > 0 ? "(No [U] blood!)" : "")) + (userBlood && rootBlood ? " " : "")
-						+ (rootBlood ? "🔸 " + rootBlood.user.name : (roots + users > 0 ? "(No [R] blood!)" : "")) + (userBlood || rootBlood ? "\n" : "")
+						+ (rootBlood ? "🔸 " + rootBlood.user.name : (roots + users > 0 ? "(No [R] blood!)" : "")) + (!submission ? (userBlood || rootBlood ? "\n" : ""):"")
 						+ `+  ${(H.isPastDate(release) ? "Released" : "Release ")} : ${(submission ? "Unannounced" : `${new Date(release).getUTCFullYear()} (${F.fuzzyAge(new Date(release))})`)}\n`
 						+ (retired ? `-  Retired  : ${F.timeSince(new Date(retiredate))}\n` : "")
 						+ "```",
@@ -194,6 +194,16 @@ class HtbEmbeds {
 						+ "```",
 					false)
 				.setFooter(`ℹ️  Challenges last updated ${F.timeSince(this.ds.LAST_UPDATE)}`)
+			break
+		}
+		case "endgame": case "fortress": case "prolab":{
+			/** SPECIAL (ENDGAME, FORTRESS, PRO LAB) EMBED CONSTRUCTOR **/
+			const { name, description, type, makers, company, entries, retired, flags} = target
+			
+			embed.attachFiles(new Attachment(F.getIcon(type), `${type}.png`))
+				.setAuthor(`${name} ${F.special2Proper(type)}`, `attachment://${type}.png`, F.profileUrl(target))
+				.setDescription(`${F.aOrAn(type)} ${F.special2Proper(type)} by ${(company? F.mdLink(company, F.profileUrl(target)) : false) || F.andifyList(makers.map(m => F.mdLink(m.username,F.memberProfileUrl({id:m.id}))))}.` +
+				`\n> ${description.split("\n").join("\n> ")}`)
 			break
 		}
 		default: break
@@ -339,10 +349,14 @@ class HtbEmbeds {
 			var embed0 = this.MEMBER_INFO_BASE
 				.setDescription("Member owns for the " + F.mdLink(target.name,F.profileUrl(target))+" "+ target.type +" (sorted by most recent first):")
 				.setAuthor("Team owns", "attachment://icon.png", F.teamProfileUrl(this.ds.TEAM_STATS))
-				.setThumbnail(F.avatar2Url(target.avatar))
+				.setThumbnail(F.avatar2Url(target.avatar) || target.thumb)
 				.setFooter("ℹ️  Hover over a name to see age of own [Desktop]")
 			var owns
 			var filteredOwns = this.ds.getTeamOwnsForTarget(target) || []
+			if (target.type == "challenge"){
+				embed0.attachFiles(new Attachment(`./static/img/${F.challengeCategoryNameToIconFile(target.category_name)}`, "cat.png"))
+					.setThumbnail("attachment://cat.png")
+			}
 			if (target.type == "machine"){
 				var {user, root, both} = H.deduplicateMachineOwns(filteredOwns)
 				switch (ownType) {
@@ -350,7 +364,7 @@ class HtbEmbeds {
 				case "root": user = []; break
 				default: break
 				}
-				console.log(user,root,both)
+				// console.log(user,root,both)
 				new Array(user, root, both).forEach(arr => arr.sort((a,b)=> H.sortByZuluDatestring(a,b,"date",false)))
 				owns = [...both, ...user, ...root]
 			} else {
@@ -646,7 +660,7 @@ class HtbEmbeds {
 	}
 
 	ownerString(achievement) {
-		console.log(this)
+		// console.log(this)
 		const {object_type: type, type: t, name, date, uid} = achievement
 		var member = this.ds.getMemberById(uid)
 		return F.mdLink(member.name,F.profileUrl(member), true, F.timeSinceSmall(new Date(date)))

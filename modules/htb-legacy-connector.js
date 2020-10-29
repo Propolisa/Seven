@@ -160,7 +160,7 @@ class HtbLegacyConnector {
 				} catch (error) {
 					console.log("No 2nd maker ...")
 				}
-				var response = await session.requestAsync("/home/machines/profile/" + urmid)
+				var response = await this.SESSION.requestAsync("/home/machines/profile/" + urmid)
 				$ = require("jquery")(new JSDOM(response.body).window)
 				var ip = $("td")[9].innerHTML
 				var points = Number($("td span")[1].innerHTML)
@@ -186,38 +186,51 @@ class HtbLegacyConnector {
 			}
 		})
 	}
-	
-	async getChallenges(session) {
-		console.log("Getting challenges...")
-		var challengeBuffer = {}
-		var specialChallengeBuffer = {}
-		var categories = ["Reversing", "Crypto", "Stego", "Pwn", "Web", "Misc", "Forensics", "Mobile", "OSINT", "Hardware"]
-		var specialTypes = ["Endgame", "Fortress", "Pro Labs"]
-		var specials = {}
-		var homepage = await session.requestAsync("/home")
-		var $ = require("jquery")(new JSDOM(homepage.body).window)
-		specialTypes.forEach(type => { specials[[type]] = []; $("a:contains('" + type + "')").next().find("a").each(function () { specials[[type]].push(this.href.substring(25)) }) })
-		return new Promise(async resolve => {
+
+	async getSpecials(){
+		try {
+			var specialChallengeBuffer = {}
+			var specialTypes = ["Endgame", "Fortress", "Pro Labs"]
+			var specials = {}
+			var homepage = await this.SESSION.requestAsync("/home")
+			var $ = require("jquery")(new JSDOM(homepage.body).window)
+			specialTypes.forEach(type => { specials[[type]] = []; $("a:contains('" + type + "')").next().find("a").each(function () { specials[[type]].push(this.href.substring(25)) }) })
 			var keys = Object.keys(specials)
-			for await (let specialKey of keys) {
+			console.log(keys, specials)
+			for (let specialKey of keys) {
+				console.log("Fetching specials:", specialKey)
 				var specialLinks = specials[specialKey]
-				var thisCategoryChallenges = []
 				var thisSpecialCategoryChallenges = []
 				for (let i = 0; i < specialLinks.length; i++) {
 					var specialLink = specialLinks[i]
-					var response = await this.getSpecialCategory(specialLink, session)
+					var response = await this.getSpecialCategory(specialLink, this.SESSION)
 					try {
-						var $ = require("jquery")(new JSDOM(response.body).window)
+						$ = require("jquery")(new JSDOM(response.body).window)
 						var specialChallenge = {}
+						specialChallenge["id"] = `${specialLink}`
 						specialChallenge["name"] = $(".luna-nav").find("li.active").find("span").remove().end().text().trim().trimEnd()
-						specialChallenge["id"] = i + 1
-						specialChallenge["category"] = specialKey
+						switch (specialKey) {
+						case "Pro Labs": specialChallenge["type"] = "prolab"; break
+						default: specialChallenge["type"] = specialKey.toLowerCase(); break
+						}
 						specialChallenge["flags"] = Object.fromEntries($("i[id^=\"flagIcon\"]").map((idx, ele) => ([[idx + 1, ele.nextSibling.nextSibling.textContent]])).get())
+						specialChallenge["makers"] = $("#descriptionTab, .header-title").find("a[href*='/home/users/profile/']").map((idx, ele) => { return { username: ele.textContent, id: Number(ele.href.substring(ele.href.indexOf("users/profile/")+14)) } }).get()
+						if (specialKey != "Fortress"){specialChallenge["description"] = $("#descriptionTab").find(".panel-body").find("p, li").map((idx, ele) => {
+							if (ele.textContent && !$(ele).children("code, a, strong").length) { return ($(ele).is("li") ? ` • ${ele.textContent}` : ele.textContent + "\n") }
+						}).get().join("\n").replace(/\n\s*\n/g, "\n\n").trim()}
 						specialChallenge["description"] = $("#descriptionTab").find(".panel-body").find("p, li").map((idx, ele) => {
-							if (ele.textContent && $(ele).children().length == 0) { return ($(ele).is("li") ? ele.textContent : ele.textContent + "\n") }
-						}).get().join("\n").trim()
-						specialChallenge["entries"] = $("code").map((idx, ele) => ele.textContent).get()
-						specialChallenge["makers"] = $("#descriptionTab, .header-title").find("a[href*='/home/users/profile/']").map((idx, ele) => { return { username: ele.textContent, id: Number(ele.href.substring(20)) } })[0]
+							if (ele.textContent && !$(ele).children("code, a").length) { return ($(ele).is("li") ? ` • ${ele.textContent}` : ele.textContent + "\n") }
+						}).get().join("\n").replace(/\n\s*\n/g, "\n\n").trim()
+						if (specialKey == "Endgame") {
+							specialChallenge["makers"] = []
+							specialChallenge["entries"] = $("#descriptionTab").find("code").map((idx, ele) => ele.textContent).get()
+						}
+						if (specialKey == "Fortress"){
+							specialChallenge["company"] = $(".col-lg-6").find($("span.c-white"))[0].textContent.trim()
+							specialChallenge["entries"] = $(".fab.fa-fort-awesome").parent().parent().find("code").map((idx, ele) => ele.textContent).get()
+						}
+
+						if (specialChallenge["name" == "Dante"]){specialChallenge["entries"] = ["10.10.110.0/24"]}
 						specialChallenge["retired"] = $(".fa-file-pdf").length > 0
 						// console.log(specialChallenge)
 						thisSpecialCategoryChallenges.push(specialChallenge)
@@ -227,62 +240,110 @@ class HtbLegacyConnector {
 				}
 				specialChallengeBuffer[specialKey] = thisSpecialCategoryChallenges
 			}
-	
-			// console.log("| SPECIAL CHALLENGES [ENDGAME, PROLAB, FORTRESS] |\n", specialChallengeBuffer)
-	
-			for await (let category of categories) {
-				response = await this.getChallengesCategory(category, session)
-				thisCategoryChallenges = []
-				$ = require("jquery")(new JSDOM(response.body).window)
-	
-				$(".panel-heading").each(() => {
-					var description = this.nextSibling.nextSibling.firstChild.nextSibling.nextSibling.nextSibling.nextSibling.data.trim()
-					var points = 0
-					var isActive = false
-					//console.log(description)
-					var dateString = $($(this).children(".panel-tools")[0]).text().trim()
-					var releaseDate = new Date(F.parseDate(dateString, "dd/MM/yyyy", new Date(0)).setUTCHours(19)).getTime()
-					var spans = $(this).children("span")
-					var activeChecker = $(spans[0]).text().trim()
-					//console.log(activeChecker.trim())
-					if (activeChecker.trim().startsWith("[")) {
-						isActive = true
-						//console.log(spans.html())
-						points = Number($(spans[0]).html().match(/[\d]*(\d+)/g)[0])
-	
-					} else {
-						// console.log("Not Active.")
-						// console.log(spans[0].innerText)
-					}
-					var makers = $(this).find("a[href^='https://www.hackthebox.eu/home/users/profile/']")
-					var maker = { "id": makers[0].href.substring(45), "name": makers[0].innerHTML }
-					var maker2 = null
-					try {
-						maker2 = { "id": makers[1].href.substring(45), "name": makers[1].innerHTML }
-					} catch (error) {
-						//console.log('\nNo 2nd maker ...')
-					}
-					var tex = $(this).text()
-					//console.log("TEX",tex)
-					var name = tex.substring(tex.indexOf((isActive ? "] " : "     ")) + 1, tex.indexOf("[by") - 1).trim()
-					var solverCount = Number($(spans[1]).text().match(/[\d]*(\d+)/g))
-					var ratePro = Number($(spans[2]).text())
-					var rateSucks = Number($(spans[3]).text())
-					// console.log("GOT CHALLENGE. Datestring:", dateString, "|", "name:", name, "| maker:", maker.name, "| maker2:", (maker2 ? maker2.name : "None"), "| points:", points, "| active:", isActive, "| solvercount:", solverCount, "| ratings:", ratePro, rateSucks * -1)
-					// console.log("Got challenge", name + " ...")
-					var thisChallenge = new LegacyHtbChallenge(name, category, releaseDate, description, isActive, points, maker, maker2, solverCount, ratePro, rateSucks)
-					thisCategoryChallenges.push(thisChallenge)
-					if (!this.getChallengeByName(thisChallenge.name)) {
-						// dFlowEnt.updateEntity('challenge', thisChallenge.name)
-					}
-				})
-				console.log("Got", thisCategoryChallenges.length, "challenges in the '" + category + "' category")
-				challengeBuffer[category] = thisCategoryChallenges
-			}
-			console.log(challengeBuffer)
-			resolve(challengeBuffer)
-		})
+			return specialChallengeBuffer
+		} catch (error) {
+			console.warn(error)
+		}
+
 	}
+	
+	// async getChallenges(session) {
+	// 	console.log("Getting challenges...")
+	// 	var challengeBuffer = {}
+	// 	var specialChallengeBuffer = {}
+	// 	var categories = ["Reversing", "Crypto", "Stego", "Pwn", "Web", "Misc", "Forensics", "Mobile", "OSINT", "Hardware"]
+	// 	var specialTypes = ["Endgame", "Fortress", "Pro Labs"]
+	// 	var specials = {}
+	// 	var homepage = await session.requestAsync("/home")
+	// 	var $ = require("jquery")(new JSDOM(homepage.body).window)
+	// 	specialTypes.forEach(type => { specials[[type]] = []; $("a:contains('" + type + "')").next().find("a").each(function () { specials[[type]].push(this.href.substring(25)) }) })
+	// 	return new Promise(async resolve => {
+	// 		var keys = Object.keys(specials)
+	// 		for await (let specialKey of keys) {
+	// 			var specialLinks = specials[specialKey]
+	// 			var thisCategoryChallenges = []
+	// 			var thisSpecialCategoryChallenges = []
+	// 			for (let i = 0; i < specialLinks.length; i++) {
+	// 				var specialLink = specialLinks[i]
+	// 				var response = await this.getSpecialCategory(specialLink, session)
+	// 				try {
+	// 					var $ = require("jquery")(new JSDOM(response.body).window)
+	// 					var specialChallenge = {}
+	// 					specialChallenge["name"] = $(".luna-nav").find("li.active").find("span").remove().end().text().trim().trimEnd()
+	// 					specialChallenge["id"] = i + 1
+	// 					specialChallenge["category"] = specialKey
+	// 					specialChallenge["flags"] = Object.fromEntries($("i[id^=\"flagIcon\"]").map((idx, ele) => ([[idx + 1, ele.nextSibling.nextSibling.textContent]])).get())
+	// 					specialChallenge["description"] = $("#descriptionTab").find(".panel-body").find("p, li").map((idx, ele) => {
+	// 						if (ele.textContent && $(ele).children().length == 0) { return ($(ele).is("li") ? ele.textContent : ele.textContent + "\n") }
+	// 					}).get().join("\n").trim()
+	// 					if (specialKey == "Endgame") {specialChallenge["entries"] = $("#descriptionTab").find("code").map((idx, ele) => ele.textContent).get()}
+	// 					if (specialKey == "Fortress"){specialChallenge["entries"] = $(".fab.fa-fort-awesome").parent().parent().find("code").map((idx, ele) => ele.textContent).get()}
+	// 					specialChallenge["makers"] = $("#descriptionTab, .header-title").find("a[href*='/home/users/profile/']").map((idx, ele) => { return { username: ele.textContent, id: Number(ele.href.substring(20)) } })[0]
+	// 					specialChallenge["retired"] = $(".fa-file-pdf").length > 0
+	// 					// console.log(specialChallenge)
+	// 					thisSpecialCategoryChallenges.push(specialChallenge)
+	// 				} catch (error) {
+	// 					console.error(error)
+	// 				}
+	// 			}
+	// 			specialChallengeBuffer[specialKey] = thisSpecialCategoryChallenges
+	// 		}
+	
+	//    // console.log("| SPECIAL CHALLENGES [ENDGAME, PROLAB, FORTRESS] |\n", specialChallengeBuffer)
+	
+	// 		for await (let category of categories) {
+	// 			response = await this.getChallengesCategory(category, session)
+	// 			thisCategoryChallenges = []
+	// 			$ = require("jquery")(new JSDOM(response.body).window)
+	
+	// 			$(".panel-heading").each(() => {
+	// 				var description = this.nextSibling.nextSibling.firstChild.nextSibling.nextSibling.nextSibling.nextSibling.data.trim()
+	// 				var points = 0
+	// 				var isActive = false
+	// 				//console.log(description)
+	// 				var dateString = $($(this).children(".panel-tools")[0]).text().trim()
+	// 				var releaseDate = new Date(F.parseDate(dateString, "dd/MM/yyyy", new Date(0)).setUTCHours(19)).getTime()
+	// 				var spans = $(this).children("span")
+	// 				var activeChecker = $(spans[0]).text().trim()
+	// 				//console.log(activeChecker.trim())
+	// 				if (activeChecker.trim().startsWith("[")) {
+	// 					isActive = true
+	// 					//console.log(spans.html())
+	// 					points = Number($(spans[0]).html().match(/[\d]*(\d+)/g)[0])
+	
+	// 				} else {
+	// 					// console.log("Not Active.")
+	// 					// console.log(spans[0].innerText)
+	// 				}
+	// 				var makers = $(this).find("a[href^='https://www.hackthebox.eu/home/users/profile/']")
+	// 				var maker = { "id": makers[0].href.substring(45), "name": makers[0].innerHTML }
+	// 				var maker2 = null
+	// 				try {
+	// 					maker2 = { "id": makers[1].href.substring(45), "name": makers[1].innerHTML }
+	// 				} catch (error) {
+	// 					//console.log('\nNo 2nd maker ...')
+	// 				}
+	// 				var tex = $(this).text()
+	// 				//console.log("TEX",tex)
+	// 				var name = tex.substring(tex.indexOf((isActive ? "] " : "     ")) + 1, tex.indexOf("[by") - 1).trim()
+	// 				var solverCount = Number($(spans[1]).text().match(/[\d]*(\d+)/g))
+	// 				var ratePro = Number($(spans[2]).text())
+	// 				var rateSucks = Number($(spans[3]).text())
+	// 				// console.log("GOT CHALLENGE. Datestring:", dateString, "|", "name:", name, "| maker:", maker.name, "| maker2:", (maker2 ? maker2.name : "None"), "| points:", points, "| active:", isActive, "| solvercount:", solverCount, "| ratings:", ratePro, rateSucks * -1)
+	// 				// console.log("Got challenge", name + " ...")
+	// 				var thisChallenge = new LegacyHtbChallenge(name, category, releaseDate, description, isActive, points, maker, maker2, solverCount, ratePro, rateSucks)
+	// 				thisCategoryChallenges.push(thisChallenge)
+	// 				if (!this.getChallengeByName(thisChallenge.name)) {
+	// 					// dFlowEnt.updateEntity('challenge', thisChallenge.name)
+	// 				}
+	// 			})
+	// 			console.log("Got", thisCategoryChallenges.length, "challenges in the '" + category + "' category")
+	// 			challengeBuffer[category] = thisCategoryChallenges
+	// 		}
+	// 		console.log(challengeBuffer)
+	// 		resolve(challengeBuffer)
+	// 	})
+	// }
 	
 	getTeamMemberIds(session, teamId, ignored) {
 		return new Promise(resolve => {

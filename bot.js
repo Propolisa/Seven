@@ -235,7 +235,7 @@ async function main() {
 		console.log("Data refresh completed!")
 		var updated = await updateCache()
 		if (updated) {console.log("Updated the DB...")}
-	}, 5 * 60 * 1000)
+	}, 10 * 60 * 1000)
 	HTB_PUSHER_OWNS_SUBSCRIPTION.on("pusherevent", async message => {
 		try {
 			switch (message.type) {
@@ -544,7 +544,8 @@ async function handleMessage(message) {
 			if (message.content.toLowerCase().trim() == "help") {
 				try { sendHelpMsg(message) } catch (e) { console.log(e) }
 			} else if (htbItem) {
-				try { SEND.embed(message, EGI.targetInfo(htbItem.type, htbItem.name,null,message,htbItem)) } catch (e) { console.error(e) }
+				console.log(htbItem)
+				try { SEND.embed(message, EGI.targetInfo(htbItem.type, htbItem.name, null,message, htbItem)) } catch (e) { console.error(e) }
 			} else {
 				var result = await understand(message)
 				var isRipe = result.allRequiredParamsPresent
@@ -577,13 +578,12 @@ async function handleMessage(message) {
 						case "getTeamLeader":  sendTeamLeaderMsg(message, result.fulfillmentText); break
 						case "getTeamRanking": SEND.embed(message, EGI.teamRank()); break
 						case "getFlagboard":  sendFlagboardMsg(message); break
-						case "getBoxInfo": SEND.embed(message, EGI.targetInfo("machine", params.machines)); break
-						case "getTargetOwners": SEND.embed(message, EGI.teamOwnsForTarget(DAT.resolveEnt(params.target,params.ownType),undefined,params.ownType,params.ownFilter)); break
+						case "getTargetInfo": SEND.embed(message, EGI.targetInfo(params.targetType, params.targetName)); break
+						case "getTargetOwners": SEND.embed(message, EGI.teamOwnsForTarget(DAT.resolveEnt(params.target,params.htbTargetType),undefined,params.ownType,params.ownFilter)); break
 						case "checkMemberOwnedTarget": SEND.embed(message, EGI.checkMemberOwnedTarget(DAT.resolveEnt(params.username, "member", false, message), DAT.resolveEnt(params.targetname, params.targettype))); break
 						case "getFirstBox":  SEND.embed(message, EGI.targetInfo("machine", "Lame")); await SEND.human(message, result.fulfillmentText); break
 						case "agent.doReboot": doFakeReboot(message, result.fulfillmentText); break
 						case "getNewBox": SEND.embed(message, EGI.targetInfo("machine", DAT.getNewBoxId(), true)); break
-						case "getChallengeInfo": SEND.embed(message, EGI.targetInfo("challenge", params.challengeName)); break
 						case "getMemberInfo": SEND.embed(message, EGI.targetInfo("member", params.username, false, message, DAT.resolveEnt(params.username, "member", false, message) || { type: null })); break
 						case "getMemberRank": SEND.embed(message, EGI.memberRank(DAT.resolveEnt(params.username, "member", false, message))); break
 						case "getMemberChart": console.log("GOT HERE..."); sendMemberChartMsg(message, params.username, (params.interval ? params.interval : "1Y")); break
