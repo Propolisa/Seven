@@ -555,9 +555,10 @@ async function handleMessage(message) {
 				if (result.intent && isRipe) {
 					var job = result.intent.displayName
 					var inf = result.parameters.fields
-					var params = struct.decode(result.parameters)
+					/** (Dialogflow) The returned entity parameters, parsed from user query. */
+					var P = struct.decode(result.parameters)
 					console.log("[DF] Detected intent: " + F.STL(job,"bs"))
-					if (Object.keys(params).length) console.log(params)
+					if (Object.keys(P).length) console.log(P)
 					try {
 						switch (job) {
 						case "help": sendHelpMsg(message); break
@@ -568,32 +569,32 @@ async function handleMessage(message) {
 						case "admin.setupEmoji":  E.initCustEmoji(client).then(SEND.human(message, "Successfully initialized Seven-related emoji on supporting channel.", false)); break
 						case "agent.getPickled":  if (!SEND.GET_PICKLED) {await SEND.human(message, result.fulfillmentText, true); SEND.human(message,"```css\n[PICKLE MODE ACTIVATED]```",true) ; SEND.pickleOn()} else { SEND.human(message, "` ERROR: circuits already scrambled... `")} break
 						case "agent.getUnpickled":  if (SEND.GET_PICKLED) {SEND.pickleOff(); SEND.human(message,"Fine then...\nThat was kinda fun though. 😏")} else { SEND.human(message, "I'm already talking normally!!!")} break
-						case "forgetMe.htbIgnore.getUserID":  forgetHtbDataFlow(message, "htb", params.uid); break
-						case "forgetMe.discordUnlink.getUserID":  forgetHtbDataFlow(message, "discord", params.uid); break
-						case "forgetMe.all.getUserID":  forgetHtbDataFlow(message, "all", params.uid); break
-						case "linkDiscord":  linkDiscord(message, (params.uid ? "uid" : "uname"), (params.uid ? params.uid : params.username)); break
-						case "unforgetMe":  unignoreMember(params.uid); SEND.human(message, result.fulfillmentText, true); break
+						case "forgetMe.htbIgnore.getUserID":  forgetHtbDataFlow(message, "htb", P.uid); break
+						case "forgetMe.discordUnlink.getUserID":  forgetHtbDataFlow(message, "discord", P.uid); break
+						case "forgetMe.all.getUserID":  forgetHtbDataFlow(message, "all", P.uid); break
+						case "linkDiscord":  linkDiscord(message, (P.uid ? "uid" : "uname"), (P.uid ? P.uid : P.username)); break
+						case "unforgetMe":  unignoreMember(P.uid); SEND.human(message, result.fulfillmentText, true); break
 						case "getTeamBadge":  SEND.human(message,F.noncifyUrl(`https://www.hackthebox.eu/badge/team/image/${DAT.TEAM_STATS.id}`),true).then(() => SEND.human(message, result.fulfillmentText, true)); break
 						case "getTeamInfo": SEND.embed(message, EGI.teamInfo()); break
 						case "getTeamLeaders": SEND.embed(message, EGI.teamLeaderboard()); break
 						case "getTeamLeader":  sendTeamLeaderMsg(message, result.fulfillmentText); break
 						case "getTeamRanking": SEND.embed(message, EGI.teamRank()); break
 						case "getFlagboard":  sendFlagboardMsg(message); break
-						case "getTargetInfo": SEND.embed(message, EGI.targetInfo(params.targetType, params.targetName)); break
-						case "getTargetOwners": SEND.embed(message, EGI.teamOwnsForTarget(DAT.resolveEnt(params.target,params.htbTargetType),undefined,params.ownType,params.ownFilter)); break
-						case "checkMemberOwnedTarget": SEND.embed(message, EGI.checkMemberOwnedTarget(DAT.resolveEnt(params.username, "member", false, message), DAT.resolveEnt(params.targetname, params.targettype))); break
+						case "getTargetInfo": SEND.embed(message, EGI.targetInfo(P.targetType, P.targetName)); break
+						case "getTargetOwners": SEND.embed(message, EGI.teamOwnsForTarget(DAT.resolveEnt(P.target,P.htbTargetType),undefined,P.ownType,P.ownFilter)); break
+						case "checkMemberOwnedTarget": SEND.embed(message, EGI.checkMemberOwnedTarget(DAT.resolveEnt(P.username, "member", false, message), DAT.resolveEnt(P.targetname, P.targettype), P.flagNames)); break
 						case "getFirstBox":  SEND.embed(message, EGI.targetInfo("machine", "Lame")); await SEND.human(message, result.fulfillmentText); break
 						case "agent.doReboot": doFakeReboot(message, result.fulfillmentText); break
 						case "getNewBox": SEND.embed(message, EGI.targetInfo("machine", DAT.getNewBoxId(), true)); break
-						case "getMemberInfo": SEND.embed(message, EGI.targetInfo("member", params.username, false, message, DAT.resolveEnt(params.username, "member", false, message) || { type: null })); break
-						case "getMemberRank": SEND.embed(message, EGI.memberRank(DAT.resolveEnt(params.username, "member", false, message))); break
-						case "getMemberChart": console.log("GOT HERE..."); sendMemberChartMsg(message, params.username, (params.interval ? params.interval : "1Y")); break
-						case "filterMemberOwns": sendActivityMsg(message,	DAT.resolveEnt(params.username, "member", false, message),
-							params.targettype, params.sortby, params.sortorder,	params.limit || 24); break
+						case "getMemberInfo": SEND.embed(message, EGI.targetInfo("member", P.username, false, message, DAT.resolveEnt(P.username, "member", false, message) || { type: null })); break
+						case "getMemberRank": SEND.embed(message, EGI.memberRank(DAT.resolveEnt(P.username, "member", false, message))); break
+						case "getMemberChart": console.log("GOT HERE..."); sendMemberChartMsg(message, P.username, (P.interval ? P.interval : "1Y")); break
+						case "filterMemberOwns": sendActivityMsg(message,	DAT.resolveEnt(P.username, "member", false, message),
+							P.targettype, P.sortby, P.sortorder,	P.limit || 24); break
 						case "filterTargets": SEND.embed(message, EGI.filteredTargets(DAT.filterEnt(message,
-							params.targettype, params.sortby, params.sortorder,	params.limit || 15,	null,	null, params.memberName, params.targetFilterBasis),
-						params.sortby,
-						params, message), true
+							P.targettype, P.sortby, P.sortorder,	P.limit || 15,	null,	null, P.memberName, P.targetFilterBasis),
+						P.sortby,
+						P, message), true
 						); break
 						default:
 							message.channel.stopTyping(true)

@@ -170,6 +170,7 @@ class SevenDatastore {
 				console.warn(`Got ${this.kC.length} challenges spanning ${Object.keys(this.MISC.CHALLENGE_CATEGORIES).length} categories...`)
 				console.log("Team stats:")
 				console.info(this.TEAM_STATS)
+				dFlowEnt.addMissingFieldsToEntity(Object.values(this.MISC.SPECIALS).flat().map(e => Object.values(e.flags)).flat(), "specialTargetFlagName")
 				dFlowEnt.addMissingFieldsToEntity(Object.values(this.MISC.SPECIALS).map(specialType => specialType.map(s => s.name)).flat(), "specialTargetName")
 				dFlowEnt.addMissingFieldsToEntity(Object.values(this.MISC.CHALLENGE_CATEGORIES).map(category => category.name), "challengeCategoryName")
 				dFlowEnt.addMissingFieldsToEntity(this.MISC.MACHINE_TAGS["7" ].tags.map(attackPath => attackPath.name), "boxAttackPath")
@@ -510,8 +511,8 @@ class SevenDatastore {
 	 * @returns {(HtbChallenge|null)}
 	 */
 	getSpecialByName(name, type=null) { // Return endgame, fortress or pro lab with name matching parameter string
-		if (!type) {return Object.values(this.MISC.SPECIALS).map(e => e.find(s => s.name.toLowerCase() == name.toLowerCase())).flat().filter(e => e)[0] || null}
-		else {return Object.values(this.MISC.SPECIALS).map(e => e.find(s => s.name.toLowerCase() == name.toLowerCase() && s.type == type)).flat()}
+		if (!type) {return Object.values(this.MISC.SPECIALS).map(e => e.find(s => (s.name == name || s.company == name))).flat().filter(e => e)[0] || null}
+		else {return Object.values(this.MISC.SPECIALS).map(e => e.find(s => (s.name == name || s.company == name) && s.type == type)).flat()}
 	}
 
 	/**
@@ -551,8 +552,18 @@ class SevenDatastore {
 
 	getMemberOwnsForTarget(member, target) {
 		if (member && target) {
-			// console.log(member)
-			var validOwns = member.activity.filter(own => own.object_type == target.type && own.name == target.name)
+			console.log(member)
+			var validOwns = null
+			switch (target.type) {
+			case "machine": case "challenge":
+				validOwns = member.activity.filter(own => own.object_type == target.type && (own.name == target.name || own.name == target.company)); break
+			case "endgame": case "fortress":
+				validOwns = member.activity.filter(own => own.object_type == target.type && (own.name == target.name || own.name == target.company)); break
+			case "prolab":
+				validOwns = []; break
+			default: break
+			}
+			
 			// console.info(`Got ${validOwns.length} valid owns...`)
 			return (!validOwns.length ? null : validOwns)
 		} else {

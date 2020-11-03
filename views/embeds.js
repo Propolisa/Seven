@@ -484,13 +484,16 @@ class HtbEmbeds {
 		return embeds
 	}
 
-	checkMemberOwnedTarget(member, target) {
+	checkMemberOwnedTarget(member, target, flagNames=null) {
+		console.log(target)
 		if (member && target){
 			var owns = this.ds.getMemberOwnsForTarget(member,target)
+			if (flagNames.length && flagNames.some(e => e.special)){owns = owns.filter(own => flagNames.some(f => f.special.toLowerCase() == own.flag_title.toLowerCase()))}
 			console.log(owns)
 			if (owns) {
 				var confirm
-				if (target.type == "machine") {
+				switch (target.type) {
+				case "machine":
 					confirm = (owns.some(m => m.type == "root") ? H.any("Yep! ", "Indeed, ", "Mhm, ", "W00t! ", "Affirmative - ", "Yup! ", "It looks like ", "Yes. ") : H.any("Partial ownage detected: ", "We're halfway there: ", ""))
 					+ F.mdLink((member.self ? "You" : this.ds.tryDiscordifyUid(member.id)), F.profileUrl(member), true, "View on HTB")
 					+ ` ${H.any("got","owned", "beat", "got")} ` + (owns.some(m => m.type == "user") ? "user" : "") + (owns.length > 1 ? " and root" : ((owns.some(m => m.type == "root") ? H.any("system","root") : ""))) + " on "
@@ -503,17 +506,24 @@ class HtbEmbeds {
 						"after a ton of hard work",
 						"after gallons of coffee and more than one failed relationship", "", "")
 					+ `. *[${F.timeSince(new Date(owns[owns.length-1].date))}]*.`
-				} else {
+					break
+				case "challenge":
 					confirm =  (H.maybe(0.8) ? H.any("Yep! ", "Indeed, ", "Mhm, ", "W00t! ", "Affirmative - ", "Yup! ", "It looks like ") : "Yes. ")
-						+ F.mdLink((member.self ? "You" : this.ds.tryDiscordifyUid(member.id)), F.profileUrl(member), true, "View on HTB") + " "
-						+ H.any("owned","completed", "finished") + " " + F.mdLink(target.name,F.profileUrl(target),true, "View on HTB") + " "
-						+ H.any("(although not without a monstrous fight)",
-							`${H.any("after","following")} a legendary ${Math.floor(Math.random() * 24)+24}-hour struggle`,
-							"after a hair-pulling effort",
-							`after a mere ${Math.floor(Math.random() * 60)} minutes of trial and error`,
-							"after significant effort",
-							"after a ton of hard work",
-							"after gallons of coffee and at least one wrecked relationship", "", "") + `. *[${F.timeSince(new Date(owns[owns.length-1].date))}]*.`
+					+ F.mdLink((member.self ? "You" : this.ds.tryDiscordifyUid(member.id)), F.profileUrl(member), true, "View on HTB") + " "
+					+ H.any("owned","completed", "finished") + " " + F.mdLink(target.name,F.profileUrl(target),true, "View on HTB") + " "
+					+ H.any("(although not without a monstrous fight)",
+						`${H.any("after","following")} a legendary ${Math.floor(Math.random() * 24)+24}-hour struggle`,
+						"after a hair-pulling effort",
+						`after a mere ${Math.floor(Math.random() * 60)} minutes of trial and error`,
+						"after significant effort",
+						"after a ton of hard work",
+						"after gallons of coffee and at least one wrecked relationship", "", "") + `. *[${F.timeSince(new Date(owns[owns.length-1].date))}]*.`
+					break
+				case "endgame": case "fortress":
+					confirm = `Yep${owns.length < Object.keys(target.flags).length && !flagNames.length? " (at least partially) -- " : ", "}${F.mdLink((member.self ? "You" : this.ds.tryDiscordifyUid(member.id)), F.profileUrl(member), true, "View on HTB")} got ` +
+										`flag${owns.length>1?"s":""} ${F.andifyList(owns.map(o => `\`${o.flag_title}\``))} on ${F.mdLink(target.name,F.profileUrl(target),true, "View on HTB")}.`
+					break
+				default: break
 				}
 				// Send embed "owns found"
 				var embed = this.MEMBER_INFO_BASE
