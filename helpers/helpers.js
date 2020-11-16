@@ -46,6 +46,17 @@ class Helpers {
 		return (a[comparator] < b[comparator]) ? (ascending? -1: 1) : ((a[comparator] > b[comparator]) ? (ascending? 1: -1) : 0)
 	}
 
+	static last(arr){
+		return arr[arr.length-1]
+	}
+	static addSubMetrics(){
+		new Array(...arguments).forEach(arr => arr.forEach((typeArray,i)=> {
+			typeArray.subIndex = i+1
+			typeArray.subCount = arr.length
+		}))
+		console.log(arguments)
+	}
+
 	static deduplicateMachineOwns (ownList = []){
 		var owns = {user:{},root:{},both:{}}
 		ownList.forEach(own => {
@@ -59,6 +70,31 @@ class Helpers {
 			}
 		})
 		Object.keys(owns).forEach(type => owns[type] = Object.values(owns[type]))
+		return owns
+	}
+
+	static removeDuplicates(myArr, prop) {
+		return myArr.filter((obj, pos, arr) => {
+			return arr.map(mapObj => mapObj[prop]).lastIndexOf(obj[prop]) === pos
+		})
+	}
+
+	static deduplicateSpecialOwns (ownList = [], target = null){
+		var owns = {partial:[],total:[]}
+		var buffer = this.removeDuplicates(ownList, "uid")
+		var counts = {}
+		var totalFlagCount = Object.keys(target.flags).length
+		ownList.forEach(uOwn => {counts[uOwn.uid] = (counts[uOwn.uid]? counts[uOwn.uid] + 1 : 1)})
+		buffer.forEach(own => {
+			own.progress = {captured:counts[own.uid],total:totalFlagCount}
+			if (counts[own.uid] < totalFlagCount){
+				own.type = "partial"
+				owns.partial.push(own)
+			} else {
+				own.type = "total"
+				owns.total.push(own)
+			}
+		})
 		return owns
 	}
 

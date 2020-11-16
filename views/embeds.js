@@ -1,7 +1,7 @@
 /** @module HtbEmbeds */
 
 const { Format: F } = require("../helpers/format.js")
-const { MessageEmbed, Message, MessageAttachment: Attachment } = require("discord.js")
+const { MessageEmbed, MessageAttachment: Attachment } = require("discord.js")
 const { SevenDatastore } = require("../models/SevenDatastore.js")
 const { Helpers: H } = require("../helpers/helpers.js")
 const {	checkSelfName } = require("../helpers/nlp.js")
@@ -57,12 +57,12 @@ class HtbEmbeds {
 	/* INFOBOXES */
 
 	targetInfo(type, identifier, isId = false, discordMessage = null, target=null) {
-		console.info(`Sending target info message for ${type} '${identifier}'...`)
-		target = target || this.ds.resolveEnt(identifier, type, isId, discordMessage) || { type: null }
+		console.info(`Sending target info message for ${target?target.type:type} '${target?target.name:identifier}'...`)
+		target = (target.type? target || this.ds.resolveEnt(identifier, type, isId, discordMessage) : { type: null })
 		if (target.country_name) { // A living, breathing human being
 			target.type = "member"
 		}
-		console.log(target)
+		// console.log(target)
 		var embed = this.TARGET_INFO_BASE
 		switch (target.type) {
 		case "machine": {
@@ -75,7 +75,7 @@ class HtbEmbeds {
 				.setDescription(
 					(os == "Other" ? "A kind of weird" : `${F.aOrAn(os)} ${os}`) + ` box ${(submission ? "submission " : "")}by **${F.memberToMdLink(maker,true,this.ds.tryDiscordifyUid(maker.id))}` +
 						`${(maker2 ? "** & **" + F.memberToMdLink(maker2) : "")}**.` +
-						`\nIP Address: **[${ip || "Unknown"}](http://${ip || "Unknown"}/)**`)
+						`\nIP Address: **[${ip || "Unknown"}](http://${ip || "0"}/)**`)
 				.setThumbnail(F.avatar2Url(avatar))
 				.addField("`  " + `${F.difficultySymbol(difficulty)} ${F.STL(difficulty + " [+" + points + "pt]", "bs")}` + "  `",
 					"```diff\n" +
@@ -86,8 +86,8 @@ class HtbEmbeds {
 						+ (users ? "💻 " + users : "") + (users && roots ? " " : "")
 						+ (roots ? "👩‍💻 " + roots : "") + (roots + users > 0 ? "\n" : "")
 						+ (!submission ? (roots + users > 0 ? "-  Bloods   : " : `-  Bloods   : ${F.STL("None taken!\n", "bs")}`) : "")
-						+ (userBlood ? "🔹 " + userBlood.user.name : (roots + users > 0 ? "(No [U] blood!)" : "")) + (userBlood && rootBlood ? " " : "")
-						+ (rootBlood ? "🔸 " + rootBlood.user.name : (roots + users > 0 ? "(No [R] blood!)" : "")) + (!submission ? (userBlood || rootBlood ? "\n" : ""):"")
+						+ (userBlood ? "🔹 " + userBlood.user.name : (users == 0 ? "(No [U] blood!)" : "")) + (userBlood ? " " : "")
+						+ (rootBlood ? "🔸 " + rootBlood.user.name : (roots == 0 ? "(No [R] blood!)" : "")) + (!submission ? (roots + users > 0 ? "\n" : ""):"")
 						+ `+  ${(H.isPastDate(release) ? "Released" : "Release ")} : ${(submission ? "Unannounced" : `${new Date(release).getUTCFullYear()} (${F.fuzzyAge(new Date(release))})`)}\n`
 						+ (retired ? `-  Retired  : ${F.timeSince(new Date(retiredate))}\n` : "")
 						+ "```",
@@ -129,7 +129,7 @@ class HtbEmbeds {
 				F.memberProfileUrl(target))
 				.setDescription(F.getFlag(nat) + "⠀**[" + (rank_text || rank) + ".]"
 						+ `(${F.memberProfileUrl(target)}`
-						+ ")**" + (team ? ` ${(process.env.HTB_UNIVERSITY_ID ? "Member" : F.toTitleCase(target.role))} of the **[${team.name}](${F.teamProfileUrlFromId(team.id)} 'View on HTB')** team.\n` : "\n")
+						+ ")**" + (team ? ` ${(process.env.HTB_UNIVERSITY_ID ? "Member" : F.toTitleCase(target.role || "member"))} of the **[${team.name}](${F.teamProfileUrlFromId(team.id)} 'View on HTB')** team.\n` : "\n")
 						+ (rank_id < 7 && H.maybe(0.1) ? `(${name} often dreams about achieving the rank of ${next_rank}, but so far the goal has proved elusive.)` : "")
 						+ (description ? `\`\`\`fix\n${F.safe(description.trim().slice(0, 200))}\n\`\`\`` : "")
 						+ (uni ? (!process.env.HTB_UNIVERSITY_ID ? "Student at " : F.toTitleCase(target.role) + " for ") + "**" + F.safe(uni) + "**.\n" : ""))
@@ -211,9 +211,16 @@ class HtbEmbeds {
 			if (flags && Object.keys(flags).length) {
 				embed.addField(`${(flags.length != 1? "Flags": "Flag")}`, `\`\`\`js\n${Object.entries(flags).map(e => `${e[0].toString().padStart(2,"0")} ${F.STL(e[1],"m")}`).join("\n")}\`\`\``)
 			}
-				
 			break
 		}
+		case "flag": {
+			const { idx, name, parent, type} = target
+			embed.attachFiles(new Attachment(F.getIcon(parent.type), `${type}.png`))
+				.setAuthor(`Flag from the ${parent.name} ${F.special2Proper(parent.type)}`, `attachment://${type}.png`, F.profileUrl(target.parent))
+				.setTitle(`"${name}"`)
+				.setDescription(`The ${F.nth(idx)} flag from the ${F.targetLink(parent)} ${F.special2Proper(parent.type)} by ${(parent.company? F.mdLink(parent.company, F.profileUrl(target.parent)) : false) || F.andifyList(parent.makers.map(m => F.mdLink(m.username,F.memberProfileUrl({id:m.id}))))}.`)
+		} break
+		
 		default: break
 		}
 		// console.info(embed)
@@ -351,7 +358,7 @@ class HtbEmbeds {
 	/* OWNAGE CHECKS */
 
 	teamOwnsForTarget(target=null, limit=25, ownType=null, ownFilter=null){
-
+		// console.log(target)
 		if (target) {
 			var embeds = []
 			var embed0 = this.MEMBER_INFO_BASE
@@ -374,11 +381,18 @@ class HtbEmbeds {
 				}
 				// console.log(user,root,both)
 				new Array(user, root, both).forEach(arr => arr.sort((a,b)=> H.sortByZuluDatestring(a,b,"date",false)))
+				H.addSubMetrics(user, root, both)
 				owns = [...both, ...user, ...root]
 			} else {
 				owns = filteredOwns
 			}
-			
+			if (["endgame", "fortress"].includes(target.type)){
+				var {partial, total} = H.deduplicateSpecialOwns(filteredOwns, target)
+				new Array(partial, total).forEach(arr => arr.sort((a,b)=> H.sortByZuluDatestring(a,b,"date",false)))
+				H.addSubMetrics(partial, total)
+				owns = [...total, ...partial]
+
+			}
 			switch (ownFilter) {
 			case "last": owns = [owns.shift()]
 				if (owns[0]) {
@@ -400,24 +414,30 @@ class HtbEmbeds {
 			}
 			
 			var chunkedOwns
-
 			if (owns.length){
 				chunkedOwns = this.embedSubdivide(owns, this.ownerString, 800, 5500, 15, "type", true)
-				console.log(chunkedOwns)
+				// console.log(chunkedOwns)
 				chunkedOwns.forEach((embeddableGroup, ix) => {
 					if (embeddableGroup.length > 0  && embeddableGroup[0].length > 0) {
 						embeds.push((ix == 0 ? embed0 : this.MEMBER_INFO_BASE)
 							.attachFiles(new Attachment(F.getIcon("rank"), "rank.png"))
 							.setAuthor("Team Owns", "attachment://rank.png", F.teamProfileUrl(this.ds.TEAM_STATS))
-							.addFields(embeddableGroup.map((e,idx) => ({inline:true, name:`${this.E.of((["root","user"].includes(e[0].label) ? e[0].label : "complete" ))} ${(target.type == "machine" ? (["root","user"].includes(e[0].label) ? ":regional_indicator_" + e[0].label[0] + ":" : "☑" ):"")} ${idx+1}/${embeddableGroup.length}`,value:`${e.map(x => x.str).join("\n")}`}))))
+							.addFields(embeddableGroup.map((e,idx) => ({
+								inline:true,
+								name:`${this.E.of((["root","user"].includes(e[0].label) ? e[0].label : (e[0].label == "both" ? "complete" : "challenge")))} ${F.ownHeaderEmoji(target,e[0])}${e[0].subCount > 1 ? F.STL(` (${e[0].subIndex}-${H.last(e).subIndex})`, "s"):""}\u200B`,
+								value:`${e.map(x => x.str).join("\n")}`
+							}))))
 					}
 				})
 			}
-			console.log(embeds)
+			// console.log(embeds)
 			// embeds = []
 
 			if (!(owns.length > 0)) {
 				embed0.setDescription("Looks like no one on the team has owned the " + F.mdLink(target.name,F.profileUrl(target))+" "+ target.type +" yet!")
+				if (target.type=="prolab" || (target.parent && target.parent.type=="prolab")){
+					embed0.setDescription("🚧 Sorry, ownage data for specific Pro Lab flags is not stored in user activity streams by Hack The Box. Hopefully, a future update will fix this.")
+				}
 				return embed0
 			}
 			return embeds
@@ -485,11 +505,11 @@ class HtbEmbeds {
 	}
 
 	checkMemberOwnedTarget(member, target, flagNames=null) {
-		console.log(target)
 		if (member && target){
 			var owns = this.ds.getMemberOwnsForTarget(member,target)
-			if (flagNames.length && flagNames.some(e => e.special)){owns = owns.filter(own => flagNames.some(f => f.special.toLowerCase() == own.flag_title.toLowerCase()))}
-			console.log(owns)
+			// console.warn(owns)
+			// if (flagNames.length && flagNames.some(e => e.special)){owns = owns.filter(own => flagNames.some(f => f.special.toLowerCase() == own.flag_title.toLowerCase()))}
+			// console.log(owns)
 			if (owns) {
 				var confirm
 				switch (target.type) {
@@ -519,13 +539,26 @@ class HtbEmbeds {
 						"after a ton of hard work",
 						"after gallons of coffee and at least one wrecked relationship", "", "") + `. *[${F.timeSince(new Date(owns[owns.length-1].date))}]*.`
 					break
-				case "endgame": case "fortress":
-					confirm = `Yep${owns.length < Object.keys(target.flags).length && !flagNames.length? " (at least partially) -- " : ", "}${F.mdLink((member.self ? "You" : this.ds.tryDiscordifyUid(member.id)), F.profileUrl(member), true, "View on HTB")} got ` +
+				case "endgame": case "fortress": case "flag":
+					if (target.parent){
+						flagNames = [target.name]
+						target = target.parent
+					}
+					if (owns.length){
+						confirm = `Yep${owns.length < Object.keys(target.flags).length && !flagNames.length? " (at least partially) -- " : ", "}${F.mdLink((member.self ? "You" : this.ds.tryDiscordifyUid(member.id)), F.profileUrl(member), true, "View on HTB")} got ` +
 										`flag${owns.length>1?"s":""} ${F.andifyList(owns.map(o => `\`${o.flag_title}\``))} on ${F.mdLink(target.name,F.profileUrl(target),true, "View on HTB")}.`
+					} else {
+						confirm = `It doesn't seem like ${F.mdLink((member.self ? "You" : this.ds.tryDiscordifyUid(member.id)), F.profileUrl(member), true, "View on HTB")} got ` +
+										` flag${flagNames.length>1?"s":""} ${F.andifyList(flagNames.map(o => `\`${o.special}\``),null,true)} on ${F.mdLink(target.name,F.profileUrl(target),true, "View on HTB")}.`
+					}
 					break
+				case "prolab": confirm = "🚧 Sorry, ownage data for specific Pro Lab flags is not stored in user activity streams by Hack The Box. Hopefully, a future update will fix this."; break
 				default: break
 				}
 				// Send embed "owns found"
+				if(target.type == "prolab" || target.parent && target.parent.type=="prolab"){
+					confirm = "🚧 Sorry, ownage data for specific Pro Lab flags is not stored in user activity streams by Hack The Box. Hopefully, a future update will fix this."
+				}
 				var embed = this.MEMBER_INFO_BASE
 					.setAuthor("Ownage Check", F.avatar2Url(member.avatar), F.memberProfileUrl(member))
 					.setThumbnail(F.avatar2Url(target.avatar))
@@ -545,6 +578,9 @@ class HtbEmbeds {
 					.setAuthor("Ownage Check", F.avatar2Url(member.avatar), F.memberProfileUrl(member))
 					.setThumbnail(F.avatar2Url(target.avatar))
 					.setDescription(reject)
+				if(target.type == "prolab" || target.parent && target.parent.type=="prolab"){
+					embed2.setDescription("🚧 Sorry, ownage data for specific Pro Lab flags is not stored in user activity streams by Hack The Box. Hopefully, a future update will fix this.")
+				}
 				if (target.type == "challenge"){
 					embed2.attachFiles(new Attachment(`./static/img/${F.challengeCategoryNameToIconFile(target.category_name)}`, "cat.png"))
 						.setThumbnail("attachment://cat.png")
@@ -562,6 +598,17 @@ class HtbEmbeds {
 
 	memberCompletedTargets() {
 
+	}
+
+	binClock(imageData){
+		if (imageData){
+			return this.CHART_BASE
+				.setTitle("Gentooman's Fabulous Rasterized Binary Clock")
+				.setDescription(`It isn't every day that you see a clock quite as fantastic as this one, a rasterized binary blockbuster sponsored by **[Gentooman](https://app.hackthebox.eu/profile/27356)**.\nThe current time (here in serverland) is ${(new Date()).toUTCString()}`)
+				.setThumbnail("https://www.hackthebox.eu/storage/avatars/9b4214468e76c630a5c211e0e5dfcb7a.png")
+				.attachFiles([{ name: "chart.png", attachment: imageData }]).setImage("attachment://chart.png")
+		}
+		return this.ENTITY_UNFOUND
 	}
 
 	memberActivity(member=null, limit=500, typeFilter=null, sortOrder, sortBy=null, imageData=null){
@@ -622,10 +669,10 @@ class HtbEmbeds {
 				sum = outString.length
 				outArrays.push([])
 				outArrays[index2d][index3d]=[]
-				outArrays[index2d][index3d].push({idx:idx,str:outString,label:(key ? item[key] : null)})
+				outArrays[index2d][index3d].push({idx:idx,subIndex:item.subIndex, subCount:item.subCount, str:outString,label:(key ? item[key] : null)})
 			} else {
 				if (sum + outString.length < fieldCharLimit && !(mixedMode? item[key] != lastKey : false )) {
-					outArrays[index2d][index3d].push({idx:idx,str:outString,label:(key ? item[key] :  null)})
+					outArrays[index2d][index3d].push({idx:idx,subIndex:item.subIndex, subCount:item.subCount,str:outString,label:(key ? item[key] :  null)})
 					sum += outString.length
 					totSum += outString.length
 				} else {
@@ -633,7 +680,7 @@ class HtbEmbeds {
 					outArrays[index2d][index3d]=[]
 					sum = outString.length
 					totSum += outString.length
-					outArrays[index2d][index3d].push({idx:idx,str:outString,label:(key ? item[key] : null)})
+					outArrays[index2d][index3d].push({idx:idx,subIndex:item.subIndex, subCount:item.subCount,str:outString,label:(key ? item[key] : null)})
 				}
 			}
 			lastKey = item[key]
@@ -678,9 +725,14 @@ class HtbEmbeds {
 	}
 
 	ownerString(achievement) {
-		// console.log(this)
-		const {object_type: type, type: t, name, date, uid} = achievement
+		console.log(achievement)
+		const {object_type: type, type: t, name, progress, date, uid} = achievement
 		var member = this.ds.getMemberById(uid)
+		switch (type) {
+		case "endgame": case "fortress": case "prolab":
+			return F.mdLink(`\`${t == "partial" ? `${F.STL(progress.captured,"bs")}/${F.STL(progress.total,"bs")}`: F.STL("ALL","bs")} 🚩\` ${this.ds.tryDiscordifyUid(member.id)}`,F.profileUrl(member), true, F.timeSinceSmall(new Date(date)))
+		default: break
+		}
 		return F.mdLink(member.name,F.profileUrl(member), true, F.timeSinceSmall(new Date(date)))
 	}
 
@@ -690,8 +742,9 @@ class HtbEmbeds {
 		case "machine":	  return `${this.E.of(target.os)}${this.E.of(F.targetDifficultyToEmojiName(target))}${this.E.of(F.targetRatingToEmojiName(target))}` + " " + F.mdLink(`\`${target.name}\``, F.profileUrl(target), false, target.os)
 		case "challenge":	return `${this.E.of(target.category_name)}${this.E.of(F.targetDifficultyToEmojiName(target))}${this.E.of(F.targetRatingToEmojiName(target))}` + " " + F.mdLink(`\`${target.name}\``, F.profileUrl(target), false, target.category_name)
 		case "endgame":		return `${this.E.of("endgame")}` + " [`"+target.name+"`]("+F.profileUrl(target)+")"
-		case "fortress":	break
-		case "prolab":		break
+		case "fortress":	return `${this.E.of("fortress")}` + " [`"+target.name+"`]("+F.profileUrl(target)+")"
+		case "prolab":		return `${this.E.of(target.name.toLowerCase())}` + " [`"+target.name+"`]("+F.profileUrl(target)+")"
+		default: return ""
 		}
 		// return F.mdLink(target.name,"http://0", true, F.timeSinceSmall(new Date(date)))
 	}
@@ -704,10 +757,11 @@ class HtbEmbeds {
 	}
 
 	socialString(github, linkedin, twitter, website) {
-		return (github ? F.mdLink("GitHub", F.safeUrl(github), true) : "") + (github && linkedin ? " | " : "")
-			+ (linkedin ? F.mdLink("LinkedIn", F.safeUrl(linkedin), true) : "") + (linkedin && twitter ? " | " : "")
-			+ (twitter ? F.mdLink("Twitter", F.safeUrl(twitter), true) : "") + (twitter && website ? " | " : "")
-			+ (website ? F.mdLink("Website", F.safeUrl(website), true) : "") + (github || linkedin || twitter || website ? "\n" : "")
+
+		return [(github ? F.mdLink("GitHub", F.safeUrl(github), true) : ""),
+			(linkedin ? F.mdLink("LinkedIn", F.safeUrl(linkedin), true) : ""), 
+			(twitter ? F.mdLink("Twitter", F.safeUrl(twitter), true) : ""),
+			(website ? F.mdLink("Website", F.safeUrl(website), true) : "")].filter(e => e).join(" | ") + (github || linkedin || twitter || website ? "\n" : "")
 	}
 
 	teamSocialString(twitter, facebook, discord) {
@@ -758,6 +812,8 @@ class HtbEmbeds {
 			.setDescription(md)
 			.setFooter(`ℹ️  Source: ${F.STL("Shoutbox", "bs")}`)
 	}
+
+	
 }
 
 module.exports = {

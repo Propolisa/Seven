@@ -38,7 +38,7 @@ class Send {
 					// random chance we'll try to generate a typo
 					var typoData = typoify.typo(ln)
 					if (typoData) {
-						console.log(typoData)
+						// console.log(typoData)
 						message.channel.startTyping()
 						await wait(
 							Math.min(ln.length * 2 * (Math.random() * 100 + this.KEYSTROKE_TIME), 2000)

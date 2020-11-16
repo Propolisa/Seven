@@ -119,8 +119,21 @@ class HtbFeedbackForChart {
 	}
 }
 
+/**
+ * A chart feedback data structure used by the new site redesign.
+ */
+class HtbSpecialFlag {
+	constructor(flagIdx, flagName, parentSpecialTarget) {
+		this.idx = flagIdx
+		this.name = flagName,
+		this.parent = parentSpecialTarget
+		this.type = "flag"
+	}
+}
+
 
 module.exports = {
 	HtbMaker,
-	HtbMachine
+	HtbMachine,
+	HtbSpecialFlag
 }

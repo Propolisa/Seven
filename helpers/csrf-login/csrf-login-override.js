@@ -4,6 +4,7 @@ var la = require("lazy-ass")
 var check = require("check-more-types")
 
 var log = require("debug")("csrf")
+log = ()=>{}
 var request = require("request")
 var cheerio = require("cheerio")
 

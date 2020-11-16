@@ -180,7 +180,7 @@ class HtbPusherSubscription extends EventEmitter {
 		}
 		
 		this.client.connection.bind("state_change", function (states) {
-			console.log("Pusher client state changed from " + states.previous + " to " + states.current)
+			console.log("[PUSHER]::: Client state changed from " + states.previous + " to " + states.current)
 		})
 	}
 

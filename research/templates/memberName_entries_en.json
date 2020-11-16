@@ -1,0 +1,24 @@
+[
+  {
+    "value": "i",
+    "synonyms": [
+      "i",
+      "me",
+      "my",
+      "mine",
+      "i\u0027m",
+      "i\u0027ve",
+      "whoami",
+      "myself"
+    ]
+  },
+  {
+    "value": "1337userName",
+    "synonyms": [
+      "1337userName",
+      "133tuser",
+      "leetusername",
+      "leetuser"
+    ]
+  }
+]

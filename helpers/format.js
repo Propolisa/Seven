@@ -19,6 +19,57 @@ class Format {
 
 	constructor() {}
 
+	static logRainbow(){
+		var header =
+		`░░░░░░░▀▄░░░▄▀░░░░░░░░
+░░░░░░▄█▀███▀█▄░░░░░░░
+░░░░░█▀███████▀█░░░░░░
+░░░░░█░█▀▀▀▀▀█░█░░░░░░
+░░░░░░░░▀▀░▀▀░░░░░░░░░`
+		var headerSeven = 
+		`⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀▓██████████▓⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀▓████████████████▓⠀⠀⠀⠀⠀
+⠀⠀⠀████████████████████⠀⠀⠀⠀
+⠀⠀████⠀⠀⠀⠀⠀▓█⠀⠀⠀⠀⠀██████⠀⠀⠀⠀
+⠀▓████⠀⠀⠀⠀⠀▓█⠀⠀⠀⠀⠀██████▓⠀⠀
+⠀█████⠀⠀⠀⠀⠀▓█⠀⠀⠀⠀⠀███████⠀⠀
+⠀▓████▓▒▒▒▒██▓▒▒▒▒██████▓⠀
+⠀⠀█████████░⠀⠀⠀⠀████████⠀⠀⠀
+⠀⠀⠀████████████████████⠀⠀⠀⠀
+⠀⠀⠀⠀▓████████████████▓⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀▓██████████▓⠀⠀⠀⠀⠀⠀⠀⠀⠀
+`
+		var cols = [
+			"#8012ed",
+			"#a005d9",
+			"#bf01bf",
+			"#d905a0",
+			"#ed1280",
+			"#fa265f",
+			"#ff4040",
+			"#fa5f26",
+			"#ed7f12",
+			"#d9a005",
+			"#bfbf01",
+			"#a0d905",
+			"#80ed12",
+			"#5ffa26",
+			"#40ff40",
+			"#26fa5f",
+			"#12ed7f",
+			"#05d9a0",
+			"#01bfbf",
+			"#05a0d9",
+			"#1280ed",
+			"#265ffa",
+			"#4040ff",
+			"#5f26fa"
+		]
+		header = (Math.random() > 0.5 ? header : headerSeven)
+		console.log(Array.from(header).map(e => `%c${e}`).join(""), ...(Array.from(header).map((e, idx) => `color:${cols[idx % cols.length]}`)))
+	}
+
 	static getImageFileNames(){
 		return Array.from(fs.readdirSync(IMG_DIR))
 	}
@@ -104,7 +155,7 @@ class Format {
 		return s.replace("\\n"," ").split(/\s/).map(lemma => `||${lemma.replace("\\n"," ")}||`).join(" ")
 	}
 
-	static toTitleCase(str) {
+	static toTitleCase(str="unknown") {
 		return str.replace(
 			/\w\S*/g,
 			function(txt) {
@@ -166,6 +217,7 @@ class Format {
 		case "endgame": return "Endgame"
 		case "fortress": return "Fortress"
 		case "prolab": return "Pro Lab"
+		case "flag": return "challenge flag"
 		default: break
 		}
 	}
@@ -182,6 +234,18 @@ class Format {
 		return `https://app.hackthebox.eu/${kwd}/${target.id}`
 	}
 
+	static targetLink(target){
+		var kwd = "user"
+		switch (target.type) {
+		case "member": kwd = "users";			  	break
+		case "machine":	kwd = "machines";			break
+		case "challenge": kwd = "challenges";	break
+		case "endgame":	case "fortress": case "prolab": return this.mdLink(target.name, `https://www.hackthebox.eu${target.id}`)
+		default:	break
+		}
+		return this.mdLink(target.name, `https://app.hackthebox.eu/${kwd}/${target.id}`)
+	}
+
 	static targetPercentRating(target){
 		switch (target.type) {
 		case "machine":	return target.rating * 20
@@ -190,10 +254,19 @@ class Format {
 		}
 	}
 
-	
+	static ownHeaderEmoji(target, sampleOwn){
+		switch (sampleOwn.label) {
+		case "user": return "🇺"
+		case "root": return "#️⃣"
+		case "both": return "🏆"
+		case "partial": return "🚩"
+		case "total": return "🏆"
+		default: return ""
+		}
+	}	
 
 
-	/** Returns the appropriate ordinal suffix (does NOT concatenate) for a given number.
+	/** Returns the appropriate ordinal form (concatenated) for a given number.
  * @param {number} n - The number to get the ordinal suffix for.
  */
 	static nth(n) { return n+(["st", "nd", "rd"][((n + 90) % 100 - 10) % 10 - 1] || "th" )}

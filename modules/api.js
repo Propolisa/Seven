@@ -35,13 +35,13 @@ class HtbApiConnector {
 				.send({ email: email, password: password, remember: true })
 				.then((response) => {
 					console.warn(
-						`Acquired API v4 Session (Valid until ${new Date(parseJwt(response.body.message.access_token).exp * 1000).toLocaleString()})`
+						`[API CONNECTOR]::: Acquired v4 Session (Valid until ${new Date(parseJwt(response.body.message.access_token).exp * 1000).toLocaleString()})`
 					)
 					resolve(response.body.message.access_token)
 				})
 				.catch((err) => {
 					console.warn(err.response.request)
-					console.warn("Could not get session:", err.status)
+					console.warn("[API CONNECTOR]::: Could not get session:", err.status)
 				})
 		})
 	}
@@ -60,6 +60,11 @@ class HtbApiConnector {
 				.get("https://www.hackthebox.eu/api/v4/" + endpointPath)
 				.set({ Accept: "application/json, */*" })
 				.set({ Authorization: "Bearer " + this.API_TOKEN })
+				.retry(2)
+				.timeout({
+					response: 5000,  // Wait 5 seconds for the server to start sending,
+					deadline: 10000, // but allow 1 minute for the file to finish loading.
+				})
 				.use(this.throttle.plugin())
 				//.use(superdebug(console.info))
 				.then((response) => {
@@ -259,9 +264,9 @@ class HtbApiConnector {
 	 * MEMBER DATA GETTERS
 	 */
 	
-	getMemberIdFromUsername(username) {
+	getMemberIdFromUsername(username="ThisUserCouldNotPossiblyExist") {
 		var val = this.htbApiGet(`search/fetch?query=${username}&tags=[%22users%22]`,true).then(res => (res.users? res.users[0].id : null))
-		console.log(username, val)
+		// console.log(username, val)
 		return val
 	}
 
@@ -271,6 +276,7 @@ class HtbApiConnector {
 	}
 
 	getCompleteMemberProfileById(memberId) {
+		if (!memberId) return null
 		const memberData = Promise.all([
 			this.getMemberProfile(memberId),
 			this.getMemberActivity(memberId),

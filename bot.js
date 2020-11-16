@@ -2,12 +2,15 @@
  * @module Seven
  */
 
-/*** STARTUP | DECIDE ENV VAR SOURCE ***/
+const { Format: F } = require("./helpers/format")
 
+/*** STARTUP | DECIDE ENV VAR SOURCE ***/
+console.log("%c╔════════════════════╗\n║ seven-server 1.01a ║\n╚════════════════════╝","color:#9FEF00; font-weight:bold; font-size: 50")
+F.logRainbow()
 if (process.env.HEROKU) {
-	console.log("SEVEN-SERVER: Started at " + new Date().toLocaleTimeString() + " on Heroku. Using cloud-configured env vars")
+	console.log("Started at " + new Date().toLocaleTimeString() + " on Heroku. Using cloud-configured env vars")
 } else {
-	console.log("SEVEN-SERVER: Started at " + new Date().toLocaleTimeString() + " on dev machine. Scanning ./config/env for vars")
+	console.log("Started at " + new Date().toLocaleTimeString() + " on dev machine. Scanning ./config/env for vars")
 	require("dotenv").config({ path: "./config/.env" })
 }
 
@@ -17,7 +20,6 @@ const Discord = require("discord.js")
 const client = new Discord.Client()
 const fs = require("fs")
 const { struct } = require("pb-util")
-const { Format: F } = require("./helpers/format")
 const dialogflow = require("dialogflow").v2beta1
 const dflow = new dialogflow.SessionsClient({ credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS) })
 const strings = require("./static/strings")
@@ -29,16 +31,16 @@ const { HtbEmbeds } = require("./views/embeds.js")
 const { SevenDatastore } = require("./models/SevenDatastore.js")
 const { Send } = require("./modules/send.js")
 const { HTBEmoji } = require("./helpers/emoji.js")
-
-
+const { BinClock: BC } = require("./helpers/binclock")
 
 /*** INIT GLOBAL STUFF ***/
 
 var DISCORD_ANNOUNCE_CHAN = false         // The Discord Channel object intended to recieve Pusher achievements.
 var HTB_PUSHER_OWNS_SUBSCRIPTION = false  // The Pusher Client own channel subscription.
+const SEVEN_DB_TABLE_NAME = "funbois"
 // var PUSHER_MSG_LOG = require("./cache/PUSHER_MSG_LOG.json")
 
-
+var PHANTOM_POOL = null
 const CHART_RENDERER = htbCharts.newChartRenderer()
 const DAT = new SevenDatastore()    // Open an abstract storage container for HTB / bot data
 const E = new HTBEmoji(client)
@@ -68,25 +70,61 @@ const db = pgp(cn)
  * @returns {Promise}
 */
 async function importDbBackup() {
-	return db.any("SELECT json FROM cache ORDER BY id ASC;", [true]).then(
-		rows => {
-			DAT.MACHINES = JSON.parse(rows[0].json)
-			DAT.CHALLENGES = JSON.parse(rows[1].json)
-			DAT.TEAM_MEMBERS = JSON.parse(rows[2].json)
-			DAT.TEAM_MEMBERS_IGNORED = JSON.parse(rows[3].json)
-			DAT.TEAM_STATS = JSON.parse(rows[4].json)
-			DAT.DISCORD_LINKS = JSON.parse(rows[5].json)
-			DAT.MISC = JSON.parse(rows[6].json)
-			console.log("IMPORT: Restored from DB backup.")
-			console.info(`Machines   : ${Object.values(DAT.MACHINES).length}` + "\n" +
-									`Challenges : ${Object.values(DAT.CHALLENGES).length}` + "\n" +
-									`Members    : ${Object.values(DAT.TEAM_MEMBERS).length}${(DAT.kTMI.length ? " tracked, " + DAT.kTMI.length + " untracked":"")}` + "\n" +
-									`Linked DC  : ${Object.values(DAT.DISCORD_LINKS).length}`)
-		}
-	).catch(
-		err => console.error(err)
-	)
+	return db.any(`SELECT EXISTS (
+		SELECT 1 
+		FROM   pg_catalog.pg_class c
+		JOIN   pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+		WHERE    c.relname = '${SEVEN_DB_TABLE_NAME}'
+		);`)
+		.then(res => res[0].exists || false)
+		.then(exists => {
+			if (!exists) {
+				console.warn("[SEVEN_DB]::: Table doesn't exist.")
+				return db.any(`CREATE TABLE ${SEVEN_DB_TABLE_NAME}(
+													id SERIAL PRIMARY KEY,
+													name text DEFAULT 'Unknown'::text,
+													json json DEFAULT '{}'::json
+											);
+
+											INSERT INTO ${SEVEN_DB_TABLE_NAME}(id,name,json) 
+											VALUES
+												(DEFAULT, 'machines', '{}'),
+												(DEFAULT, 'challenges', '{}'),
+												(DEFAULT, 'team_members', '{}'),
+												(DEFAULT, 'team_members_ignored', '{}'),
+												(DEFAULT, 'team_stats', '{}'),
+												(DEFAULT, 'discord_links', '{}'),
+												(DEFAULT, 'misc', '{}');
+												`).then(console.log("Inserted!"))}
+			else {
+				// console.log("[SEVEN_DB]::: Data table found.")
+				return true
+			}
+		}).then( res => {
+			return db.any("SELECT json FROM cache ORDER BY id ASC;", [true]).then(
+				rows => {
+					DAT.MACHINES = JSON.parse(rows[0].json)
+					DAT.CHALLENGES = JSON.parse(rows[1].json)
+					DAT.TEAM_MEMBERS = JSON.parse(rows[2].json)
+					DAT.TEAM_MEMBERS_IGNORED = JSON.parse(rows[3].json)
+					DAT.TEAM_STATS = JSON.parse(rows[4].json)
+					DAT.DISCORD_LINKS = JSON.parse(rows[5].json)
+					DAT.MISC = JSON.parse(rows[6].json)
+					console.log("[DB IMPORT]::: Restored from DB backup.")
+					console.info(`Machines   : ${Object.values(DAT.MACHINES).length}` + "\n" +
+											`Challenges : ${Object.values(DAT.CHALLENGES).length}` + "\n" +
+											`Members    : ${Object.values(DAT.TEAM_MEMBERS).length}${(DAT.kTMI.length ? " tracked, " + DAT.kTMI.length + " untracked":"")}` + "\n" +
+											`Linked DC  : ${Object.values(DAT.DISCORD_LINKS).length}`)
+				}
+			).catch(
+				err => console.error(err)
+			)
+
+		})
 }
+// console.log()
+
+// }
 
 
 /** Updates the cloud backup, with options for selective update. 
@@ -97,24 +135,22 @@ async function updateCache(fields = DB_FIELDNAMES_AUTO) {
 	for (let i = 0; i < fields.length; i++) {
 		var fieldName = fields[i]
 		switch (fieldName.toLowerCase()) {
-		case "machines": fieldData.push({ id: 1, json: DAT.MACHINES }); break
-		case "challenges": fieldData.push({ id: 2, json: DAT.CHALLENGES }); break
-		case "team_members": fieldData.push({ id: 3, json: DAT.TEAM_MEMBERS }); break
-		case "team_members_ignored": fieldData.push({ id: 4, json: DAT.TEAM_MEMBERS_IGNORED }); break // These should only update manually
-		case "team_stats": fieldData.push({ id: 5, json: DAT.TEAM_STATS }); break
-		case "discord_links": fieldData.push({ id: 6, json: DAT.DISCORD_LINKS }); break               // These should only update manually
-		case "misc": fieldData.push({ id: 7, json: DAT.MISC }); break
+		case "machines": fieldData.push({ id: 1, json: JSON.stringify(DAT.MACHINES) }); break
+		case "challenges": fieldData.push({ id: 2, json: JSON.stringify(DAT.CHALLENGES) }); break
+		case "team_members": fieldData.push({ id: 3, json: JSON.stringify(DAT.TEAM_MEMBERS) }); break
+		case "team_members_ignored": fieldData.push({ id: 4, json: JSON.stringify(DAT.TEAM_MEMBERS_IGNORED) }); break // These should only update manually
+		case "team_stats": fieldData.push({ id: 5, json: JSON.stringify(DAT.TEAM_STATS) }); break
+		case "discord_links": fieldData.push({ id: 6, json: JSON.stringify(DAT.D_STATIC) }); break               // These should only update manually
+		case "misc": fieldData.push({ id: 7, json: JSON.stringify(DAT.MISC) }); break
 		default:
 			break
 		}
 	}
-	console.info("About to push this data to the DB: ")
-	console.dir(fieldData, { depth: 1 } )
-	const cs = new pgp.helpers.ColumnSet(["?id", { name: "json", cast: "json" }], { table: "cache" })
+	const cs = new pgp.helpers.ColumnSet(["?id", { name: "json", cast: "json" }], { table: SEVEN_DB_TABLE_NAME })
 	const update = pgp.helpers.update(fieldData, cs) + " WHERE v.id = t.id"
 	return await db.result(update)
 		.then(() => {
-			console.log("EXPORT: Updated database backup.")
+			console.log(`[DB BACKUP]::: Backed up ${F.andifyList(fields.map(e => `'${e}'`))} to DB for a rainy day.`)
 			return true
 		})
 		.catch(e => {
@@ -198,9 +234,9 @@ async function updateDiscordIds(client, guildIdString) {
 	for (let i = 0; i < keys.length; i++) {
 		var link = DAT.DISCORD_LINKS[keys[i]]
 		try {
-			var guildMember = await guild.members.resolve(link.id) || false
+			var guildMember = await guild.members.fetch(link.id) || false
 			if (guildMember) {
-				var member = guildMember.user
+				var member = guildMember
 				DAT.DISCORD_LINKS[keys[i]] = member || DAT.DISCORD_LINKS[i]
 			}
 		} catch (error) {
@@ -216,10 +252,11 @@ async function refresh(){
 }
 
 async function main() {
+	PHANTOM_POOL = await require("phantom-pool")()
 	await importDbBackup()
 	DAT.TEAM_STATS.teamFounder = process.env.FOUNDER_HTB_ID
 	await DAT.init()
-
+	await DAT.syncAgent()
 	var HTB_PUSHER_OWNS_SUBSCRIPTION = new HtbPusherSubscription("97608bf7532e6f0fe898",
 		[
 			{channel: "owns-channel", event: "display-info"},
@@ -267,16 +304,17 @@ async function main() {
 	})
 
 	client.on("ready", async () => {
-		console.warn("INFO: Discord connection established...")
-		console.log("CLIENT READY")
+		console.log("[DISCORD]::: CLIENT READY")
 
 		DISCORD_ANNOUNCE_CHAN = await client.channels.fetch(process.env.DISCORD_ANNOUNCE_CHAN_ID.toString())
 
 		/** Test the Pusher owns functionality */
 		// var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
 		// PUSHER_DUMMY_DATA.slice(0,10).forEach(e => {HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel:"owns-channel"})})
-		console.log("Discord account associations:", Object.values(DAT.DISCORD_LINKS).length)
-		setInterval(() => updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString()), 30 * 60 * 1000)   // UPDATE OWNAGE DATA BY PARSING, EVERY 30 MINUTES
+		
+		console.log(`[DISCORD]::: ${Object.values(DAT.DISCORD_LINKS).length} guild members have linked their HTB accounts.`)
+		updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString())
+		setInterval(() => updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString()), 30 * 60 * 1000)   // UPDATE DISCORD LINKS EVERY 30 MINUTES
 	})
 	client.on("message", message => {
 		message.content = message.content.substring(0, 255)
@@ -288,6 +326,7 @@ async function main() {
 				message.channel.stopTyping()
 			}
 		} else if (isAdmin(message.author)) {
+			console.warn("Message content:",message.content)
 			console.log("Message is from dev admin, responding...")
 			if (message.content.includes("📤")) {
 				console.log("Sending file msg...")
@@ -365,10 +404,9 @@ async function sendActivityMsg(message, member, targetType=undefined, sortBy=und
  * @param {Object} message A Discord Message object.
  */
 function understand(message) {
-	// console.log(dflow)
 	//var sessionPath = dflow.environmentSessionPath(process.env.GOOGLE_CLOUD_PROJECT, "Production", "seven-server", message.author.id)
 	var sessionPath = dflow.sessionPath(process.env.GOOGLE_CLOUD_PROJECT, message.author.id)
-	console.log("Sending message to DialogFlow for comprehension. Session ID:", sessionPath)
+	console.log(`[DF]::: Sending message from ${message.author.username} to DialogFlow for comprehension`)
 	const request = {
 		session: sessionPath,
 		queryInput: {
@@ -402,15 +440,15 @@ async function linkDiscord(message, idType, id) {
 	switch (idType) {
 	case "uid":
 		try {
-			DAT.DISCORD_LINKS[id] = message.author
+			DAT.DISCORD_LINKS[id] = (message.channel.type=="dm" ? message.author : await message.guild.members.fetch(`${message.author.id}`))
 			await SEND.human(message, H.any("Associated HTB user " + DAT.getMemberById(id).name + " (" + id + ")", "HTB user " + DAT.getMemberById(id).name + " (" + DAT.getMemberById(id).id + ") has been linked") + " to your Discord account (" + message.author.tag + ")", true)
-			updateCache(["discord_links"])
+			updateCache(["DISCORD_LINKS"])
 			//exportData(DISCORD_LINKS, "discord_links.json")
 		} catch (error) { console.log(error) }
 		break
 
 	case "uname": try {
-		DAT.DISCORD_LINKS[DAT.getMemberByName(id).id] = message.author
+		DAT.DISCORD_LINKS[DAT.getMemberByName(id).id] = (message.channel.type=="dm" ? message.author : await message.guild.members.fetch(`${message.author.id}`))
 		await SEND.human(message, H.any("Associated HTB user " + DAT.getMemberByName(id).name, "HTB user " + DAT.getMemberByName(id).name + " (" + DAT.getMemberByName(id).id + ") has been linked") + " to your Discord account (" + message.author.tag + ")", true)
 		updateCache(["discord_links"])
 		// exportData(DISCORD_LINKS, "discord_links.json")
@@ -545,20 +583,19 @@ async function handleMessage(message) {
 			if (message.content.toLowerCase().trim() == "help") {
 				try { sendHelpMsg(message) } catch (e) { console.log(e) }
 			} else if (htbItem) {
-				console.log(htbItem)
+				console.log("[SEVEN]::: HTB Entity was resolved.")
 				try { SEND.embed(message, EGI.targetInfo(htbItem.type, htbItem.name, null,message, htbItem)) } catch (e) { console.error(e) }
 			} else {
 				var result = await understand(message)
 				var isRipe = result.allRequiredParamsPresent
-				console.log("result.intent: " + result.intent.displayName + "  |  isRipe(hasParams): " + isRipe)
+				console.log("[DF]::: Detected intent: " + F.STL(result.intent.displayName,"bs") + " | " + (isRipe? (result.parameters.length? "All required params present.": "No required parameters") : "Required parameters missing.") )
 				// console.dir(result)
 				if (result.intent && isRipe) {
 					var job = result.intent.displayName
 					var inf = result.parameters.fields
 					/** (Dialogflow) The returned entity parameters, parsed from user query. */
 					var P = struct.decode(result.parameters)
-					console.log("[DF] Detected intent: " + F.STL(job,"bs"))
-					if (Object.keys(P).length) console.log(P)
+					if (Object.keys(P).length) console.log("Extracted:",P)
 					try {
 						switch (job) {
 						case "help": sendHelpMsg(message); break
@@ -574,6 +611,7 @@ async function handleMessage(message) {
 						case "forgetMe.all.getUserID":  forgetHtbDataFlow(message, "all", P.uid); break
 						case "linkDiscord":  linkDiscord(message, (P.uid ? "uid" : "uname"), (P.uid ? P.uid : P.username)); break
 						case "unforgetMe":  unignoreMember(P.uid); SEND.human(message, result.fulfillmentText, true); break
+						case "getTime": SEND.embed(message, EGI.binClock(await BC.genImg(PHANTOM_POOL))); break
 						case "getTeamBadge":  SEND.human(message,F.noncifyUrl(`https://www.hackthebox.eu/badge/team/image/${DAT.TEAM_STATS.id}`),true).then(() => SEND.human(message, result.fulfillmentText, true)); break
 						case "getTeamInfo": SEND.embed(message, EGI.teamInfo()); break
 						case "getTeamLeaders": SEND.embed(message, EGI.teamLeaderboard()); break
@@ -596,10 +634,15 @@ async function handleMessage(message) {
 						P.sortby,
 						P, message), true
 						); break
+						case "Default Fallback Intent": {
+							htbItem = await DAT.resolveEnt(message.content.replace(/\s/g,""),null,null,message,true)
+							if (htbItem) {
+								SEND.embed(message, EGI.targetInfo(null,null,null,message,htbItem)); break
+							} else { await SEND.human(message, result.fulfillmentText) }
+						} break
 						default:
 							message.channel.stopTyping(true)
 							if (result.fulfillmentText) {
-								message.channel.startTyping()
 								await SEND.human(message, result.fulfillmentText)
 								message.channel.stopTyping(true)
 							}
@@ -607,13 +650,12 @@ async function handleMessage(message) {
 					} catch (error) {
 						console.error(error)
 					}
-					
 					message.channel.stopTyping(true)
 				} else {
-					if (result.fulfillmentText) {
-						message.channel.startTyping()
-						await SEND.human(message, result.fulfillmentText)
-					}
+					htbItem = await DAT.resolveEnt(message.content.replace(/\s/g,""),null,null,message,true)
+					if (htbItem) {
+						SEND.embed(message, EGI.targetInfo(null,null,null,message,htbItem))
+					} else { await SEND.human(message, result.fulfillmentText) }
 				}
 			}
 

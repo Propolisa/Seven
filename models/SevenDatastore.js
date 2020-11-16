@@ -8,7 +8,8 @@ const {
 	HtbMachine,
 	HtbChallenge,
 	TeamMember
-} = require("../helpers/classes_legacy.js")
+} = require("../helpers/classes.js")
+const {	HtbSpecialFlag } = require("../helpers/classes.js")
 const {
 	HtbApiConnector: V4
 } = require("../modules/api.js")
@@ -60,6 +61,16 @@ class SevenDatastore {
 	get D() {
 		return this.DISCORD_LINKS
 	}
+
+	get D_STATIC() {
+		var buffer = Object.assign({}, this.DISCORD_LINKS)
+		Object.keys(buffer).forEach(linKey => {
+			let link = buffer[linKey]
+			buffer[linKey] = Object.assign({},{id: link.id, username: link.username || link.user.username, nickname: link.nickname})
+		})
+		return buffer
+	}
+
 	get TS() {
 		return this.TEAM_STATS
 	}
@@ -108,25 +119,30 @@ class SevenDatastore {
 	init() {
 		return this.V4API.init(process.env.HTB_EMAIL, process.env.HTB_PASS)
 			.then(this.V3API.init())
-			
+	}
+
+	syncAgent(){
+		if (process.env["IS_DEV_INSTANCE"]) return setTimeout(() => dFlowEnt.syncAgentUpstream(), 60*1000)
+		else return dFlowEnt.syncAgentDownstream()
 	}
 
 	async update() {
 		if (!this.UPDATE_LOCK) {
 			this.UPDATE_LOCK = true
-			console.log("Update lock engaged. Beginning update attempt.")
+			console.log("[API CONNECTOR]::: Update lock engaged. Beginning update attempt.")
 			try {
 				/* LEGACY STUFF FOR PARSING / PUSHER CONNECT / DATA ABT TEAMS: */
 				await this.V3API.init()
 				var SESH = this.V3API.SESSION
-				if (SESH) console.warn("Got a logged in V3 session.")
+				if (SESH) console.log("[API CONNECTOR]::: Got a logged in V3 session.")
 				this.MISC.SPECIALS = await this.V3API.getSpecials()
-				console.log(this.MISC.SPECIALS)
+				let specialCounts = Object.keys(this.MISC.SPECIALS).map(e => `${this.MISC.SPECIALS[e].length} ${e}`)
+				console.warn(`[APIv4]::: Got ${F.andifyList(specialCounts)}.`)
 				/* API v4 DATA COLLECTION (Who's feeling sexy now..?!) */
 				var MACHINES_V3 = await this.V3API.getMachines()
 				var urmachine = false
 				urmachine = await this.V3API.getUnreleasedMachine()
-				console.warn(urmachine ? "INFO: Got unreleased machine " + urmachine.name + "..." : "INFO: There are currently no machines in unreleased section.")
+				console.warn(urmachine ? "[APIv4]::: Got unreleased machine " + urmachine.name + "..." : "[APIv4]::: There are currently no machines in unreleased section.")
 				if (urmachine) {
 					MACHINES_V3[urmachine.id] = urmachine
 				}
@@ -139,13 +155,12 @@ class SevenDatastore {
 				})) || MACHINES_V4[e])
 
 				this.MACHINES = Object.assign(COMBINED_MACHINES,mSObj)
-				console.warn(`Got ${Object.keys(this.MACHINES).length} machines...`)
+				console.warn(`[APIv4]::: Got ${Object.keys(this.MACHINES).length} machines (Including submissions)...`)
 				
 				var mt = await this.V4API.getMachineTags()
 				this.MISC.MACHINE_TAGS = mt
-				console.warn(`Got ${Object.keys(this.MISC.MACHINE_TAGS).length} machine tag categories...`)
-				
-
+				console.warn(`[APIv4]::: Got ${Object.keys(this.MISC.MACHINE_TAGS).length} machine tag categories...`)
+			
 				if (process.env.HTB_TEAM_ID) {
 					this.TEAM_STATS = await this.V4API.getCompleteTeamProfile(process.env.HTB_TEAM_ID)
 					delete this.TEAM_STATS.weekly
@@ -161,15 +176,14 @@ class SevenDatastore {
 					this.TEAM_STATS = Object.assign(await this.V3API.getUniversityProfile(SESH, process.env.HTB_UNIVERSITY_ID) || {}, await this.V4API.getUniversityProfile(process.env.HTB_UNIVERSITY_ID) || {}, {avatar_url: `https://www.hackthebox.eu/storage/universities/${Number(process.env.HTB_UNIVERSITY_ID)}.png`, type:"university", captain: {id: captain.id, name: captain.name}})
 					// this.TEAM_MEMBERS = await this.V4API.getCompleteMemberProfilesByMemberPartials(TEAM_MEMBERS_BASE)
 				} else {
-					console.warn("No ID (Team or University) was specified!! Please add a definition for either 'HTB_UNIVERSITY_ID' or 'HTB_TEAM_ID' in your environment variables.")
+					console.warn("[API CONNECTOR]::: No ID (Team or University) was specified!! Please add a definition for either 'HTB_UNIVERSITY_ID' or 'HTB_TEAM_ID' in your environment variables.")
 				}
-				
-				console.warn(`Got ${Object.keys(this.TEAM_MEMBERS).length} team member profiles...`)
+				console.warn(`[APIv4]::: Got ${Object.keys(this.TEAM_MEMBERS).length} team member profiles...`)
+				var names = this.vTM.map(e => e.name.toLowerCase())
 				this.CHALLENGES = await this.V4API.getAllCompleteChallengeProfiles()
 				this.MISC.CHALLENGE_CATEGORIES = await this.V4API.getChallengeCategories()
-				console.warn(`Got ${this.kC.length} challenges spanning ${Object.keys(this.MISC.CHALLENGE_CATEGORIES).length} categories...`)
-				console.log("Team stats:")
-				console.info(this.TEAM_STATS)
+				console.warn(`[APIv4]::: Got ${this.kC.length} challenges spanning ${Object.keys(this.MISC.CHALLENGE_CATEGORIES).length} categories...`)
+				console.warn(`[APIv4]::: Got team info for "${this.TEAM_STATS.name}"`)
 				dFlowEnt.addMissingFieldsToEntity(Object.values(this.MISC.SPECIALS).flat().map(e => Object.values(e.flags)).flat(), "specialTargetFlagName")
 				dFlowEnt.addMissingFieldsToEntity(Object.values(this.MISC.SPECIALS).map(specialType => specialType.map(s => s.name)).flat(), "specialTargetName")
 				dFlowEnt.addMissingFieldsToEntity(Object.values(this.MISC.CHALLENGE_CATEGORIES).map(category => category.name), "challengeCategoryName")
@@ -177,9 +191,9 @@ class SevenDatastore {
 				dFlowEnt.addMissingFieldsToEntity(this.MISC.MACHINE_TAGS["11" ].tags.map(attackSub  => attackSub.name ), "boxAttackSub")
 				dFlowEnt.addMissingFieldsToEntity(this.MISC.MACHINE_TAGS["9"].tags.map(attackLang => attackLang.name), "boxLanguage")
 				dFlowEnt.addMissingFieldsToEntity(Object.values(this.MACHINES).map(machine => machine.name), "Machines")
-				dFlowEnt.addMissingFieldsToEntity(Object.values(this.TEAM_MEMBERS).map(member => member.name), "memberName")
+				dFlowEnt.addMissingFieldsToEntity(Object.values(this.TEAM_MEMBERS).map(member => ({value: member.name, synonyms:[member.name, ...this.getDiscordUserSynonymsForUid(member.id, names)]})), "memberName")
 				dFlowEnt.addMissingFieldsToEntity(Object.values(this.CHALLENGES).map(challenge => challenge.name), "challenge")
-
+				dFlowEnt.addMissingFieldsToEntity(Object.values(this.TEAM_MEMBERS).map(member => ({value: member.name, synonyms:[member.name, ...this.getDiscordUserSynonymsForUid(member.id, names)]})), "memberName")
 				/* TO HANDLE EXPORTS WITHOUT DB (USING LOCAL JSON FILES ( useful for dev )):::
 					|  exportData(MACHINES, "machines.json")
 					|  exportData(CHALLENGES, "challenges.json")
@@ -189,16 +203,15 @@ class SevenDatastore {
 					\  exportData(TEAM_STATS, "team_stats.json")  */
 				this.LAST_UPDATE = new Date()
 				this.UPDATE_LOCK = false
-				console.log("Update lock released.")
+				console.log("[API CONNECTOR]::: Update lock released.")
 			} catch (error) {
-				console.error(error, "UPDATE FAILED.")
-				console.error("\nUPDATE LOCK HAS BEEN RESET AS A PRECAUTION.")
+				console.error(error, "[API CONNECTOR]::: UPDATE FAILED.")
+				console.error("\n[API CONNECTOR]::: UPDATE LOCK HAS BEEN RESET AS A PRECAUTION.")
 				this.UPDATE_LOCK = false
 				// throw(error)
 			}
-
 		} else {
-			console.warn("WARN: DATA UPDATE NOT STARTED, AS ONE IS ALREADY IN PROGRESS.")
+			console.warn("[API CONNECTOR]::: WARNING: DATA UPDATE NOT STARTED, AS ONE IS ALREADY IN PROGRESS.")
 		}
 	}
 
@@ -235,6 +248,15 @@ class SevenDatastore {
 			break
 		case "challenge":
 			targets = this.vC
+			break
+		case "endgame":
+			targets = this.MISC.SPECIALS["Endgame"]
+			break
+		case "fortress":
+			targets = this.MISC.SPECIALS["Fortress"]
+			break
+		case "prolab":
+			targets = this.MISC.SPECIALS["Pro Labs"]
 			break
 		default:
 			break
@@ -293,7 +315,7 @@ class SevenDatastore {
 		targetFilterBases.filter(e => e.cust).forEach(filterBasis => {
 			switch (filterBasis.cust) {
 			case "nolimit":
-				console.log("USER DON'T WANT NO LIMITS")
+				console.warn("[APIv4]::: USER DON'T WANT NO LIMITS")
 				limit = 0
 				break
 			case "incomplete":
@@ -306,13 +328,10 @@ class SevenDatastore {
 				break
 			case "complete":
 				if (memberNames) {
-					// console.log(memberNames)
 					memberNames.forEach(memberName => {
-						console.log(targets.length)
 						var member = this.resolveEnt(memberName, "member", false, message, false)
 						targets = targets.filter(target => (this.getMemberOwnsForTarget(member, target)))
-						console.log(targets.length)
-						console.log(("checked " + memberName))
+						console.log(("Checked " + memberName))
 					})
 				}
 				break
@@ -330,7 +349,6 @@ class SevenDatastore {
 				}
 				break
 			case "poorly rated":
-				console.log("Got here!")
 				if (targetType == "machine") {
 					targets = targets.filter(target => target.rating < 3)
 				} else if (targetType == "challenge") {
@@ -392,11 +410,11 @@ class SevenDatastore {
 	}
 
 	resolveExternalMember(id, name = null) {
-		console.log("resolving external member...", arguments)
+		// console.log("Resolving external member...", arguments)
 		if (id) {
 			return this.V4API.getCompleteMemberProfileById(id)
 		} else if (name) {
-			return this.V4API.getMemberIdFromUsername(name).then(resolvedId => this.V4API.getCompleteMemberProfileById(resolvedId))
+			return this.V4API.getMemberIdFromUsername(name).then(resolvedId => this.V4API.getCompleteMemberProfileById(resolvedId)).then(member => (member && member.name ? Object.assign({type:"member"},member): member))
 		}
 	}
 
@@ -407,7 +425,7 @@ class SevenDatastore {
 			}
 			var result = {}
 			const isSelf = checkSelfName(kwd)
-			kwd = (targetType == "member" && checkSelfName(kwd) ? discordMessage.author.username : kwd)
+			kwd = (isSelf ? this.getMemberById(this.getIdFromDiscordId(discordMessage ? discordMessage.author.id : null)).name || (discordMessage ? discordMessage.author.name : kwd) : kwd)
 			// console.log("Resolving '" + kwd + "'...")
 			if (targetType) {
 				switch (targetType) {
@@ -435,11 +453,12 @@ class SevenDatastore {
 				result["machine"] = this.getMachineByName(kwd)
 				result["challenge"] = this.getChallengeByName(kwd)
 				result["special"] = this.getSpecialByName(kwd)
+				result["specialFlag"] = this.getSpecialFlagByName(kwd)
 				if (lookup && !/\s/.test(kwd) && !Object.values(result).some(e => e)) {
 					result["member"] = this.resolveExternalMember((isIdLookup ? kwd : null), (!isIdLookup ? kwd : null))
 				}
 			}
-			return result["member"] || result["machine"] || result["challenge"] || result["special"]
+			return result["member"] || result["machine"] || result["challenge"] || result["special"] || result["specialFlag"]
 		} catch (error) {
 			console.error(error)
 			console.warn(`Resolving datastore entity ${(isIdLookup ? "[by ID] " : "")}from '${kwd}' failed. ${(targetType ? "(Target type '" + targetType + "' specified.)" : "")}`)
@@ -454,16 +473,18 @@ class SevenDatastore {
 	 * @returns {(TeamMember|null)}
 	 */
 	getMemberByName(name, isSelf = false) {
-		var match = (Object.values(this.TEAM_MEMBERS).find(member => member.name.toLowerCase() == name.toLowerCase()))
-		if (match) {
-			if (isSelf) {
-				match = Object.assign({}, match)
-				match.self = true
+		if (name){
+			var match = (Object.values(this.TEAM_MEMBERS).find(member => member.name.toLowerCase() == name.toLowerCase()))
+			if (match) {
+				if (isSelf) {
+					match = Object.assign({}, match)
+					match.self = true
+				}
+				return match
+			} else {
+				match = this.getIdFromDiscordName(name)
+				return this.TEAM_MEMBERS[match] || null
 			}
-			return match
-		} else {
-			match = this.getIdFromDiscordName(name)
-			return this.TEAM_MEMBERS[match] || null
 		}
 	}
 
@@ -508,11 +529,31 @@ class SevenDatastore {
 	/**
 	 * Get the challenge object whose name matches the parameter string.
 	 * @param {string} name - The challenge name.
-	 * @returns {(HtbChallenge|null)}
+	 * @returns {Object}
 	 */
-	getSpecialByName(name, type=null) { // Return endgame, fortress or pro lab with name matching parameter string
-		if (!type) {return Object.values(this.MISC.SPECIALS).map(e => e.find(s => (s.name == name || s.company == name))).flat().filter(e => e)[0] || null}
-		else {return Object.values(this.MISC.SPECIALS).map(e => e.find(s => (s.name == name || s.company == name) && s.type == type)).flat()}
+	getSpecialByName(name=null, type=null) { // Return endgame, fortress or pro lab with name matching parameter string
+		if (name && this.MISC.SPECIALS) {
+			if (!type) {return Object.values(this.MISC.SPECIALS).map(e => e.find(s => (s.name == name || s.company == name))).flat().filter(e => e)[0] || null}
+			else {return Object.values(this.MISC.SPECIALS).map(e => e.find(s => (s.name == name || s.company == name) && s.type == type)).flat()}
+		} else {
+			return null
+		}
+	}
+
+	/**
+	 * Get the special challenge flag pseudo-object whose name matches the parameter string.
+	 * @param {string} name - The special challenge flag name.
+	 * @returns {Object}
+	 */
+	getSpecialFlagByName(name) { // Return endgame, fortress or pro lab with name matching parameter string
+		if (this.MISC.SPECIALS) {
+			var specialTargetResolved = Object.values(this.MISC.SPECIALS).flat().map(e => ({parent:e, flag:Object.values(e.flags).map((f,i) => ({name:f,idx:i+1})).find(f => f.name.replace(/\W/g, "").toLowerCase() == name.replace(/\W/g, "").toLowerCase())})).flat().filter(e => e.flag).shift()
+			var res
+			if (specialTargetResolved) {res = new HtbSpecialFlag(specialTargetResolved.flag.idx,specialTargetResolved.flag.name,specialTargetResolved.parent)}
+			else {res = null}
+			return res
+		} else { return null }
+		
 	}
 
 	/**
@@ -552,13 +593,15 @@ class SevenDatastore {
 
 	getMemberOwnsForTarget(member, target) {
 		if (member && target) {
-			console.log(member)
-			var validOwns = null
+			// console.log(member)
+			var validOwns = []
 			switch (target.type) {
 			case "machine": case "challenge":
-				validOwns = member.activity.filter(own => own.object_type == target.type && (own.name == target.name || own.name == target.company)); break
+				validOwns = member.activity.filter(own => own.object_type == target.type && (own.name == target.name || own.name == target.company)).map(own => ({...own, id:member.id})); break
 			case "endgame": case "fortress":
-				validOwns = member.activity.filter(own => own.object_type == target.type && (own.name == target.name || own.name == target.company)); break
+				validOwns = member.activity.filter(own => own.object_type == target.type && (own.name == target.name || own.name == target.company)).map(own => ({...own, id:member.id})); break
+			case "flag":
+				validOwns = member.activity.filter(own => own.object_type == target.parent.type && (own.name == target.parent.name || own.name == target.parent.company)).filter(own => target.name.toLowerCase() == own.flag_title.toLowerCase()).map(own => ({...own, id:member.id})); break
 			case "prolab":
 				validOwns = []; break
 			default: break
@@ -580,23 +623,41 @@ class SevenDatastore {
 			}
 		}
 		const member = this.getMemberById(memberId)
+		if (!member) return []
 		// console.log(member)
 		var owns = (targetType ? [...member.activity].filter(e => e.object_type == targetType) : [...member.activity])
 		const filteredOwns = process(owns, sortOrder, sortBy, limit)
-		return filteredOwns || null
+		return filteredOwns || []
 	}
 
 	getTeamOwnsForTarget(target) {
 		if (!target) {
 			return undefined
 		}
-		var teamOwns = Object.values(this.TEAM_MEMBERS).map(e => ({
-			id: e.id,
-			act: e.activity
-		})).map(owns => owns.act.filter(own => own.object_type == target.type && own.name == target.name).map(k => ({
+		// console.warn(target)
+		var teamOwns = []
+		// if (target.type == "flag") {
+		// 	teamOwns = this.vTM.map(e => ({
+		// 		id: e.id,
+		// 		act: e.activity
+		// 	})).map(member => member.act.filter(own => own.object_type == target.parent.type && own.flag_title == target.name).map(k => ({
+		// 		...k,
+		// 		uid: member.id
+		// 	}))).filter(own => target.name == own.flag_title).flat(1).sort((a, b) => H.sortByZuluDatestring(a, b, "date", false))
+		// } else {
+		// 	teamOwns = this.vTM.map(e => ({
+		// 		id: e.id,
+		// 		act: e.activity
+		// 	})).map(member => member.act.filter(own => own.object_type == target.type && own.name == target.name).map(k => ({
+		// 		...k,
+		// 		uid: member.id
+		// 	}))).flat(1).sort((a, b) => H.sortByZuluDatestring(a, b, "date", false))
+		// }
+		teamOwns = this.vTM.map(m => this.getMemberOwnsForTarget(m,target)).flat().filter(e => e).map(k => ({
 			...k,
-			uid: owns.id
-		}))).flat(1).sort((a, b) => H.sortByZuluDatestring(a, b, "date", false))
+			uid: k.id
+		})).flat(1).sort((a, b) => H.sortByZuluDatestring(a, b, "date", false))
+		
 		console.info(`Got ${teamOwns.length} valid team owns...`)
 		return (!teamOwns.length ? null : teamOwns)
 	}
@@ -684,6 +745,11 @@ class SevenDatastore {
 		return (out.length == 1 ? out[0] : out)
 	}
 
+	getDiscordUserSynonymsForUid(id, names){
+		var dcMem = this.D_STATIC[id]
+		var buffer = [...new Set([(H.sAcc(dcMem, "username") || ""), (H.sAcc(dcMem, "nickname") || "")].filter(e => e).filter(e => !names.includes(e.toLowerCase())))]
+		return buffer
+	}
 	/**
 	 * Returns a pretty-printable version of the Discord username and / or HTB username for a given HTB UID, in hyperlinked Discord markdown.
 	 * @param {number} uid
@@ -691,8 +757,9 @@ class SevenDatastore {
 	 */
 	tryDiscordifyUid(uid, isSelf = false, showBothNames=true) {
 		if (uid in this.TEAM_MEMBERS) {
-			if (uid in this.DISCORD_LINKS) {
-				var discordName = this.DISCORD_LINKS[uid].username
+			if (uid in this.D_STATIC) {
+				var dcMem = this.D_STATIC[uid]
+				var discordName = (H.sAcc(dcMem, "username") || "") || (H.sAcc(dcMem, "nickname") || "")
 				if (discordName.toLowerCase() != this.TEAM_MEMBERS[uid].name.toLowerCase()) {
 					return `🌀${F.STL(discordName, "bs")}${(showBothNames ? " ("+this.TEAM_MEMBERS[uid].name+")" : "" )}${(isSelf ? " [You]":"")}`
 				} else {
@@ -712,7 +779,17 @@ class SevenDatastore {
 	 * @returns {(number|false)}
 	 */
 	getIdFromDiscordName(username) {
-		var id = Object.keys(this.DISCORD_LINKS).find(link => this.DISCORD_LINKS[link].username.toLowerCase() == username.toLowerCase())
+		var id = Object.keys(this.D_STATIC).find(link => ((H.sAcc(this.D_STATIC[link], "username") || "").toLowerCase() || (H.sAcc(this.D_STATIC[link], "nickname") || "")) == username.toLowerCase())
+		return id || false
+	}
+
+	/**
+	 * Gets the HTB user ID for a given Discord username, if such an association exists.
+	 * @param {string} dId - The Discord username to lookup linked account for.
+	 * @returns {(number|false)}
+	 */
+	getIdFromDiscordId(dId) {
+		var id = Object.keys(this.D_STATIC).find(link => H.sAcc(this.D_STATIC[link], "id") || H.sAcc(this.D_STATIC[link], "userID") == dId)
 		return id || false
 	}
 

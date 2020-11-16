@@ -64,7 +64,7 @@ class HtbLegacyConnector {
 			rp("https://www.hackthebox.eu/api/machines/get/all?api_token=" + process.env.HTB_TOKEN, { json: true })
 				.then(function (machines) {
 					var machineSet = {}
-					console.log("Got", machines.length, "machines...")
+					console.warn("[APIv3]::: Got", machines.length, "machines...")
 					//console.log(value)
 					var machineIds = jp.query(machines, "$.*.id")
 					var machineNames = jp.query(machines, "$.*.name")
@@ -196,9 +196,9 @@ class HtbLegacyConnector {
 			var $ = require("jquery")(new JSDOM(homepage.body).window)
 			specialTypes.forEach(type => { specials[[type]] = []; $("a:contains('" + type + "')").next().find("a").each(function () { specials[[type]].push(this.href.substring(25)) }) })
 			var keys = Object.keys(specials)
-			console.log(keys, specials)
+			// console.log(keys, specials)
 			for (let specialKey of keys) {
-				console.log("Fetching specials:", specialKey)
+				console.warn("[APIv3]::: Fetching specials:", specialKey)
 				var specialLinks = specials[specialKey]
 				var thisSpecialCategoryChallenges = []
 				for (let i = 0; i < specialLinks.length; i++) {
@@ -347,14 +347,14 @@ class HtbLegacyConnector {
 	
 	getTeamMemberIds(session, teamId, ignored) {
 		return new Promise(resolve => {
-			console.log(`Enumerating member ids for team #${teamId}...`)
+			console.log(`[APIv3]::: Enumerating member ids for team #${teamId}...`)
 			session.request(`/home/teams/profile/${Number(teamId)}`, function (error, response, body) {
 				var teamIds = []
 				var $ = require("jquery")(new JSDOM(body).window)
 				//console.log("Team page body length:" + body)
 				// Parse Team Stats
 				// console.log($("#membersTable").children()[0])
-				console.log("Getting team members...")
+				console.log("[APIv3]::: Getting team members...")
 				// Parse Team Members
 				try {
 					$($("#membersTable").children()[1]).children().each(function() {
@@ -375,7 +375,7 @@ class HtbLegacyConnector {
 
 	getUniversityProfile(session, universityId){
 		return new Promise(resolve => {
-			console.log(`Getting university profile for uni #${universityId}...`)
+			console.log(`[APIv3]::: Getting university profile for uni #${universityId}...`)
 			session.request(`/home/universities/profile/${Number(universityId)}`, function (error, response, body) {
 				var $ = require("jquery")(new JSDOM(body).window)
 				var teamInfo = {}
@@ -401,7 +401,7 @@ class HtbLegacyConnector {
 
 	getUniversityMemberIds(session, universityId, ignored) {
 		return new Promise(resolve => {
-			console.log(`Enumerating HTB IDs for students of University #${universityId}...`)
+			console.log(`[APIv3]::: Enumerating HTB IDs for students of University #${universityId}...`)
 			session.request(`/home/universities/profile/${Number(universityId)}`, function (error, response, body) {
 				var universityIds = []
 				var $ = require("jquery")(new JSDOM(body).window)
@@ -427,7 +427,7 @@ class HtbLegacyConnector {
 	
 	getTeamStats(session, teamId) {
 		return new Promise(resolve => {
-			console.log("Getting team stats...")
+			console.log("[APIv3]::: Getting team stats...")
 			session.request(`/home/teams/profile/${teamId}`, (error, response, body) => {
 				var teamStats = {}
 				var $ = require("jquery")(new JSDOM(body).window)
@@ -454,9 +454,9 @@ class HtbLegacyConnector {
 					teamStats.globalRanking = globalRanking
 					teamStats.points = totalPoints
 					teamStats.owns = { roots: totalRoots, users: totalUsers }
-					console.log("Team Stats Updated:", teamStats)
+					console.log("[APIv3]::: Team Stats Updated:", teamStats)
 				} catch (error) {
-					console.error(error, "ERROR: Could not parse team stats. Failing gracefully...")
+					console.error(error, "[APIv3]::: ERROR: Could not parse team stats. Failing gracefully...")
 				}
 				resolve(teamStats)
 			})
@@ -467,7 +467,7 @@ class HtbLegacyConnector {
 	
 	getTeamData(session, id) {
 		return new Promise(resolve => {
-			console.log("Getting team details...")
+			console.log("[APIv3]::: Getting team details...")
 			session.request(`/home/teams/profile/${id}`, (error, response, body) => {
 				var teamUsers = {}
 				var $ = require("jquery")(new JSDOM(body).window)
@@ -490,12 +490,12 @@ class HtbLegacyConnector {
 					TEAM_STATS.respects = respects
 					TEAM_STATS.owns.roots = totalRoots
 					TEAM_STATS.owns.users = totalUsers
-					console.log("Team Stats Updated:", TEAM_STATS)
+					console.log("[APIv3]::: Team Stats Updated:", TEAM_STATS)
 				} catch (error) {
 					console.error(error)
-					console.error("ERROR: Could not parse team Data. Failing gracefully...")
+					console.error("[APIv3]::: ERROR: Could not parse team Data. Failing gracefully...")
 				}
-				console.log("Getting team members...")
+				console.log("[APIv3]::: Getting team members...")
 				// Parse Team Members
 				try {
 	
@@ -518,7 +518,7 @@ class HtbLegacyConnector {
 				} catch (error) {
 					console.error(error)
 				}
-				console.log("SUCCESS: Got team members... " + Object.keys(teamUsers).length)
+				console.log("[APIv3]::: SUCCESS: Got team members... " + Object.keys(teamUsers).length)
 				resolve(teamUsers)
 			})
 		})
@@ -561,7 +561,7 @@ class HtbLegacyConnector {
 	
 	async getOwnageData(session, mbrs) {
 		var members = Object.keys(mbrs)
-		console.log("Collecting ownage data for " + members.length + " team members...")
+		console.log("[APIv3]::: Collecting ownage data for " + members.length + " team members...")
 		return new Promise(async resolve => {
 			for (var i = 0; i < members.length; i++) {
 				//for (var i = 0; i < 5; i++) {
@@ -611,7 +611,7 @@ class HtbLegacyConnector {
 					} else {
 						// TEAM_MEMBERS[id].stats = { users: 0, roots: 0, challenges: 0, respects: 0, bloods: 0 }
 					}
-					console.log("Parsing owns for " + TEAM_MEMBERS[id].name + "...")
+					console.log("[APIv3]::: Parsing owns for " + TEAM_MEMBERS[id].name + "...")
 				} catch (error) {
 					// There was a problem getting stats for the user based on profile timechart
 					console.log(error)

@@ -1,0 +1,180 @@
+﻿<html lang="en"><head>
+
+  <meta charset="UTF-8">
+  
+<link rel="apple-touch-icon" type="image/png" href="https://static.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png">
+<meta name="apple-mobile-web-app-title" content="CodePen">
+
+<link rel="shortcut icon" type="image/x-icon" href="https://static.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico">
+
+<link rel="mask-icon" type="" href="https://static.codepen.io/assets/favicon/logo-pin-8f3771b1072e3c38bd662872f6b673a722f4b3ca2421637d5596661b4e2132cc.svg" color="#111">
+
+
+  <title>CodePen - Binary Clock</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+
+  
+  
+<style>
+html, body {
+  background: #27272C;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+          align-items: center;
+  height: 100%
+}
+
+.pip {
+  width: 17px;
+  height: 17px;
+  margin: 7px;
+  background-color: #525252;
+  border-radius: 100%;
+  -webkit-transition: all .3s ease-in;
+  transition: all .3s ease-in;
+}
+
+.pip--on {
+  background-color: #48d8b8;
+  -webkit-transform: scale(1.1);
+          transform: scale(1.1);
+}
+
+.clock {
+  display: -webkit-box;
+  display: flex
+}
+
+.binary-digit-group {
+  display: -webkit-box;
+  display: flex;
+  margin: 0 6px;
+}
+</style>
+
+  <script>
+  window.console = window.console || function(t) {};
+</script>
+
+  
+  
+  <script>
+  if (document.location.search.match(/type=embed/gi)) {
+    window.parent.postMessage("resize", "*");
+  }
+</script>
+
+
+</head>
+
+<body translate="no">
+  <div id="react"><div data-reactroot="" class="app"><div class="clock"><div class="binary-digit-group"><div class="binary-digit"><div class="pip false"></div><div class="pip false"></div><div class="pip pip--on"></div><div class="pip false"></div></div><div class="binary-digit"><div class="pip false"></div><div class="pip false"></div><div class="pip pip--on"></div><div class="pip pip--on"></div></div></div><div class="binary-digit-group"><div class="binary-digit"><div class="pip false"></div><div class="pip pip--on"></div><div class="pip false"></div><div class="pip pip--on"></div></div><div class="binary-digit"><div class="pip false"></div><div class="pip pip--on"></div><div class="pip pip--on"></div><div class="pip false"></div></div></div><div class="binary-digit-group"><div class="binary-digit"><div class="pip false"></div><div class="pip pip--on"></div><div class="pip false"></div><div class="pip false"></div></div><div class="binary-digit"><div class="pip pip--on"></div><div class="pip false"></div><div class="pip false"></div><div class="pip false"></div></div></div></div></div></div>
+    <script src="https://static.codepen.io/assets/common/stopExecutionOnTimeout-157cd5b220a5c80d4ff8e0e70ac069bffd87a61252088146915e8726e5d9f147.js"></script>
+
+  <script src="https://npmcdn.com/react@15.3.0/dist/react.min.js"></script>
+<script src="https://npmcdn.com/react-dom@15.3.0/dist/react-dom.min.js"></script>
+  
+      <script id="rendered-js">
+const Pip = ({ isOn }) =>
+React.createElement("div", { className: `pip ${isOn && 'pip--on'}` });
+
+const BinaryDigit = ({ base2NumberAsArray }) =>
+React.createElement("div", { className: "binary-digit" },
+
+base2NumberAsArray.map((pip, idx) => React.createElement(Pip, { key: idx, isOn: pip === 1 })));
+
+
+
+const BinaryDigitGroup = ({ group }) =>
+React.createElement("div", { className: "binary-digit-group" },
+
+group.map((binaryDigit, idx) => React.createElement(BinaryDigit, { base2NumberAsArray: binaryDigit, key: idx })));
+
+
+
+class Clock extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      digits: [[], [], []] };
+
+  }
+
+  componentDidMount() {
+    setInterval(function () {
+      const date = new Date();
+      const newDigits = [
+      numberAsBinaryArrayPair(date.getHours()),
+      numberAsBinaryArrayPair(date.getMinutes()),
+      numberAsBinaryArrayPair(date.getSeconds())];
+
+      this.setState({
+        digits: newDigits });
+
+    }.bind(this), 1000);
+  }
+
+  render() {
+    return (
+      React.createElement("div", { className: "app" },
+      React.createElement("div", { className: "clock" },
+
+      this.state.digits.map(digit => React.createElement(BinaryDigitGroup, { group: digit })))));
+
+
+
+
+  }}
+
+
+
+ReactDOM.render(
+React.createElement(Clock, null),
+document.getElementById('react'));
+
+
+
+function numberToBinary(base10Number) {
+  const base2Values = [8, 4, 2, 1];
+  let output = [0, 0, 0, 0];
+  let remainder = base10Number;
+
+  base2Values.forEach((val, idx) => {
+    const left = remainder - val;
+
+    if (left >= 0) {
+      output[idx] = 1;
+      remainder = left;
+    }
+  });
+
+  return output;
+}
+
+function numberAsBinaryArrayPair(number) {
+  const pair = [];
+  if (number < 10) {
+    pair[0] = numberToBinary();
+    pair[1] = numberToBinary(number);
+  } else {
+    const numberAsArray = String(number).split('');
+    pair[0] = numberToBinary(parseInt(numberAsArray[0], 10));
+    pair[1] = numberToBinary(parseInt(numberAsArray[1], 10));
+  }
+
+  return pair;
+}
+//# sourceURL=pen.js
+    </script>
+
+  
+
+
+
+
+ 
+</body></html>
