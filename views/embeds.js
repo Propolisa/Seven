@@ -58,7 +58,7 @@ class HtbEmbeds {
 
 	targetInfo(type, identifier, isId = false, discordMessage = null, target=null) {
 		console.info(`Sending target info message for ${target?target.type:type} '${target?target.name:identifier}'...`)
-		target = (target.type? target || this.ds.resolveEnt(identifier, type, isId, discordMessage) : { type: null })
+		target = (target && target.type? target: this.ds.resolveEnt(identifier, type, isId, discordMessage) || { type: null })
 		if (target.country_name) { // A living, breathing human being
 			target.type = "member"
 		}
