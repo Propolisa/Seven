@@ -6,6 +6,7 @@
 # 💬 Seven
 #### An AI-powered Discord Bot for [Hack The Box](https://www.hackthebox.eu) teams. 
 ![Seven's visage](/branding/seven_thumb_128.png)
+
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ## 🍉 About 
