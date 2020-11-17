@@ -3,5 +3,68 @@
   "description": "Seven's Node.js app, packaged for Heroku",
   "repository": "https://github.com/Propolisa/Seven",
   "logo": "https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_256.png",
-  "keywords": ["node", "hackthebox", "discord.js"]
+	"keywords": ["node", "hackthebox", "discord.js"],
+	"addons": [
+    "heroku-postgresql",
+    {
+      "plan": "hobby-dev",
+      "as": "DATABASE"
+    }
+  ],
+	"env": {
+		"BOT_TOKEN": {
+			"description": "Your Discord bot credential, acquired from the Developer Portal.",
+			"value": ""
+		},
+		"HTB_EMAIL": {
+			"description": "Your Hack The Box login email address.",
+			"value": ""
+		},
+		"HTB_PASS": {
+			"description": "Your personal Hack The Box password (please ensure this password is not used anywhere else, for your own security)",
+			"value": ""
+		},
+		"DATABASE_URL": {
+			"description": "The postgres database url (auto-provisioned by Heroku addon) in the format: postgres://db_uname:db_pass@host_ip/db_name",
+			"value": ""
+		},
+		"GOOGLE_APPLICATION_CREDENTIALS": {
+			"description": "The JSON credential file from GCP for the DialogFlow project's API user, as a string.",
+			"value": ""
+		},
+		"GOOGLE_CLOUD_PROJECT": {
+			"description": "The short name / tag that uniquely identifies your DialogFlow project on GCP, e.g. 'seven-huqce'.",
+			"value": ""
+		},
+		"ADMIN_DISCORD_ID": {
+			"description": "The ID of the Discord user who will have administrator access to the bot (probably you!).",
+			"value": ""
+		},
+		"DISCORD_GUILD_ID": {
+			"description": "The HTB Team's Discord guild ID.",
+			"value": ""
+		},
+		"DISCORD_ANNOUNCE_CHAN_ID": {
+			"description": "The ID of the channel (e.g. 'bot') where Seven can send notifications. (Omit if announcements are not desired)",
+			"required": false,
+			"value": ""
+		},
+		"EMOJI_GUILD_ID": {
+			"description": "The ID of the Guild (e.g. 'Seven-Emoji') which Seven can use for storing and retrieving custom emoji.",
+			"value": ""
+		},
+		"HTB_TEAM_ID": {
+			"description": "The team's ID on HTB, which can be found in its profile URL.",
+			"value": ""
+		},
+		"IS_HEROKU": {
+			"description": "Indicates to the Node app that Seven is running on Heroku (suppressing certain dev tools).",
+			"value": "true"
+		},
+		"ACCEPT_HIGHCHARTS_LICENSE": {
+			"description": "Pre-accepts the Highcharts Export Server license for silent deployment.",
+			"value": "YES"
+		}
+	}
+	
 }
