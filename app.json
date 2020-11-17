@@ -5,9 +5,8 @@
   "logo": "https://raw.githubusercontent.com/Propolisa/Seven/master/branding/seven_thumb_256.png",
 	"keywords": ["node", "hackthebox", "discord.js"],
 	"addons": [
-    "heroku-postgresql",
     {
-      "plan": "hobby-dev",
+      "plan": "heroku-postgresql:hobby-dev",
       "as": "DATABASE"
     }
   ],
