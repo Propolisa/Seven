@@ -21,7 +21,7 @@ const client = new Discord.Client()
 const fs = require("fs")
 const { struct } = require("pb-util")
 const dialogflow = require("dialogflow").v2beta1
-const dflow = new dialogflow.SessionsClient({ credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS) })
+const dflow = new dialogflow.SessionsClient({ credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS || "{}") })
 const strings = require("./static/strings")
 const { Helpers: H } = require("./helpers/helpers.js")
 const { HtbPusherSubscription } = require("./helpers/pusher-htb")
@@ -630,6 +630,11 @@ async function handleMessage(message) {
 						case "filterMemberOwns": sendActivityMsg(message,	DAT.resolveEnt(P.username, "member", false, message),
 							P.targettype, P.sortby, P.sortorder,	P.limit || 24); break
 						case "filterTargets": SEND.embed(message, EGI.filteredTargets(DAT.filterEnt(message,
+							P.targettype, P.sortby, P.sortorder,	P.limit || 15,	null,	null, P.memberName, P.targetFilterBasis),
+						P.sortby,
+						P, message), true
+						); break
+						case "filterMembers": SEND.embed(message, EGI.filteredTargets(DAT.filterEnt(message,
 							P.targettype, P.sortby, P.sortorder,	P.limit || 15,	null,	null, P.memberName, P.targetFilterBasis),
 						P.sortby,
 						P, message), true

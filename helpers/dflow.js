@@ -10,7 +10,7 @@ const zTools = require("../helpers/zip-tools")
  
 const dialogflow = require("dialogflow")
 const { agent } = require("superagent")
-const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS)
+const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS || "{}")
 const entitiesClient = new dialogflow.EntityTypesClient({
 	credentials: credentials,
 })
