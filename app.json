@@ -54,12 +54,12 @@
 			"required": false
 		},
 		"HTB_TEAM_ID": {
-			"description": "ᴛᴇᴀᴍ ᴍᴏᴅᴇ: The team's ID on HTB (get from the public team profile URL). If a university, leave blank.",
+			"description": "𝗧𝗘𝗔𝗠 𝗠𝗢𝗗𝗘: The team's ID on HTB (get from the public team profile URL). If a university, leave blank.",
 			"value": "",
 			"required": false
 		},
 		"HTB_UNIVERSITY_ID": {
-			"description": "ᴜɴɪᴠᴇʀꜱɪᴛy ᴍᴏᴅᴇ: The university's ID on HTB (get from the public uni profile URL). If a team, leave blank.",
+			"description": "𝗨𝗡𝗜𝗩𝗘𝗥𝗦𝗜𝗧𝗬 𝗠𝗢𝗗𝗘: The university's ID on HTB (get from the public uni profile URL). If a team, leave blank.",
 			"value": "",
 			"required": false
 		},
