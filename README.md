@@ -1,11 +1,12 @@
 👩‍💻️ *If you enjoy Seven, feel free to show some love so I can create more projects like this!*
 
 
-[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F1F61UIUZ)
+[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F1F61UIUZ) 
 
 # 💬 Seven
 #### An AI-powered Discord Bot for [Hack The Box](https://www.hackthebox.eu) teams. 
 ![Seven's visage](/branding/seven_thumb_128.png)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ## 🍉 About 
 Seven is a semi-intelligent AI chatbot built with [DialogFlow](https://dialogflow.cloud.google.com/) and [Node.js](https://nodejs.org/), whose purpose is to make Hack The Box (hackthebox.eu/) achievement data accessible and convenient within team Discord channels. 
