@@ -50,11 +50,18 @@
 		},
 		"EMOJI_GUILD_ID": {
 			"description": "The ID of the Guild (e.g. 'Seven-Emoji') which Seven can use for storing and retrieving custom emoji.",
-			"value": ""
+			"value": "",
+			"required": false
 		},
 		"HTB_TEAM_ID": {
-			"description": "The team's ID on HTB, which can be found in its profile URL.",
-			"value": ""
+			"description": "FOR TEAMS: The team's ID on HTB (get from the public team profile URL). If a university, <strong>leave blank</strong>.",
+			"value": "",
+			"required": false
+		},
+		"HTB_UNIVERSITY_ID": {
+			"description": "FOR UNIVERSITIES: The university's ID on HTB (get from the public uni profile URL). If a team, leave blank.",
+			"value": "",
+			"required": false
 		},
 		"IS_HEROKU": {
 			"description": "Indicates to the Node app that Seven is running on Heroku (suppressing certain dev tools).",
