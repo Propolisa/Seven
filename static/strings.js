@@ -3,7 +3,7 @@ const confirmUnlinkedDiscord = "Alright, your Discord ID (if one has been linked
 const confirmBlacklistedHtbProfile = "Noted! Your HTB account has been blacklisted from future scans so you won't show up in ranking/info responses. Your profile details within my program has been purged as well. :watermelon:\nThanks for letting me know. You can ask me in the future to remember you again, if you'd like to be included again."
 const confirmWillIgnoreUser = "Okay, I've removed all traces of your data and will no longer respond to queries with your rank / ownage / other data.\nYou can undo this at any time by asking me to remember you again."
 
-exports.manual = manual;
+exports.manual = manual
 exports.confirmBlacklistedHtbProfile = confirmBlacklistedHtbProfile
 exports.confirmUnlinkedDiscord = confirmUnlinkedDiscord
 exports.confirmWillIgnoreUser = confirmWillIgnoreUser
