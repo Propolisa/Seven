@@ -20,7 +20,7 @@
 			"value": ""
 		},
 		"HTB_PASS": {
-			"description": "Your personal Hack The Box password (please ensure this password is not used anywhere else, for your own security)",
+			"description": "Your personal Hack The Box password (consider resetting this to a secure random one, for bot usage)",
 			"value": ""
 		},
 		"DATABASE_URL": {
@@ -54,12 +54,12 @@
 			"required": false
 		},
 		"HTB_TEAM_ID": {
-			"description": "𝗧𝗘𝗔𝗠 𝗠𝗢𝗗𝗘: The team's ID on HTB (get from the public team profile URL). If a university, leave blank.",
+			"description": "𝗧𝗘𝗔𝗠 𝗠𝗢𝗗𝗘: The team's ID on HTB (get from the public team profile URL). 𝘐𝘧 𝘢 𝘶𝘯𝘪𝘷𝘦𝘳𝘴𝘪𝘵𝘺, 𝘭𝘦𝘢𝘷𝘦 𝘣𝘭𝘢𝘯𝘬.",
 			"value": "",
 			"required": false
 		},
 		"HTB_UNIVERSITY_ID": {
-			"description": "𝗨𝗡𝗜𝗩𝗘𝗥𝗦𝗜𝗧𝗬 𝗠𝗢𝗗𝗘: The university's ID on HTB (get from the public uni profile URL). If a team, leave blank.",
+			"description": "𝗨𝗡𝗜𝗩𝗘𝗥𝗦𝗜𝗧𝗬 𝗠𝗢𝗗𝗘: The university's ID on HTB (get from the public uni profile URL). 𝘐𝘧 𝘢 𝘵𝘦𝘢𝘮, 𝘭𝘦𝘢𝘷𝘦 𝘣𝘭𝘢𝘯𝘬.",
 			"value": "",
 			"required": false
 		},
