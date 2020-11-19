@@ -281,12 +281,12 @@ class HtbApiConnector {
 		const memberData = Promise.all([
 			this.getMemberProfile(memberId),
 			this.getMemberActivity(memberId),
-			// this.getMemberMachineOsProgress(memberId),
+			this.getMemberMachineOsProgress(memberId),
 			this.getMemberChallengeProgress(memberId),
 			this.getMemberEndgameProgress(memberId),
 			this.getMemberFortressProgress(memberId),
 			this.getMemberProlabProgress(memberId),
-			// this.getMemberBloods(memberId)
+			this.getMemberBloods(memberId)
 		]).then((results) => H.combine(results.map(e => e.profile)))
 		return memberData
 	}
@@ -295,12 +295,12 @@ class HtbApiConnector {
 		const memberData = Promise.all([
 			this.getMemberProfile(member.id),
 			this.getMemberActivity(member.id),
-			// this.getMemberMachineOsProgress(member.id),
+			this.getMemberMachineOsProgress(member.id),
 			this.getMemberChallengeProgress(member.id),
 			this.getMemberEndgameProgress(member.id),
 			this.getMemberFortressProgress(member.id),
 			this.getMemberProlabProgress(member.id),
-			// this.getMemberBloods(member.id)
+			this.getMemberBloods(member.id)
 		]).then((results) => H.combine([member, ...results.map(e => e.profile)]))
 		return memberData
 	}
