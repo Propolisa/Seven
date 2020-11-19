@@ -120,9 +120,10 @@ class HtbEmbeds {
 				user_bloods, system_bloods, description, university_name: uni, website, github, linkedin, twitter } = target
 
 			const challs = challenge_owns.solved
-			const challenge_bloods = bloods.challenges.length
+			const challenge_bloods = H.sAcc(bloods, "challenges", "length")
+			const machine_bloods = H.sAcc(bloods, "challenges", "length")
 			const hasOwns = (roots + users + challs > 0)
-			const hasBloods = (bloods.challenges.length + bloods.machines.length > 0)
+			const hasBloods = ((challenge_bloods || 0) + (machine_bloods || 0) > 0)
 			const hasRespect = Boolean(respects)
 			embed.setAuthor(this.ds.tryDiscordifyUid(id, target.self) || target.name + "  " + F.rankSymbol(rank),
 				(team ? F.avatar2Url(team.avatar) : ""),
