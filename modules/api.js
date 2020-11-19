@@ -14,9 +14,9 @@ class HtbApiConnector {
 		this.API_TOKEN = ""
 		this.throttle = new Throttle({
 			active: true, // set false to pause queue
-			rate: 20, // how many requests can be sent every `ratePer`- 20
+			rate: 2, // how many requests can be sent every `ratePer`- 20
 			ratePer: 1000, // number of ms in which `rate` requests may be sent - 1000
-			concurrent: 20, // how many requests can be sent concurrently - 20
+			concurrent: 1, // how many requests can be sent concurrently - 20
 		})
 	}
 
@@ -68,6 +68,7 @@ class HtbApiConnector {
 				.use(this.throttle.plugin())
 				//.use(superdebug(console.info))
 				.then((response) => {
+					console.log(`Got ${response.request.url}...`)
 					if (parseText) {
 						resolve(JSON.parse(response.text))
 					} else {
@@ -280,12 +281,12 @@ class HtbApiConnector {
 		const memberData = Promise.all([
 			this.getMemberProfile(memberId),
 			this.getMemberActivity(memberId),
-			this.getMemberMachineOsProgress(memberId),
+			// this.getMemberMachineOsProgress(memberId),
 			this.getMemberChallengeProgress(memberId),
 			this.getMemberEndgameProgress(memberId),
 			this.getMemberFortressProgress(memberId),
 			this.getMemberProlabProgress(memberId),
-			this.getMemberBloods(memberId)
+			// this.getMemberBloods(memberId)
 		]).then((results) => H.combine(results.map(e => e.profile)))
 		return memberData
 	}
@@ -294,12 +295,12 @@ class HtbApiConnector {
 		const memberData = Promise.all([
 			this.getMemberProfile(member.id),
 			this.getMemberActivity(member.id),
-			this.getMemberMachineOsProgress(member.id),
+			// this.getMemberMachineOsProgress(member.id),
 			this.getMemberChallengeProgress(member.id),
 			this.getMemberEndgameProgress(member.id),
 			this.getMemberFortressProgress(member.id),
 			this.getMemberProlabProgress(member.id),
-			this.getMemberBloods(member.id)
+			// this.getMemberBloods(member.id)
 		]).then((results) => H.combine([member, ...results.map(e => e.profile)]))
 		return memberData
 	}

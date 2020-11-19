@@ -272,7 +272,7 @@ async function main() {
 		console.log("Data refresh completed!")
 		var updated = await updateCache()
 		if (updated) {console.log("Updated the DB...")}
-	}, 10 * 60 * 1000)
+	}, 30 * 60 * 1000) // Lower frequency of update to once per hour after server fail issue
 	HTB_PUSHER_OWNS_SUBSCRIPTION.on("pusherevent", async message => {
 		try {
 			switch (message.type) {
