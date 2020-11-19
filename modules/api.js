@@ -68,7 +68,7 @@ class HtbApiConnector {
 				.use(this.throttle.plugin())
 				//.use(superdebug(console.info))
 				.then((response) => {
-					console.log(`Got ${response.request.url}...`)
+					// console.log(`Got ${response.request.url}...`)
 					if (parseText) {
 						resolve(JSON.parse(response.text))
 					} else {
