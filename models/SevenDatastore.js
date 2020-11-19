@@ -425,7 +425,15 @@ class SevenDatastore {
 			}
 			var result = {}
 			const isSelf = checkSelfName(kwd)
-			kwd = (isSelf ? H.sAcc(this.getMemberById(this.getIdFromDiscordId(discordMessage ? discordMessage.author.id : null)),"name") || (discordMessage ? discordMessage.author.name : kwd) : kwd)
+			if (isSelf){
+				try {
+					var idByDid = this.getIdFromDiscordId(discordMessage.author.id)
+					var idByDname = this.getIdFromDiscordName(discordMessage.author.username)
+					kwd = H.sAcc(this.getMemberById(idByDid).name) || H.sAcc(this.getMemberById(idByDname),"name") || kwd
+				} catch (error) {
+					console.error(error)
+				}
+			}
 			// console.log("Resolving '" + kwd + "'...")
 			if (targetType) {
 				switch (targetType) {
