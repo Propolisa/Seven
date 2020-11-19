@@ -425,7 +425,7 @@ class SevenDatastore {
 			}
 			var result = {}
 			const isSelf = checkSelfName(kwd)
-			kwd = (isSelf ? this.getMemberById(this.getIdFromDiscordId(discordMessage ? discordMessage.author.id : null)).name || (discordMessage ? discordMessage.author.name : kwd) : kwd)
+			kwd = (isSelf ? H.sAcc(this.getMemberById(this.getIdFromDiscordId(discordMessage ? discordMessage.author.id : null)),"name") || (discordMessage ? discordMessage.author.name : kwd) : kwd)
 			// console.log("Resolving '" + kwd + "'...")
 			if (targetType) {
 				switch (targetType) {
