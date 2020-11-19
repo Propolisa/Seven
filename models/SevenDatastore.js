@@ -429,7 +429,7 @@ class SevenDatastore {
 				try {
 					var idByDid = this.getIdFromDiscordId(discordMessage.author.id)
 					var idByDname = this.getIdFromDiscordName(discordMessage.author.username)
-					kwd = H.sAcc(this.getMemberById(idByDid).name) || H.sAcc(this.getMemberById(idByDname),"name") || kwd
+					kwd = H.sAcc(this.getMemberById(idByDid), "name") || H.sAcc(this.getMemberById(idByDname),"name") || kwd
 				} catch (error) {
 					console.error(error)
 				}
