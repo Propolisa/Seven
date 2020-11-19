@@ -8,7 +8,7 @@
 ![Seven's visage](/branding/seven_thumb_128.png)
 
 [![Deploy](/branding/button.svg)](https://heroku.com/deploy)
-
+ 
 ## 🍉 About 
 Seven is a semi-intelligent AI chatbot built with [DialogFlow](https://dialogflow.cloud.google.com/) and [Node.js](https://nodejs.org/), whose purpose is to make Hack The Box (hackthebox.eu/) achievement data accessible and convenient within team Discord channels. 
 
