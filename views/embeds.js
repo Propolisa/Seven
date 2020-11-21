@@ -58,6 +58,9 @@ class HtbEmbeds {
 
 	targetInfo(type, identifier, isId = false, discordMessage = null, target=null) {
 		console.info(`Sending target info message for ${target?target.type:type} '${target?target.name:identifier}'...`)
+		if (identifier == "i" && !(H.sAcc(target,"type"))) {
+			return this.ENTITY_UNFOUND.setTitle("Hmm...").setDescription(`**I only know you on Discord${discordMessage ? `, ${discordMessage.author.username}`: ""}.**\nPlease indicate your username on Hack The Box (I won't make assumptions even if it's the same) -- like "seven i am [username] on hackthebox". I'll link things up properly then. 👋`)
+		}
 		target = (target && target.type? target: this.ds.resolveEnt(identifier, type, isId, discordMessage) || { type: null })
 		if (target.country_name) { // A living, breathing human being
 			target.type = "member"

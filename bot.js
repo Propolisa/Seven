@@ -101,15 +101,15 @@ async function importDbBackup() {
 				return true
 			}
 		}).then( res => {
-			return db.any("SELECT json FROM cache ORDER BY id ASC;", [true]).then(
+			return db.any(`SELECT json FROM ${SEVEN_DB_TABLE_NAME} ORDER BY id ASC;`, [true]).then(
 				rows => {
-					DAT.MACHINES = JSON.parse(rows[0].json)
-					DAT.CHALLENGES = JSON.parse(rows[1].json)
-					DAT.TEAM_MEMBERS = JSON.parse(rows[2].json)
-					DAT.TEAM_MEMBERS_IGNORED = JSON.parse(rows[3].json)
-					DAT.TEAM_STATS = JSON.parse(rows[4].json)
-					DAT.DISCORD_LINKS = JSON.parse(rows[5].json)
-					DAT.MISC = JSON.parse(rows[6].json)
+					DAT.MACHINES = rows[0].json
+					DAT.CHALLENGES = rows[1].json
+					DAT.TEAM_MEMBERS = rows[2].json
+					DAT.TEAM_MEMBERS_IGNORED = rows[3].json
+					DAT.TEAM_STATS = rows[4].json
+					DAT.DISCORD_LINKS = rows[5].json
+					DAT.MISC = rows[6].json
 					console.log("[DB IMPORT]::: Restored from DB backup.")
 					console.info(`Machines   : ${Object.values(DAT.MACHINES).length}` + "\n" +
 											`Challenges : ${Object.values(DAT.CHALLENGES).length}` + "\n" +
@@ -441,7 +441,7 @@ async function linkDiscord(message, idType, id) {
 	case "uid":
 		try {
 			DAT.DISCORD_LINKS[id] = (message.channel.type=="dm" ? message.author : await message.guild.members.fetch(`${message.author.id}`))
-			await SEND.human(message, H.any("Associated HTB user " + DAT.getMemberById(id).name + " (" + id + ")", "HTB user " + DAT.getMemberById(id).name + " (" + DAT.getMemberById(id).id + ") has been linked") + " to your Discord account (" + message.author.tag + ")", true)
+			await SEND.human(message, H.any("Associated HTB user " + DAT.getMemberById(id).name + " (" + id + ")", "HTB user " + DAT.getMemberById(id).name + " (" + DAT.getMemberById(id).id + ") has been linked") + " to your Discord account (" + message.author.tag + "). Thanks! 🙂", true)
 			updateCache(["DISCORD_LINKS"])
 			//exportData(DISCORD_LINKS, "discord_links.json")
 		} catch (error) { console.log(error) }
@@ -449,7 +449,7 @@ async function linkDiscord(message, idType, id) {
 
 	case "uname": try {
 		DAT.DISCORD_LINKS[DAT.getMemberByName(id).id] = (message.channel.type=="dm" ? message.author : await message.guild.members.fetch(`${message.author.id}`))
-		await SEND.human(message, H.any("Associated HTB user " + DAT.getMemberByName(id).name, "HTB user " + DAT.getMemberByName(id).name + " (" + DAT.getMemberByName(id).id + ") has been linked") + " to your Discord account (" + message.author.tag + ")", true)
+		await SEND.human(message, "HTB user " + F.STL(F.toTitleCase(id),"bs") + " (" + DAT.getMemberByName(id).id + ") has been linked to your Discord account (" + F.STL("🌀 "+message.author.tag, "bs") + "). Thanks! 🙂", true)
 		updateCache(["discord_links"])
 		// exportData(DISCORD_LINKS, "discord_links.json")
 	} catch (error) { console.log(error) }
