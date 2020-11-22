@@ -89,8 +89,8 @@ class HtbEmbeds {
 						+ (users ? "💻 " + users : "") + (users && roots ? " " : "")
 						+ (roots ? "👩‍💻 " + roots : "") + (roots + users > 0 ? "\n" : "")
 						+ (!submission ? (roots + users > 0 ? "-  Bloods   : " : `-  Bloods   : ${F.STL("None taken!\n", "bs")}`) : "")
-						+ (userBlood ? "🔹 " + userBlood.user.name : (users == 0 ? "(No [U] blood!)" : "")) + (userBlood ? " " : "")
-						+ (rootBlood ? "🔸 " + rootBlood.user.name : (roots == 0 ? "(No [R] blood!)" : "")) + (!submission ? (roots + users > 0 ? "\n" : ""):"")
+						+ (userBlood ? "🔹 " + userBlood.user.name : (roots && users == 0 ? "(No [U] blood!)" : "")) + (userBlood ? " " : "")
+						+ (rootBlood ? "🔸 " + rootBlood.user.name : (users && roots == 0 ? "(No [R] blood!)" : "")) + (!submission ? (roots + users > 0 ? "\n" : ""):"")
 						+ `+  ${(H.isPastDate(release) ? "Released" : "Release ")} : ${(submission ? "Unannounced" : `${new Date(release).getUTCFullYear()} (${F.fuzzyAge(new Date(release))})`)}\n`
 						+ (retired ? `-  Retired  : ${F.timeSince(new Date(retiredate))}\n` : "")
 						+ "```",
