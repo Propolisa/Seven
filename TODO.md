@@ -17,12 +17,12 @@ The most pressing features she'd like to achieve, based on feedback from her fri
 - [ ] Fix sorting of owns data (most recent first)
 - [ ] Allow listing, sorting and filtering of challenges (e.g. `"latest 10 retired boxes"`, `"BOF challenges"`, `"oldest Active Directory machine"`).
 - [ ] Smarter subject detection (Is Seven _really_ being addressed by a message or not?)
-- [ ] Machine / challenge filters
+- [x] Machine / challenge filters
 - [x] Add points to member infobox, rank and leaderboard embeds (`𝖱𝖺𝗇𝗄 : ( 🌍 𝟭𝟰𝟱𝘁𝗵 | 👥 𝟲𝘁𝗵 ) 🍕 𝖯𝗈𝗂𝗇𝗍𝗌: 𝟭𝟮𝟰𝟱`)
 - [ ] User Authentication
   - 2FA via user temporarily setting bot-provided token in HTB profile image or description
 - [ ] Storage and (validated) provision of box | challenge | (THM room ?) __writeup hashes__ ( or other user secrets)
 ## Planned
 - [ ] Implement better logging (e.g. Winston)
-- [ ] Enable passthru mode (e.g. "Seven, be my voice") -- ([this doesn't break Discord rules, right...?](https://support.discord.com/hc/en-us/articles/115002192352-Automated-user-accounts-self-bots-))
+- [ ] Enable passthru mode (e.g. "Seven, be my voice")
 - [ ] Add a built-in webserver for control interface

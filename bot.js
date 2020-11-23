@@ -32,6 +32,7 @@ const { SevenDatastore } = require("./models/SevenDatastore.js")
 const { Send } = require("./modules/send.js")
 const { HTBEmoji } = require("./helpers/emoji.js")
 const { BinClock: BC } = require("./helpers/binclock")
+const { send } = require("q")
 
 /*** INIT GLOBAL STUFF ***/
 
@@ -320,7 +321,17 @@ async function main() {
 		message.content = message.content.substring(0, 255)
 		if (!DEV_MODE_ON) {
 			try {
-				handleMessage(message)
+				if (SEND.PASSTHRU && message.channel.type != "dm" && !message.author.bot) {
+					SEND.passthru_register(message)
+				} else if (message.author.id == process.env.ADMIN_DISCORD_ID
+						&& SEND.PASSTHRU
+						&& message.referencedMessage
+						&& message.channel.type == "dm"
+						&& message.channel.recipient.id == process.env.ADMIN_DISCORD_ID) {
+					SEND.passthru(message)
+				} else {
+					handleMessage(message)
+				}
 			} catch (error) {
 				console.log(error)
 				message.channel.stopTyping()
@@ -333,7 +344,17 @@ async function main() {
 				sendFileMsg()
 			} else {
 				try {
-					handleMessage(message)
+					if (SEND.PASSTHRU && message.channel.type != "dm" && !message.author.bot) {
+						SEND.passthru_register(message)
+					} else if (message.author.id == process.env.ADMIN_DISCORD_ID
+							&& SEND.PASSTHRU
+							&& message.referencedMessage
+							&& message.channel.type == "dm"
+							&& message.channel.recipient.id == process.env.ADMIN_DISCORD_ID) {
+						SEND.passthru(message)
+					} else {
+						handleMessage(message)
+					}
 				} catch (error) {
 					console.log(error)
 					message.channel.stopTyping()
@@ -367,7 +388,7 @@ async function sendMemberChartMsg(message, username, term) {
 	var chartImageB64 = await CHART_RENDERER.renderChart(member, chartData, term, "userProgress")
 	var chartImage = new Buffer.from(chartImageB64, "base64")
 	var embed = EGI.memberAchievementTimelineChart(member, term, chartImage)
-	message.reply(embed)
+	SEND.embed(message, embed)
 }
 
 async function sendActivityMsg(message, member, targetType=undefined, sortBy=undefined, sortOrder=undefined, limit=40) {
@@ -600,6 +621,8 @@ async function handleMessage(message) {
 						switch (job) {
 						case "help": sendHelpMsg(message); break
 						case "admin.forceUpdateData":  admin_forceUpdate(message); break
+						case "admin.passthruOn": if (isAdmin(message.author)) {SEND.human(message, `Parrot mode ${F.STL("ON","bs")}. 🦜`); SEND.passthruOn()} else {SEND.human(message,"Sorry, not for you. 🦜")} break
+						case "admin.passthruOff": if (isAdmin(message.author)) {SEND.human(message,`Parrot mode ${F.STL("OFF","bs")}. 🦜`); SEND.passthruOff()} else {SEND.human(message,"Sorry, not for you. 🦜")} break
 						case "admin.clearCached":  admin_clearCached(message); break
 						case "admin.setStatus":  admin_setStatus(message, inf); break
 						case "admin.clearEmoji":  E.clearCustEmoji(client).then(SEND.human(message, "Successfully purged Seven-related emoji from supporting channel.", false)); break
