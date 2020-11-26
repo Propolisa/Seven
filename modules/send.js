@@ -82,7 +82,7 @@ class Send {
 				msg = " "
 			}
 			if (this.GET_PICKLED) msg = H.any(F.getPickled(msg),F.getScrambled(msg),F.getSpoiled(msg))
-			var msgLines = msg.split("\n")
+			var msgLines = msg.split(/\n|\\n/g)
 			var firstline = noMention ? false : true
 	
 			await asyncForEach(msgLines, async (ln) => {

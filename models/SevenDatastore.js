@@ -948,6 +948,10 @@ class SevenDatastore {
 		return entriesAffected
 	}
 
+	integratePusherBlood(){
+		
+	}
+
 	mdLinksFromBoxIds(boxIds) { // Get markdown links to a HTB user's profile, based on UID.
 		// console.log(boxIds)
 		if (boxIds) {

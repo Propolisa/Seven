@@ -788,17 +788,17 @@ class HtbEmbeds {
 
 	/** REALTIME PUSHER EVENT NOTIFICATIONS */
 
-	pusherOwn(member, target, sub) {
+	pusherOwn(member, target, sub, blood=false) {
 		target = this.ds.resolveEnt(target)
 		// console.log(member, target)
 		if (!member || !target){
 			return this.ENTITY_UNFOUND
 		}
 		var pb =  this.PUSHER_BASE
-			.setAuthor(F.toTitleCase(target.type || "Unknown") + (["root", "user"].includes(sub) ? ` ${sub} ` : " ") + "own", F.avatarFullUrl(member), "")
+			.setAuthor((blood? "🩸 " : "") + F.toTitleCase(target.type || "Unknown") + (["root", "user"].includes(sub) ? ` ${sub} ` : " ") + "own" + (blood? " !!!" : ""), F.avatarFullUrl(member), "")
 			.setThumbnail(F.avatar2Url(target.avatar) || (member.team? F.avatar2Url(member.team.avatar) : F.avatar2Url(member.avatar)))
 			.setColor(H.any(...Object.values(F.COL)))
-			.setDescription(`${F.memberToMdLink(member,true,this.ds.tryDiscordifyUid(member.id))} owned ${(["root", "user"].includes(sub)? sub + " on" : "")} ${F.mdLink(target.name, F.profileUrl(target))}${(target.type == "challenge" ? " from the *"+target.category_name+"* category":"")}${(H.maybe(0.2) ? H.any(". Nice work! 🙂", ". **Why is all the RUM GONE!!!!**", ", woohoo!!", "!", ". Congrats! 🥳") : "")}` )
+			.setDescription(`${F.memberToMdLink(member,true,this.ds.tryDiscordifyUid(member.id))} ${blood ? "got" : "owned"} ${(["root", "user"].includes(sub)? sub + (blood?" blood":"") + " on" : "")} ${F.mdLink(target.name, F.profileUrl(target))}${(target.type == "challenge" ? " from the *"+target.category_name+"* category":"")}${(H.maybe(0.2) ? H.any(". Nice work! 🙂", ". **Why is all the RUM GONE!!!!**", ", woohoo!!", "!", ". Congrats! 🥳") : "")}` )
 			.setFooter(`ℹ️  Source: ${F.STL("Shoutbox", "bs")}`)
 		if (target.type == "challenge") {
 			pb.attachFiles(new Attachment(`./static/img/${F.challengeCategoryNameToIconFile(target.category_name)}`, "cat.png"))

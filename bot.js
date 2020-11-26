@@ -34,20 +34,6 @@ const { HTBEmoji } = require("./helpers/emoji.js")
 const { BinClock: BC } = require("./helpers/binclock")
 const { send } = require("q")
 
-/*** INIT GLOBAL STUFF ***/
-
-var DISCORD_ANNOUNCE_CHAN = false         // The Discord Channel object intended to recieve Pusher achievements.
-var HTB_PUSHER_OWNS_SUBSCRIPTION = false  // The Pusher Client own channel subscription.
-const SEVEN_DB_TABLE_NAME = "funbois"
-// var PUSHER_MSG_LOG = require("./cache/PUSHER_MSG_LOG.json")
-
-var PHANTOM_POOL = null
-const CHART_RENDERER = htbCharts.newChartRenderer()
-const DAT = new SevenDatastore()    // Open an abstract storage container for HTB / bot data
-const E = new HTBEmoji(client)
-const EGI = new HtbEmbeds(DAT, E) 			// Give Embed Constructor access to the datastore
-const SEND = new Send()
-
 /*** HANDLE DEVELOPMENT INSTANCE CASE ***/
 
 var DEV_MODE_ON = false
@@ -57,6 +43,20 @@ if (process.env.IS_DEV_INSTANCE) {
 	console.error("DEVELOPMENT MODE ON.\n  Only queries by the developer will be responded to by this instance.\n  (Avoids conflicts/ duplicate responses in production use)")
 }
 
+
+/*** INIT GLOBAL STUFF ***/
+
+var DISCORD_ANNOUNCE_CHAN = false         // The Discord Channel object intended to recieve Pusher achievements.
+var HTB_PUSHER_OWNS_SUBSCRIPTION = false  // The Pusher Client own channel subscription.
+const SEVEN_DB_TABLE_NAME = "funbois"
+var PUSHER_MSG_LOG = DEV_MODE_ON ? require("./cache/PUSHER_MSG_LOG.json") : null
+
+var PHANTOM_POOL = null
+const CHART_RENDERER = htbCharts.newChartRenderer()
+const DAT = new SevenDatastore()    // Open an abstract storage container for HTB / bot data
+const E = new HTBEmoji(client)
+const EGI = new HtbEmbeds(DAT, E) 			// Give Embed Constructor access to the datastore
+const SEND = new Send()
 
 /* SETUP DB IMPORT TO RESTORE LAST GOOD STATE */
 const cn = {
@@ -276,10 +276,15 @@ async function main() {
 	}, 30 * 60 * 1000) // Lower frequency of update to once per hour after server fail issue
 	HTB_PUSHER_OWNS_SUBSCRIPTION.on("pusherevent", async message => {
 		try {
+			if (DEV_MODE_ON){
+				PUSHER_MSG_LOG.push(message)
+				let data = JSON.stringify(PUSHER_MSG_LOG, null, 2)
+				fs.writeFileSync("./cache/PUSHER_MSG_LOG.json", data)
+			}
 			switch (message.type) {
 			case "machine": case "challenge": case "endgame": case "fortress": case	"prolab":
-				if (DAT.DISCORD_LINKS[message.uid]) {
-					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherOwn(DAT.resolveEnt(message.uid,"member",true,null,true), message.target, message.flag || message.type))
+				if (DAT.DISCORD_LINKS[message.uid] || message.blood) {
+					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherOwn(await DAT.resolveEnt(message.uid,"member",true,null,true), message.target, message.flag || message.type, message.blood))
 				}
 				if (DAT.TEAM_MEMBERS[message.uid]) {
 					console.warn("RELEVANT PUSHER OWN INCOMING::: ")
@@ -289,7 +294,7 @@ async function main() {
 			default:
 				// DISCORD_ANNOUNCE_CHAN.send(EGI.pusherNotif(message.markdown))
 				break
-			}				
+			}
 		} catch (error) {
 			console.error(error)
 		}
@@ -310,8 +315,8 @@ async function main() {
 		DISCORD_ANNOUNCE_CHAN = await client.channels.fetch(process.env.DISCORD_ANNOUNCE_CHAN_ID.toString())
 
 		/** Test the Pusher owns functionality */
-		// var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
-		// PUSHER_DUMMY_DATA.slice(0,10).forEach(e => {HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel:"owns-channel"})})
+		var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
+		PUSHER_DUMMY_DATA.slice(0,10).forEach(e => {HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel:"owns-channel"})})
 		
 		console.log(`[DISCORD]::: ${Object.values(DAT.DISCORD_LINKS).length} guild members have linked their HTB accounts.`)
 		updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString())
