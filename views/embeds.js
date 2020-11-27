@@ -795,7 +795,7 @@ class HtbEmbeds {
 			return this.ENTITY_UNFOUND
 		}
 		var pb =  this.PUSHER_BASE
-			.setAuthor((blood? "🩸 " : "") + F.toTitleCase(target.type || "Unknown") + (["root", "user"].includes(sub) ? ` ${sub} ` : " ") + "own" + (blood? " !!!" : ""), F.avatarFullUrl(member), "")
+			.setAuthor((blood? "🩸 " : "") + F.toTitleCase(target.type || "Unknown") + (["root", "user"].includes(sub) ? ` ${sub} ` : " ") + (blood? "blood taken" : "own") + (blood? "!" : ""), F.avatarFullUrl(member), "")
 			.setThumbnail(F.avatar2Url(target.avatar) || (member.team? F.avatar2Url(member.team.avatar) : F.avatar2Url(member.avatar)))
 			.setColor(H.any(...Object.values(F.COL)))
 			.setDescription(`${F.memberToMdLink(member,true,this.ds.tryDiscordifyUid(member.id))} ${blood ? "got" : "owned"} ${(["root", "user"].includes(sub)? sub + (blood?" blood":"") + " on" : "")} ${F.mdLink(target.name, F.profileUrl(target))}${(target.type == "challenge" ? " from the *"+target.category_name+"* category":"")}${(H.maybe(0.2) ? H.any(". Nice work! 🙂", ". **Why is all the RUM GONE!!!!**", ", woohoo!!", "!", ". Congrats! 🥳") : "")}` )
