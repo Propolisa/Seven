@@ -289,6 +289,11 @@ async function main() {
 			case "machine": case "challenge": case "endgame": case "fortress": case	"prolab":
 				if (DAT.DISCORD_LINKS[message.uid] || message.blood) {
 					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherOwn(await DAT.resolveEnt(message.uid,"member",true,null,true), message.target, message.flag || message.type, message.blood))
+					if (message.blood){
+						for (let i = 0; i < 3; i++) {
+							DISCORD_ANNOUNCE_CHAN.send("‼").then(message => message.delete())
+						}
+					}
 				}
 				if (DAT.TEAM_MEMBERS[message.uid]) {
 					console.warn("RELEVANT PUSHER OWN INCOMING::: ")

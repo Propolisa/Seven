@@ -40,7 +40,7 @@ function parsePusherEvent(data) {
 	var md = null
 	try {
 		switch (data["channel"]) {
-		case "owns-channel":
+		case "owns-channel": case "infobox-channel":
 		{
 			let dom = (new JSDOM(data.text))
 			let msg = dom.window.document.body
