@@ -61,7 +61,8 @@ function parsePusherEvent(data) {
 			md = td.turndown(texts.join(""))            // MD: Recombine HTML and convert to Markdown
 			let uid = (links.length ?  Number(links[0].href.substring(45)) : null)
 			var isBlood = Array.from(msg.querySelectorAll("span.text-danger")).some(e => e.textContent.includes("1st blood"))
-			let type = machine ? "machine" : challenge ? "challenge" : null
+			var isLaunch = msg.textContent.includes("mass-powering")
+			let type = machine ? "machine" : challenge ? "challenge" : isLaunch ? "launch" : null 
 			let flag = undefined
 			let target = machine || challenge
 			let lemmas = msg.childNodes[1].textContent.trim().split(" ")

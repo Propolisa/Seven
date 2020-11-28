@@ -257,7 +257,7 @@ async function main() {
 	await importDbBackup()
 	DAT.TEAM_STATS.teamFounder = process.env.FOUNDER_HTB_ID
 	await DAT.init()
-	await DAT.syncAgent()
+	// await DAT.syncAgent()
 	var HTB_PUSHER_OWNS_SUBSCRIPTION = new HtbPusherSubscription("97608bf7532e6f0fe898",
 		[
 			{channel: "owns-channel", event: "display-info"},
@@ -268,12 +268,16 @@ async function main() {
 		], DAT.V3API.CSRF_TOKEN)
 	// refresh().then(console.log("Initial update completed!"))
 	
-	setInterval(async () => {
-		await refresh()
-		console.log("Data refresh completed!")
-		var updated = await updateCache()
-		if (updated) {console.log("Updated the DB...")}
-	}, 30 * 60 * 1000) // Lower frequency of update to once per hour after server fail issue
+	if (!DEV_MODE_ON){
+		await DAT.syncAgent()
+		setInterval(async () => {
+			await refresh()
+			console.log("Data refresh completed!")
+			var updated = await updateCache()
+			if (updated) {console.log("Updated the DB...")}
+		}, 30 * 60 * 1000) // Lower frequency of update to once per hour after server fail issue
+	}
+	
 	HTB_PUSHER_OWNS_SUBSCRIPTION.on("pusherevent", async message => {
 		try {
 			if (DEV_MODE_ON){
@@ -290,6 +294,9 @@ async function main() {
 					console.warn("RELEVANT PUSHER OWN INCOMING::: ")
 					DAT.integratePusherOwn(message.uid, message.time, message.type, message.target, message.flag, true)
 				}
+				break
+			case "launch":
+				DISCORD_ANNOUNCE_CHAN.send(EGI.pusherNotif(message.markdown))
 				break
 			default:
 				// DISCORD_ANNOUNCE_CHAN.send(EGI.pusherNotif(message.markdown))
