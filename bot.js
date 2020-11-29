@@ -287,7 +287,7 @@ async function main() {
 			}
 			switch (message.type) {
 			case "machine": case "challenge": case "endgame": case "fortress": case	"prolab":
-				if (DAT.DISCORD_LINKS[message.uid] || message.blood) {
+				if (DAT.DISCORD_LINKS[message.uid] || message.blood || DEV_MODE_ON) {
 					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherOwn(await DAT.resolveEnt(message.uid,"member",true,null,true), message.target, message.flag || message.type, message.blood))
 					if (message.blood){
 						for (let i = 0; i < 3; i++) {

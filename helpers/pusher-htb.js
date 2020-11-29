@@ -75,6 +75,7 @@ function parsePusherEvent(data) {
 			} else if (machine) {
 			// This is (probably) a box own.
 				flag = lemmas[1]
+				flag = flag == "system" ? "root" : flag
 			}
 			return new HtbPusherEvent(data, uid || undefined, type || undefined, target || undefined, flag || undefined, md, data.text, data.channel, isBlood)}	
 		default:
