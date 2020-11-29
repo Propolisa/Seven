@@ -74,12 +74,7 @@ function parsePusherEvent(data) {
 				flag = ["root", "system"].includes(msg.childNodes[3].textContent.trim().split(" ")[1]) ? "root" : "user"
 			} else if (machine) {
 			// This is (probably) a box own.
-				let flagSpec = lemmas[1]
-				switch (target) {
-				case "root": case "system": flag = "root"; break
-				case "user": flag = "user"; break
-				default: break
-				}
+				flag = lemmas[1]
 			}
 			return new HtbPusherEvent(data, uid || undefined, type || undefined, target || undefined, flag || undefined, md, data.text, data.channel, isBlood)}	
 		default:

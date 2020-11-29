@@ -304,7 +304,9 @@ async function main() {
 				DISCORD_ANNOUNCE_CHAN.send(EGI.pusherNotif(message.markdown))
 				break
 			default:
-				// DISCORD_ANNOUNCE_CHAN.send(EGI.pusherNotif(message.markdown))
+				if (message.uid && DAT.DISCORD_LINKS[message.uid]) {
+					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherNotif(message.markdown))
+				}
 				break
 			}
 		} catch (error) {
