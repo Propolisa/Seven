@@ -40,7 +40,7 @@ function parsePusherEvent(data) {
 	var md = null
 	try {
 		switch (data["channel"]) {
-		case "owns-channel": case "infobox-channel":
+		case "owns-channel": case "infobox-channel": case null:
 		{
 			let dom = (new JSDOM(data.text))
 			let msg = dom.window.document.body
@@ -62,9 +62,13 @@ function parsePusherEvent(data) {
 			let uid = (links.length ?  Number(links[0].href.substring(45)) : null)
 			var isBlood = Array.from(msg.querySelectorAll("span.text-danger")).some(e => e.textContent.includes("1st blood"))
 			var isLaunch = msg.textContent.includes("mass-powering")
+			var launchName
+			if (isLaunch) {
+				launchName = H.sAcc(nodes,0,"firstChild","data")
+			}
 			let type = machine ? "machine" : challenge ? "challenge" : isLaunch ? "launch" : null 
 			let flag = undefined
-			let target = machine || challenge
+			let target = machine || challenge || launchName
 			let lemmas = msg.childNodes[1].textContent.trim().split(" ")
 			let verb = lemmas[0]
 			if (verb == "solved") {

@@ -807,16 +807,68 @@ class HtbEmbeds {
 		return pb
 	}
 
-	pusherNotif(md) {
-		return this.PUSHER_BASE
-			.attachFiles(new Attachment(`./static/img/${F.challengeCategoryNameToIconFile("Hardware")}`, "notif.png"))
-			.setAuthor("Pusher notification", this.ds.TEAM_STATS.avatar_url)
-			.setThumbnail("attachment://notif.png")
+	pusherNotif(event) {
+		var {markdown:md, target} = event
+		target = target ? this.ds.getMachineByName(target) : null
+		var embed = this.PUSHER_BASE
 			.setColor(H.any(...Object.values(F.COL)))
-			.setDescription(md)
 			.setFooter(`ℹ️  Source: ${F.STL("Shoutbox", "bs")}`)
+		switch (event.type) {
+		case "launch":
+			embed.setAuthor("Machine Launch 🎁", "attachment://type.png", F.profileUrl(target) )
+				.attachFiles(new Attachment(F.getIcon(target.type || "machine"), "type.png"))
+				.setThumbnail(F.avatarFullUrl(target))
+				.setColor(F.COL.HTB_GREEN)
+				.setDescription(F.targetLink(target)
+					+	H.any(" is going live now! 🩸",
+						" is available as of now!",
+						" is online.",
+						" is green for go. 🟢",
+						" just went online.",
+						" just went live.",
+						" is now in operation.",
+						" is go for launch! 🚀",
+						" going live now...",
+						" just launched. 👩‍🚀",
+						" online now.")
+					+ (H.maybe(0.3) ? "\n" + H.any(
+						"Let's get to it!",
+						"Who's on blood duty this week?? ❤",
+						"You know what to do!",
+						"It's time to show them how it's done!!!",
+						"Time to pwn!",
+						"Roll up your sleeves and get hacking! 💪",
+						"Get to it!",
+						"What are you waiting for? 🍉",
+						"Let's go for blood!",
+						"Who's up for first blood?",
+						"Anyone down to go for blood?",
+						"It's go time!",
+						"Show them who's boss!",
+						"It's now or never.",
+						"Watermelon time!",
+						"Ready when you are! 🍉") + (H.maybe(0.5) ? "\n(Real talk, " + H.any(
+						"**[TheATeam](https://www.hackthebox.eu/home/teams/profile/1750 'View on HTB')**",
+						" team **[BirdsArentReal](https://www.hackthebox.eu/home/teams/profile/1709 'View on HTB')**",
+						"**[TheWINRaRs](https://www.hackthebox.eu/home/teams/profile/2710 'View on HTB') team**",
+						"the **[AlphaPwners](https://www.hackthebox.eu/home/teams/profile/673 'View on HTB')** team",
+						"**[xct](https://app.hackthebox.eu/users/13569 'View on HTB')**",
+						"**[snowscan](https://app.hackthebox.eu/users/9267 'View on HTB')**",
+						"**[InfoSecJack ](https://app.hackthebox.eu/users/52045 'View on HTB')**",
+					) + " is probably going to get the glory. But we'll have more fun!) 🍉" : "") : "")
+				)
+			break
+	
+		default:
+			embed.setAuthor("Pusher notification", this.ds.TEAM_STATS.avatar_url)
+				.attachFiles(new Attachment(`./static/img/${F.challengeCategoryNameToIconFile("Hardware")}`, "notif.png"))
+				.setThumbnail("attachment://notif.png")
+				.setDescription(md)
+			break
+		}
+		return embed
 	}
-
+	
 	
 }
 

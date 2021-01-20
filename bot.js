@@ -287,7 +287,7 @@ async function main() {
 			}
 			switch (message.type) {
 			case "machine": case "challenge": case "endgame": case "fortress": case	"prolab":
-				if (DAT.DISCORD_LINKS[message.uid] || message.blood || DEV_MODE_ON) {
+				if (DAT.DISCORD_LINKS[message.uid] || message.blood || DAT.TEAM_MEMBERS[message.uid]) {
 					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherOwn(await DAT.resolveEnt(message.uid,"member",true,null,true), message.target, message.flag || message.type, message.blood))
 					if (message.blood){
 						for (let i = 0; i < 3; i++) {
@@ -301,11 +301,11 @@ async function main() {
 				}
 				break
 			case "launch":
-				DISCORD_ANNOUNCE_CHAN.send(EGI.pusherNotif(message.markdown))
+				DISCORD_ANNOUNCE_CHAN.send(EGI.pusherNotif(message))
 				break
 			default:
 				if (message.uid && DAT.DISCORD_LINKS[message.uid]) {
-					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherNotif(message.markdown))
+					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherNotif(message))
 				}
 				break
 			}
@@ -329,8 +329,8 @@ async function main() {
 		DISCORD_ANNOUNCE_CHAN = await client.channels.fetch(process.env.DISCORD_ANNOUNCE_CHAN_ID.toString())
 
 		/** Test the Pusher owns functionality */
-		var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
-		PUSHER_DUMMY_DATA.slice(0,10).forEach(e => {HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel:"owns-channel"})})
+		// var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
+		//	PUSHER_DUMMY_DATA.slice(0,2).forEach(e => {HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel: null})})
 		
 		console.log(`[DISCORD]::: ${Object.values(DAT.DISCORD_LINKS).length} guild members have linked their HTB accounts.`)
 		updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString())

@@ -874,9 +874,9 @@ class SevenDatastore {
 	integratePusherOwn(uid, time, type, targetName, flag = null, isPusher = false) {
 		var member = this.getMemberById(uid)
 		var target = this.resolveEnt(targetName, type)
-		console.log(`[PUSHER INTEGRATION]::: Resolved member ${member.name} [${member.id}] and target ${target.name} [${target.type}]`)
 		var entriesAffected = false
 		if (member && target) {
+			console.log(`[PUSHER INTEGRATION]::: Resolved member ${member.name} [${member.id}] and target ${target.name} [${target.type}]`)
 			try {
 				switch (flag || type) {
 				case "user":
