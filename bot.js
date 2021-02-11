@@ -275,7 +275,7 @@ async function main() {
 			console.log("Data refresh completed!")
 			var updated = await updateCache()
 			if (updated) {console.log("Updated the DB...")}
-		}, 30 * 60 * 1000) // Lower frequency of update to once per hour after server fail issue
+		}, 3 * 60 * 60 * 1000) // Lower frequency of update to once every three hours after rate limiter issue
 	}
 	
 	HTB_PUSHER_OWNS_SUBSCRIPTION.on("pusherevent", async message => {
@@ -628,7 +628,7 @@ async function handleMessage(message) {
 			} else {
 				var result = await understand(message)
 				var isRipe = result.allRequiredParamsPresent
-				console.log("[DF]::: Detected intent: " + F.STL(result.intent.displayName,"bs") + " | " + (isRipe? (result.parameters.length? "All required params present.": "No required parameters") : "Required parameters missing.") )
+				console.log("[DF]::: Detected intent: " + result.intent.displayName + " | " + (isRipe? (result.parameters.length? "All required params present.": "No required parameters") : "Required parameters missing.") )
 				// console.dir(result)
 				if (result.intent && isRipe) {
 					var job = result.intent.displayName

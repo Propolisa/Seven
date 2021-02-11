@@ -1,6 +1,7 @@
 const request = require("superagent")
 const Throttle = require("superagent-throttle")
 const superdebug = require("superdebug")
+// var logger = require("superagent-logger");
 const { Helpers: H } = require("../helpers/helpers.js")
 
 const setTypeForValues = (type, objectMap) => {
@@ -13,9 +14,9 @@ class HtbApiConnector {
 	constructor() {
 		this.API_TOKEN = ""
 		this.throttle = new Throttle({
-			active: true, // set false to pause queue
-			rate: 2, // how many requests can be sent every `ratePer`- 20
-			ratePer: 1000, // number of ms in which `rate` requests may be sent - 1000
+			active: true,  // set false to pause queue
+			rate: 10,       // how many requests can be sent every `ratePer`- 20
+			ratePer: 60000, // number of ms in which `rate` requests may be sent - 1 minute / 60,000 ms
 			concurrent: 1, // how many requests can be sent concurrently - 20
 		})
 	}
@@ -47,6 +48,7 @@ class HtbApiConnector {
 	}
 	
 	async htbApiGet(endpointPath, parseText=false) {
+		// console.count(endpointPath.replace(/[0-9]/g, ""))
 		if (this.checkTokenExpiring(this.API_TOKEN)){
 			try {
 				this.API_TOKEN = await this.getV4AccessToken(this.AUTH_INFO.email,this.AUTH_INFO.password)
@@ -66,9 +68,9 @@ class HtbApiConnector {
 					deadline: 10000, // but allow 1 minute for the file to finish loading.
 				})
 				.use(this.throttle.plugin())
-				//.use(superdebug(console.info))
+				// .use(logger)
 				.then((response) => {
-					// console.log(`Got ${response.request.url}...`)
+					console.log(`${new Date().toLocaleTimeString()} ⇛ ${response.status.toString().padStart(3," ")}: GET "${response.request.url.substring(33)}"` + ( response.headers["x-ratelimit-limit"] ? ` | Remaining limiter credit: ${response.headers["x-ratelimit-remaining"]} / ${response.headers["x-ratelimit-limit"]}`: " | (No rate limiter on this endpoint)" ))
 					if (parseText) {
 						resolve(JSON.parse(response.text))
 					} else {
@@ -76,7 +78,7 @@ class HtbApiConnector {
 					}
 				})
 				.catch((err) => {
-					console.warn("Could not access '" + endpointPath + "':", err)
+					console.warn("Could not access '" + endpointPath + "':", err.response.status)
 					reject(false)
 				})
 		})

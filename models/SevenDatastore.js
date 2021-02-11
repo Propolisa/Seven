@@ -9,6 +9,7 @@ const {
 	HtbChallenge,
 	TeamMember
 } = require("../helpers/classes.js")
+
 const {	HtbSpecialFlag } = require("../helpers/classes.js")
 const {
 	HtbApiConnector: V4
@@ -131,23 +132,29 @@ class SevenDatastore {
 			this.UPDATE_LOCK = true
 			console.log("[API CONNECTOR]::: Update lock engaged. Beginning update attempt.")
 			try {
+				console.time("Data update took")	
 				/* LEGACY STUFF FOR PARSING / PUSHER CONNECT / DATA ABT TEAMS: */
 				await this.V3API.init()
 				var SESH = this.V3API.SESSION
 				if (SESH) console.log("[API CONNECTOR]::: Got a logged in V3 session.")
+				console.time("Getting specials took")
 				this.MISC.SPECIALS = await this.V3API.getSpecials()
+				console.timeEnd("Getting specials took")
 				let specialCounts = Object.keys(this.MISC.SPECIALS).map(e => `${this.MISC.SPECIALS[e].length} ${e}`)
 				console.warn(`[APIv4]::: Got ${F.andifyList(specialCounts)}.`)
 				/* API v4 DATA COLLECTION (Who's feeling sexy now..?!) */
+				console.time("Getting machines [V3] took")
 				var MACHINES_V3 = await this.V3API.getMachines()
 				var urmachine = false
 				urmachine = await this.V3API.getUnreleasedMachine()
-				console.warn(urmachine ? "[APIv4]::: Got unreleased machine " + urmachine.name + "..." : "[APIv4]::: There are currently no machines in unreleased section.")
+				console.warn(urmachine ? "[APIv3]::: Got unreleased machine " + urmachine.name + "..." : "[APIv3]::: There are currently no machines in unreleased section.")
 				if (urmachine) {
 					MACHINES_V3[urmachine.id] = urmachine
 				}
 				var machineSubmissions = await this.V3API.getMachineSubmissions()
 				var mSObj = (machineSubmissions.length ? H.arrToObj(machineSubmissions,"id") : {})
+				console.timeEnd("Getting machines [V3] took")
+				console.time("Getting machines [V4] took")
 				var MACHINES_V4 = await this.V4API.getAllCompleteMachineProfiles()
 				var COMBINED_MACHINES = {}
 				Object.keys(MACHINES_V3).map(e => COMBINED_MACHINES[e] = H.combine([MACHINES_V3[e], MACHINES_V4[e]]) || (Object.assign({}, MACHINES_V3[e], {
@@ -155,12 +162,15 @@ class SevenDatastore {
 				})) || MACHINES_V4[e])
 
 				this.MACHINES = Object.assign(COMBINED_MACHINES,mSObj)
+				console.timeEnd("Getting machines [V4] took")
 				console.warn(`[APIv4]::: Got ${Object.keys(this.MACHINES).length} machines (Including submissions)...`)
-				
+				console.time("Getting machine tags [V4] took")
 				var mt = await this.V4API.getMachineTags()
 				this.MISC.MACHINE_TAGS = mt
+				console.timeEnd("Getting machine tags [V4] took")
 				console.warn(`[APIv4]::: Got ${Object.keys(this.MISC.MACHINE_TAGS).length} machine tag categories...`)
 			
+				console.time("Getting team / uni data [V4] took")
 				if (process.env.HTB_TEAM_ID) {
 					this.TEAM_STATS = await this.V4API.getCompleteTeamProfile(process.env.HTB_TEAM_ID)
 					delete this.TEAM_STATS.weekly
@@ -178,10 +188,13 @@ class SevenDatastore {
 				} else {
 					console.warn("[API CONNECTOR]::: No ID (Team or University) was specified!! Please add a definition for either 'HTB_UNIVERSITY_ID' or 'HTB_TEAM_ID' in your environment variables.")
 				}
+				console.timeEnd("Getting team / uni data [V4] took")
 				console.warn(`[APIv4]::: Got ${Object.keys(this.TEAM_MEMBERS).length} team member profiles...`)
 				var names = this.vTM.map(e => e.name.toLowerCase())
+				console.time("Getting challenge profiles and tags [V4] took")
 				this.CHALLENGES = await this.V4API.getAllCompleteChallengeProfiles()
 				this.MISC.CHALLENGE_CATEGORIES = await this.V4API.getChallengeCategories()
+				console.timeEnd("Getting challenge profiles and tags [V4] took")
 				console.warn(`[APIv4]::: Got ${this.kC.length} challenges spanning ${Object.keys(this.MISC.CHALLENGE_CATEGORIES).length} categories...`)
 				console.warn(`[APIv4]::: Got team info for "${this.TEAM_STATS.name}"`)
 				dFlowEnt.addMissingFieldsToEntity(Object.values(this.MISC.SPECIALS).flat().map(e => Object.values(e.flags)).flat(), "specialTargetFlagName")
@@ -204,6 +217,7 @@ class SevenDatastore {
 				this.LAST_UPDATE = new Date()
 				this.UPDATE_LOCK = false
 				console.log("[API CONNECTOR]::: Update lock released.")
+				console.timeEnd("Data update took")	
 			} catch (error) {
 				console.error(error, "[API CONNECTOR]::: UPDATE FAILED.")
 				console.error("\n[API CONNECTOR]::: UPDATE LOCK HAS BEEN RESET AS A PRECAUTION.")
