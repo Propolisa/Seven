@@ -16,7 +16,7 @@
     "dialogflow": "^1.2.0",
     "discord.js": "github:monbrey/discord.js#inline-replies",
     "dotenv": "^8.2.0",
-    "highcharts-export-server": "^2.0.28",
+    "highcharts-export-server": "^2.1.0",
     "jquery": "^3.5.1",
     "jsdom": "^16.2.2",
     "jsonpath": "^1.0.2",
