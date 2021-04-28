@@ -3,6 +3,7 @@ const dateFormat = require("date-fns/format")
 const { Helpers: H } = require("./helpers")
 const parseDate = require("date-fns/parse")
 const fs = require("fs")
+const { remove } = require("nconf")
 
 var IMG_DIR = "./static/img/"
 var IMG_FILENAMES = null
@@ -75,25 +76,25 @@ class Format {
 	}
 
 	static STL(str, inType) {
-		str = str.toString()
+		str = String(str)
 		//Converts text to the unicode special math font equivalent specified in switch [ bs, s, b, m ]
 		var out = ""
-		var type = "𝟢𝟣𝟤𝟥𝟦𝟧𝟨𝟩𝟪𝟫𝖠𝖡𝖢𝖣𝖤𝖥𝖦𝖧𝖨𝖩𝖪𝖫𝖬𝖭𝖮𝖯𝖰𝖱𝖲𝖳𝖴𝖵𝖶𝖷𝖸𝖹𝖺𝖻𝖼𝖽𝖾𝖿𝗀𝗁𝗂𝗃𝗄𝗅𝗆𝗇𝗈𝗉𝗊𝗋𝗌𝗍𝗎𝗏𝗐𝗑𝗒𝗓" // Default to math sans
+		var type = "𝟢𝟣𝟤𝟥𝟦𝟧𝟨𝟩𝟪𝟫𝖠𝖡𝖢𝖣𝖤𝖥𝖦𝖧𝖨𝖩𝖪𝖫𝖬𝖭𝖮𝖯𝖰𝖱𝖲𝖳𝖴𝖵𝖶𝖷𝖸𝖹𝖺𝖻𝖼𝖽𝖾𝖿𝗀𝗁𝗂𝗃𝗄𝗅𝗆𝗇𝗈𝗉𝗊𝗋𝗌𝗍𝗎𝗏𝗐𝗑𝗒𝗓'" // Default to math sans
 		var normalSet =
-			"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" // Normal alphabet
+			"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'" // Normal alphabet
 		var realphabetize = true
 		if (inType == "bs") {
 			// If bold sans
-			type = "𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇"
+			type = "𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇’"
 		} else if (inType == "s") {
 			// If sans
-			type = "𝟢𝟣𝟤𝟥𝟦𝟧𝟨𝟩𝟪𝟫𝖠𝖡𝖢𝖣𝖤𝖥𝖦𝖧𝖨𝖩𝖪𝖫𝖬𝖭𝖮𝖯𝖰𝖱𝖲𝖳𝖴𝖵𝖶𝖷𝖸𝖹𝖺𝖻𝖼𝖽𝖾𝖿𝗀𝗁𝗂𝗃𝗄𝗅𝗆𝗇𝗈𝗉𝗊𝗋𝗌𝗍𝗎𝗏𝗐𝗑𝗒𝗓"
+			type = "𝟢𝟣𝟤𝟥𝟦𝟧𝟨𝟩𝟪𝟫𝖠𝖡𝖢𝖣𝖤𝖥𝖦𝖧𝖨𝖩𝖪𝖫𝖬𝖭𝖮𝖯𝖰𝖱𝖲𝖳𝖴𝖵𝖶𝖷𝖸𝖹𝖺𝖻𝖼𝖽𝖾𝖿𝗀𝗁𝗂𝗃𝗄𝗅𝗆𝗇𝗈𝗉𝗊𝗋𝗌𝗍𝗎𝗏𝗐𝗑𝗒𝗓’"
 		} else if (inType == "b") {
 			// If bold serif
-			type = "𝟎𝟏𝟐𝟑𝟒𝟓𝟔𝟕𝟖𝟗𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙𝐚𝐛𝐜𝐝𝐞𝐟𝐠𝐡𝐢𝐣𝐤𝐥𝐦𝐧𝐨𝐩𝐪𝐫𝐬𝐭𝐮𝐯𝐰𝐱𝐲𝐳"
+			type = "𝟎𝟏𝟐𝟑𝟒𝟓𝟔𝟕𝟖𝟗𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙𝐚𝐛𝐜𝐝𝐞𝐟𝐠𝐡𝐢𝐣𝐤𝐥𝐦𝐧𝐨𝐩𝐪𝐫𝐬𝐭𝐮𝐯𝐰𝐱𝐲𝐳’"
 		} else if (inType == "m") {
 			// If monospaced
-			type = "𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿𝙰𝙱𝙲𝙳𝙴𝙵𝙶𝙷𝙸𝙹𝙺𝙻𝙼𝙽𝙾𝙿𝚀𝚁𝚂𝚃𝚄𝚅𝚆𝚇𝚈𝚉𝚊𝚋𝚌𝚍𝚎𝚏𝚐𝚑𝚒𝚓𝚔𝚕𝚖𝚗𝚘𝚙𝚚𝚛𝚜𝚝𝚞𝚟𝚠𝚡𝚢𝚣"
+			type = "𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿𝙰𝙱𝙲𝙳𝙴𝙵𝙶𝙷𝙸𝙹𝙺𝙻𝙼𝙽𝙾𝙿𝚀𝚁𝚂𝚃𝚄𝚅𝚆𝚇𝚈𝚉𝚊𝚋𝚌𝚍𝚎𝚏𝚐𝚑𝚒𝚓𝚔𝚕𝚖𝚗𝚘𝚙𝚚𝚛𝚜𝚝𝚞𝚟𝚠𝚡𝚢𝚣’"
 		} else if (inType == "spoiler_mono") {
 			// If should be obfuscated as individual spoiler characters
 			realphabetize = false
@@ -228,7 +229,7 @@ class Format {
 		case "member": kwd = "users";			  	break
 		case "machine":	kwd = "machines";			break
 		case "challenge": kwd = "challenges";	break
-		case "endgame":	case "fortress": case "prolab": return `https://www.hackthebox.eu${target.id}`
+		case "endgame":	case "fortress": case "prolab": return `https://app.hackthebox.eu/${target.type}/${target.id}`
 		default:	break
 		}
 		return `https://app.hackthebox.eu/${kwd}/${target.id}`
@@ -411,7 +412,7 @@ class Format {
 	static boxOsSymbol(category) {
 		switch (category.toLowerCase()) {
 		case "Linux": return "🐧"
-		case "Windows": return any("🔷", "🔶", "💠")
+		case "Windows": return H.any("🔷", "🔶", "💠")
 		case "Solaris": return "☀️"
 		case "FreeBSD": return "😈"
 		case "Android": return "🍈"
@@ -452,7 +453,8 @@ class Format {
 
 
 	/**
-	 * This function exists as evidence that Propolis (spoken in true third person style) does not have any standards regarding time management. 🤷‍♀️
+	 * This function exists as evidence that Propolis (spoken in true third person style)
+	 * does not have any standards regarding time management. 🤷‍♀️
 	 * @param {*} len - How many dominoes to assemble (obviously!)
 	 */
 	static randomDominoes(len = 0) {
@@ -470,6 +472,45 @@ class Format {
 		return dominoes
 	}
 
+	
+	/**
+	 * Refine a MD turned-down version of the HTML description of a Pro Lab
+	 * @param {*} description - The already turned-down description field from the ProLab object
+	 */
+	static convertProLabDescription(description) {
+		var paras = description.split("\n\n")
+		var backup = [...paras]
+		var listIndex = -1
+		for (let i = 0; i < paras.length; i++) {
+			if (typeof paras[i] == "string" & new RegExp(/.*\*\*.*Level.*\*\*/).test(paras[i])){
+				paras[i] = "**This lab exposes players to:**"
+				listIndex = i + 1
+				for (let x = 0; x < i - 1; x++) {
+					paras[x] = undefined	
+				}
+				paras[i-1] = "\n> " + backup.slice(0,i).join("\n> ")
+			}
+			if (i == listIndex){
+				paras[i - 1] = paras[i - 1] + paras[i].replace(/\*\s\s/gi,"• ")
+				paras[i] = undefined
+			}
+			
+			if (paras[i]){
+				if (paras[i].includes("entry point") || paras[i].includes("out of scope")){
+					paras[i] = "```fix\n⚠ " + paras[i].replace(/\*\*/gi, "") + "\n```"
+				} else if (i == listIndex || i == listIndex -1) {
+					paras[i] = "\n" + paras[i] + "\n"
+				} else {
+					paras[i] = "```md\n" + paras[i] + "\n```"
+				}
+			}
+			
+			
+		}
+		let out = paras.filter(e => typeof e != undefined).join("\n").trim()
+		out = out ? "\n" + out : out
+		return out
+	}
 
 	static progressBar(progressAsPercent = 75, length = 10, label = true) {
 		// Returns pretty unicode progress bar, like:	▰▰▰▱▱▱▱▱ 38%
@@ -684,7 +725,7 @@ class Format {
 	}
 
 	static memberToMdLink(member, bold = true, customText=null) {
-		return (bold ? "**" : "") + `[${customText || member.name}](https://app.hackthebox.eu/users/${member.id} 'View on HTB')` + (bold ? "**" : "")
+		return (bold ? "**" : "") + `[${customText || H.sAcc(member,"name")}](https://app.hackthebox.eu/users/${member.id} 'View on HTB')` + (bold ? "**" : "")
 	}
 
 	static shortDate(date){

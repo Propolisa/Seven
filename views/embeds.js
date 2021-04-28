@@ -5,6 +5,11 @@ const { MessageEmbed, MessageAttachment: Attachment } = require("discord.js")
 const { SevenDatastore } = require("../models/SevenDatastore.js")
 const { Helpers: H } = require("../helpers/helpers.js")
 const {	checkSelfName } = require("../helpers/nlp.js")
+const TD = require("turndown")
+const td = new TD()
+const sharp = require("sharp")
+const request = require("superagent")
+
 const DFLT = null
 
 class HtbEmbeds {
@@ -56,7 +61,7 @@ class HtbEmbeds {
 
 	/* INFOBOXES */
 
-	targetInfo(type, identifier, isId = false, discordMessage = null, target=null) {
+	async infoFor(type, identifier, isId = false, discordMessage = null, target=null) {
 		console.info(`Sending target info message for ${target?target.type:type} '${target?target.name:identifier}'...`)
 		if (identifier == "i" && !(H.sAcc(target,"type"))) {
 			return this.ENTITY_UNFOUND.setTitle("Hmm...").setDescription(`**I only know you on Discord${discordMessage ? `, ${discordMessage.author.username}`: ""}.**\nPlease indicate your username on Hack The Box (I won't make assumptions even if it's the same) -- like "seven i am [username] on hackthebox". I'll link things up properly then. 👋`)
@@ -70,9 +75,10 @@ class HtbEmbeds {
 		switch (target.type) {
 		case "machine": {
 			/** MACHINE EMBED CONSTRUCTOR **/
-			const { id, os, name, ip = "10.10.10.[?]", avatar, maker, maker2, userBlood, rootBlood,
+			var { id, os, name, ip = "10.10.10.[?]", avatar, maker, maker2, userBlood, rootBlood,
 				difficultyText: difficulty, points = 0, retired, retiredate, release, stars=false, user_owns_count: users,
 				root_owns_count: roots, submission = false, status = "", tester} = target
+			difficulty = difficulty || target.difficulty
 			embed.attachFiles(new Attachment(`./static/img/${F.osNameToIconFile(os)}`, "os.png"))
 				.setAuthor(name, "attachment://os.png", F.machineProfileUrl(target))
 				.setDescription(
@@ -128,6 +134,7 @@ class HtbEmbeds {
 			const hasOwns = (roots + users + challs > 0)
 			const hasBloods = ((challenge_bloods || 0) + (machine_bloods || 0) > 0)
 			const hasRespect = Boolean(respects)
+
 			embed.setAuthor(this.ds.tryDiscordifyUid(id, target.self) || target.name + "  " + F.rankSymbol(rank),
 				(team ? F.avatar2Url(team.avatar) : ""),
 				F.memberProfileUrl(target))
@@ -200,20 +207,89 @@ class HtbEmbeds {
 				.setFooter(`ℹ️  Challenges last updated ${F.timeSince(this.ds.LAST_UPDATE)}`)
 			break
 		}
-		case "endgame": case "fortress": case "prolab":{
-			/** SPECIAL (ENDGAME, FORTRESS, PRO LAB) EMBED CONSTRUCTOR **/
-			const { name, description, type, makers, company, entries, retired, flags} = target
+		case "fortress": {
+			console.log(target)
+			const { id, name, image, cover_image_url, number_of_flags,
+				user_availability, ip, company, reset_votes, description,
+				has_completion_message, completion_message, progress_percent,
+				players_completed, points, flags, type} = target
+			
+			embed.attachFiles(new Attachment(F.getIcon(type), `${type}.png`))
+				.setAuthor(`${name} ${F.special2Proper(type)}`, `attachment://${type}.png`, company.url)
+				.setThumbnail(company.image)
+				.setImage(cover_image_url)
+				.setDescription(`${F.aOrAn(type)} ${F.special2Proper(type)} by ${(company? F.mdLink(company.name, F.profileUrl(target)) : false)}.` +
+				(description? `\n> ${description.split("\n").join("\n> ")}` + `\nIP Address: **[${ip || "Unknown"}](http://${ip || "0"}/)**`: ""))
+				
+			if (flags && Object.keys(flags).length) {
+				embed.addField(`${(flags.length != 1? "Flags": "Flag")}`, `\`\`\`js\n${flags.map(e => `${e.id.toString().padStart(2,"0")} ${F.STL(e.title,"m")}`).join("\n")}\`\`\``)
+			}
+			break
+		}
+		case "endgame": {
+			console.log(target)
+			let { id, name, avatar_url, cover_image_url,
+				retired, vip, creators, endgame_machines_count, flags,
+				endgame_flags_count, user_availability,
+				is_new, points, players_completed, endgame_reset_votes,
+				most_recent_reset, entry_points, video_url,
+				description, completion_icon, completion_text, type} = target
+			description = description.replace(`<h4>${name}</h4>`, "").trim()
+			description = td.turndown(description)
 			
 			embed.attachFiles(new Attachment(F.getIcon(type), `${type}.png`))
 				.setAuthor(`${name} ${F.special2Proper(type)}`, `attachment://${type}.png`, F.profileUrl(target))
-				.setDescription(`${F.aOrAn(type)} ${F.special2Proper(type)} by ${(company? F.mdLink(company, F.profileUrl(target)) : false) || F.andifyList(makers.map(m => F.mdLink(m.username,F.memberProfileUrl({id:m.id}))))}.` +
+				.setThumbnail(avatar_url)
+				.setImage(cover_image_url)
+				.setDescription(`${F.aOrAn(type)} ${F.special2Proper(type)} by **${F.memberToMdLink(creators[0],true,this.ds.tryDiscordifyUid(creators[0].id))}` +
+				`${(creators.length > 1 ? "** & **" + F.memberToMdLink(creators[1]) : "")}**.` +
 				(description? `\n> ${description.split("\n").join("\n> ")}` : ""))
-				
-			if (entries && entries.length) {
-				embed.addField(`${(entries.length != 1? "Entry Points": "Entry Point")}`, `${entries.map(e => `[\`${F.STL(e,"s")}\`](https://0)`).join("\n")}`)
+			
+			if (entry_points && entry_points.length) {
+				embed.addField(`${(entry_points.length != 1? "Entry Points": "Entry Point")}`, `${entry_points.map(ep=>`**[\`${ep}\`](http://${ep}/)**`).join("\n")}`)
 			}
+				
 			if (flags && Object.keys(flags).length) {
-				embed.addField(`${(flags.length != 1? "Flags": "Flag")}`, `\`\`\`js\n${Object.entries(flags).map(e => `${e[0].toString().padStart(2,"0")} ${F.STL(e[1],"m")}`).join("\n")}\`\`\``)
+				embed.addField(`${(flags.length != 1? "Flags": "Flag")}`, `\`\`\`js\n${flags.map(e => `${e.id.toString().padStart(2,"0")} ${F.STL(e.title,"m")}`).join("\n")}\`\`\``)
+			}
+			break
+		}
+		case "prolab": {
+			console.log(target)
+			let { id, name, release_at, pro_machines_count, pro_flags_count, flags,
+				ownership, user_eligible_for_certificate, is_new, skill_level,
+				designated_category, team, level, lab_servers_count, cover_img_url,
+				version, entry_points, description, video_url, cover_image_url,
+				active_users, lab_master, type, excerpt, social_links, new_version,
+				overview_image_url, designated_level} = target
+			let creators = [lab_master]
+			description = description.replace(`<h4>${name}</h4>`, "").trim()
+			description = td.turndown(description)
+			description = F.convertProLabDescription(description)
+			var prolab_avatar = null
+			try {
+				const agent = request.agent()
+				let SVG = await agent.get(`https://app.hackthebox.eu/images/icons/ic-prolabs/ic-${name.toLowerCase()}-overview.svg`)
+				prolab_avatar = await sharp(SVG.body).resize(280, 128,{fit:"contain", background:{r:0,g:0,b:0,alpha:0}}).png().toBuffer()
+			} catch (error) {
+				console.error(error)
+			}
+			embed.attachFiles(new Attachment(F.getIcon(type), `${type}.png`))
+				.attachFiles(new Attachment(prolab_avatar || F.getIcon(type), `${name}.png`))
+				.setAuthor(`${F.special2Proper(type)}: ${name}`, `attachment://${type}.png`, F.profileUrl(target))
+				.setThumbnail(F.avatar2Url(lab_master.avatar_thumb))
+				.setImage(`attachment://${name}.png`)
+				.setFooter("🠔 The same logo, but smaller!",`attachment://${name}.png`)
+				.setDescription(`${F.aOrAn(type)} ${F.special2Proper(type)} by **${F.memberToMdLink(creators[0],true,this.ds.tryDiscordifyUid(creators[0].id))}` +
+				`${(creators.length > 1 ? "** & **" + F.memberToMdLink(creators[1]) : "")}**.` +
+				(description? `\n${description}` : ""))
+			
+			if (entry_points && entry_points.length) {
+				embed.addField(`${(entry_points.length != 1? "Entry Points": "Entry Point")}`, `${entry_points.map(ep=>`**[\`${ep}\`](http://${ep}/)**`).join("\n")}`)
+			}
+				
+			if (flags && Object.keys(flags).length) {
+				embed.addField(`${(flags.length != 1? "Flags": "Flag")}`, `\`\`\`js\n${flags.map(e => `${e.id.toString().padStart(2,"0")} ${F.STL(e.title,"m")}`).join("\n")}\`\`\``)
 			}
 			break
 		}
@@ -324,34 +400,28 @@ class HtbEmbeds {
 		
 		var flagsSorted = flags.slice().sort()
 
-		console.log(flags,flagsSorted)
 		var flagString = ""
 		var sortedFlagString = ""
-		// flags = []
-		// TEAM_STATS.topMembers.forEach(memberId => {
-		//   member = TEAM_MEMBERS[memberId]
-		//   var flagLink = "["+getFlag(member.countryCode)+"](http://" + member.id + ")"
-		//   flags.push(flagLink)
-		// });
-		// flags.join("")
-		
-		var spliced = H.sp(9, flags)
+		const percentages = (xs) =>	xs.reduce((pcts, x) => ({...pcts, [x]: (pcts [x] || 0) + 100 / (xs .length)}), {})
+		var flagPercentages = Object.entries(percentages(flags))
+		var flagStatString = flagPercentages.sort((a, b) => (a[1] < b[1]) ? 1 : -1).map(pair => `${pair[0]}: ${pair[1].toFixed(1)}%`).join("\n")
+
+		var spliced = H.split(9, flags)
 		spliced.forEach(flagRow => {
 			flagString += "\n" + flagRow.join(" ")
 		})
 		
-		var sortSpliced = H.sp(9, flagsSorted)
+		var sortSpliced = H.split(9, flagsSorted)
 		sortSpliced.forEach(flagRow => {
 			sortedFlagString += "\n" + flagRow.join(" ")
 		})
-		console.log(spliced, sortSpliced)
 
 		return this.TEAM_INFO_BASE.attachFiles(new Attachment("./static/img/ui/rank.png", "rank.png"))
 			.setAuthor(H.any("🗺️", "🌎", "🌏", "🌍", "🌐", "🚩", "⛳", "🛂", "🛫", "✈️", "🛩️") + " Team Locales", "attachment://rank.png", F.teamProfileUrl(this.ds.TEAM_STATS))
 			.setThumbnail(this.ds.TEAM_STATS.avatar_url)
 			.setColor(F.COL.VIVID_PURPLE)
 			.setFooter("ℹ️  How cool is this feature?!")
-			.setDescription(H.any(sortedFlagString, flagString))
+			.setDescription(H.any(flagString, sortedFlagString, flagStatString))
 		
 	}
 

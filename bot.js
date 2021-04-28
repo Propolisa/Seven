@@ -20,7 +20,7 @@ const Discord = require("discord.js")
 const client = new Discord.Client()
 const fs = require("fs")
 const { struct } = require("pb-util")
-const dialogflow = require("dialogflow").v2beta1
+const dialogflow = require("@google-cloud/dialogflow").v2beta1
 const dflow = new dialogflow.SessionsClient({ credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS || "{}") })
 const strings = require("./static/strings")
 const { Helpers: H } = require("./helpers/helpers.js")
@@ -29,6 +29,7 @@ const pgp = require("pg-promise")({ capSQL: true })
 const htbCharts = require("./modules/charts/index.js")
 const { HtbEmbeds } = require("./views/embeds.js")
 const { SevenDatastore } = require("./models/SevenDatastore.js")
+// const { SevenApiServer } = require("./modules/seven-api-server.js")
 const { Send } = require("./modules/send.js")
 const { HTBEmoji } = require("./helpers/emoji.js")
 const { BinClock: BC } = require("./helpers/binclock")
@@ -48,12 +49,13 @@ if (process.env.IS_DEV_INSTANCE) {
 
 var DISCORD_ANNOUNCE_CHAN = false         // The Discord Channel object intended to recieve Pusher achievements.
 var HTB_PUSHER_OWNS_SUBSCRIPTION = false  // The Pusher Client own channel subscription.
-const SEVEN_DB_TABLE_NAME = "funbois"
+const SEVEN_DB_TABLE_NAME = "seven_data"
 var PUSHER_MSG_LOG = DEV_MODE_ON ? require("./cache/PUSHER_MSG_LOG.json") : null
 
 var PHANTOM_POOL = null
 const CHART_RENDERER = htbCharts.newChartRenderer()
 const DAT = new SevenDatastore()    // Open an abstract storage container for HTB / bot data
+// const API = new SevenApiServer(DAT, 666)
 const E = new HTBEmoji(client)
 const EGI = new HtbEmbeds(DAT, E) 			// Give Embed Constructor access to the datastore
 const SEND = new Send()
@@ -64,7 +66,7 @@ const cn = {
 	ssl: (process.env.DATABASE_URL.includes("localhost") ? false : { rejectUnauthorized: false })
 }
 
-const DB_FIELDNAMES_AUTO = ["MACHINES", "CHALLENGES", "TEAM_MEMBERS", "TEAM_MEMBERS_IGNORED", "TEAM_STATS", "DISCORD_LINKS", "MISC"]
+const DB_FIELDNAMES_AUTO = ["MACHINES", "CHALLENGES", "FORTRESSES", "ENDGAMES", "PROLABS", "TEAM_MEMBERS", "TEAM_MEMBERS_IGNORED", "TEAM_STATS", "DISCORD_LINKS", "MISC"]
 const db = pgp(cn)
 
 /** Imports globals from the cloud backup (Objects stored as raw, singular JSON columns in DB)
@@ -91,6 +93,9 @@ async function importDbBackup() {
 											VALUES
 												(DEFAULT, 'machines', '{}'),
 												(DEFAULT, 'challenges', '{}'),
+												(DEFAULT, 'fortresses', '{}'),
+												(DEFAULT, 'endgames', '{}'),
+												(DEFAULT, 'prolabs', '{}'),
 												(DEFAULT, 'team_members', '{}'),
 												(DEFAULT, 'team_members_ignored', '{}'),
 												(DEFAULT, 'team_stats', '{}'),
@@ -106,16 +111,22 @@ async function importDbBackup() {
 				rows => {
 					DAT.MACHINES = rows[0].json
 					DAT.CHALLENGES = rows[1].json
-					DAT.TEAM_MEMBERS = rows[2].json
-					DAT.TEAM_MEMBERS_IGNORED = rows[3].json
-					DAT.TEAM_STATS = rows[4].json
-					DAT.DISCORD_LINKS = rows[5].json
-					DAT.MISC = rows[6].json
+					DAT.FORTRESSES = rows[2].json
+					DAT.ENDGAMES = rows[3].json
+					DAT.PROLABS = rows[4].json
+					DAT.TEAM_MEMBERS = rows[5].json
+					DAT.TEAM_MEMBERS_IGNORED = rows[6].json
+					DAT.TEAM_STATS = rows[7].json
+					DAT.DISCORD_LINKS = rows[8].json
+					DAT.MISC = rows[9].json
 					console.log("[DB IMPORT]::: Restored from DB backup.")
-					console.info(`Machines   : ${Object.values(DAT.MACHINES).length}` + "\n" +
-											`Challenges : ${Object.values(DAT.CHALLENGES).length}` + "\n" +
-											`Members    : ${Object.values(DAT.TEAM_MEMBERS).length}${(DAT.kTMI.length ? " tracked, " + DAT.kTMI.length + " untracked":"")}` + "\n" +
-											`Linked DC  : ${Object.values(DAT.DISCORD_LINKS).length}`)
+					console.info(`Machines   : ${Object.values(DAT.MACHINES).length}\n` +
+								`Challenges : ${Object.values(DAT.CHALLENGES).length}\n` +
+								`Fortresses : ${Object.values(DAT.FORTRESSES).length}\n` +
+								`Endgames : ${Object.values(DAT.ENDGAMES).length}\n` +
+								`Pro Labs : ${Object.values(DAT.PROLABS).length}\n` +
+								`Members    : ${Object.values(DAT.TEAM_MEMBERS).length}${(DAT.kTMI.length ? " tracked, " + DAT.kTMI.length + " untracked":"")}\n` +
+								`Linked DC  : ${Object.values(DAT.DISCORD_LINKS).length}`)
 				}
 			).catch(
 				err => console.error(err)
@@ -138,11 +149,14 @@ async function updateCache(fields = DB_FIELDNAMES_AUTO) {
 		switch (fieldName.toLowerCase()) {
 		case "machines": fieldData.push({ id: 1, json: JSON.stringify(DAT.MACHINES) }); break
 		case "challenges": fieldData.push({ id: 2, json: JSON.stringify(DAT.CHALLENGES) }); break
-		case "team_members": fieldData.push({ id: 3, json: JSON.stringify(DAT.TEAM_MEMBERS) }); break
-		case "team_members_ignored": fieldData.push({ id: 4, json: JSON.stringify(DAT.TEAM_MEMBERS_IGNORED) }); break // These should only update manually
-		case "team_stats": fieldData.push({ id: 5, json: JSON.stringify(DAT.TEAM_STATS) }); break
-		case "discord_links": fieldData.push({ id: 6, json: JSON.stringify(DAT.D_STATIC) }); break               // These should only update manually
-		case "misc": fieldData.push({ id: 7, json: JSON.stringify(DAT.MISC) }); break
+		case "fortresses": fieldData.push({ id: 3, json: JSON.stringify(DAT.FORTRESSES) }); break
+		case "endgames": fieldData.push({ id: 4, json: JSON.stringify(DAT.ENDGAMES) }); break
+		case "prolabs": fieldData.push({ id: 5, json: JSON.stringify(DAT.PROLABS) }); break
+		case "team_members": fieldData.push({ id: 6, json: JSON.stringify(DAT.TEAM_MEMBERS) }); break
+		case "team_members_ignored": fieldData.push({ id: 7, json: JSON.stringify(DAT.TEAM_MEMBERS_IGNORED) }); break // These should only update manually
+		case "team_stats": fieldData.push({ id: 8, json: JSON.stringify(DAT.TEAM_STATS) }); break
+		case "discord_links": fieldData.push({ id: 9, json: JSON.stringify(DAT.D_STATIC) }); break               // These should only update manually
+		case "misc": fieldData.push({ id: 10, json: JSON.stringify(DAT.MISC) }); break
 		default:
 			break
 		}
@@ -275,7 +289,7 @@ async function main() {
 			console.log("Data refresh completed!")
 			var updated = await updateCache()
 			if (updated) {console.log("Updated the DB...")}
-		}, 3 * 60 * 60 * 1000) // Lower frequency of update to once every three hours after rate limiter issue
+		}, 1 * 60 * 60 * 1000) // Lower frequency of update to once every hour after rate limiter issue
 	}
 	
 	HTB_PUSHER_OWNS_SUBSCRIPTION.on("pusherevent", async message => {
@@ -421,7 +435,6 @@ async function sendActivityMsg(message, member, targetType=undefined, sortBy=und
 		orderedDates.push((new Date()).toISOString())
 	}
 	var dateRange = {oldest:new Date(orderedDates[0]), latest: new Date(), interval: new Date(orderedDates[orderedDates.length - 1])}
-	console.log(owns)
 	var types = ["user","root","challenge","endgame","fortress"]
 	types.forEach(thisType => {
 		var filtered = owns.filter(e => e.object_type==thisType || e.type == thisType)
@@ -432,7 +445,6 @@ async function sendActivityMsg(message, member, targetType=undefined, sortBy=und
 		e.push([Date.parse(orderedDates[0]) || (new Date()).getTime(), 0 ])
 	})
 	
-	console.log(series)
 	var chartImageB64 = await CHART_RENDERER.renderChart(member, null, null, "userActivity", series, dateRange)
 	var chartImage = new Buffer.from(chartImageB64, "base64")
 	SEND.embed(message, EGI.memberActivity(member, limit, targetType, sortOrder, sortBy, chartImage))
@@ -444,8 +456,8 @@ async function sendActivityMsg(message, member, targetType=undefined, sortBy=und
  * @param {Object} message A Discord Message object.
  */
 function understand(message) {
-	//var sessionPath = dflow.environmentSessionPath(process.env.GOOGLE_CLOUD_PROJECT, "Production", "seven-server", message.author.id)
-	var sessionPath = dflow.sessionPath(process.env.GOOGLE_CLOUD_PROJECT, message.author.id)
+	// var sessionPath = dflow.sessionPath(process.env.GOOGLE_CLOUD_PROJECT, "Production", "seven-server", message.author.id)
+	var sessionPath = dflow.projectAgentSessionPath(process.env.GOOGLE_CLOUD_PROJECT, message.author.id)
 	console.log(`[DF]::: Sending message from ${message.author.username} to DialogFlow for comprehension`)
 	const request = {
 		session: sessionPath,
@@ -624,7 +636,7 @@ async function handleMessage(message) {
 				try { sendHelpMsg(message) } catch (e) { console.log(e) }
 			} else if (htbItem) {
 				console.log("[SEVEN]::: HTB Entity was resolved.")
-				try { SEND.embed(message, EGI.targetInfo(htbItem.type, htbItem.name, null,message, htbItem)) } catch (e) { console.error(e) }
+				try { SEND.embed(message, await EGI.infoFor(htbItem.type, htbItem.name, null,message, htbItem)) } catch (e) { console.error(e) }
 			} else {
 				var result = await understand(message)
 				var isRipe = result.allRequiredParamsPresent
@@ -660,15 +672,15 @@ async function handleMessage(message) {
 						case "getTeamLeader":  sendTeamLeaderMsg(message, result.fulfillmentText); break
 						case "getTeamRanking": SEND.embed(message, EGI.teamRank()); break
 						case "getFlagboard":  sendFlagboardMsg(message); break
-						case "getTargetInfo": SEND.embed(message, EGI.targetInfo(P.targetType, P.targetName)); break
+						case "getTargetInfo": SEND.embed(message, await EGI.infoFor(P.targetType, P.targetName)); break
 						case "getTargetOwners": SEND.embed(message, EGI.teamOwnsForTarget(DAT.resolveEnt(P.target,P.htbTargetType),undefined,P.ownType,P.ownFilter)); break
 						case "checkMemberOwnedTarget": SEND.embed(message, EGI.checkMemberOwnedTarget(DAT.resolveEnt(P.username, "member", false, message), DAT.resolveEnt(P.targetname, P.targettype), P.flagNames)); break
-						case "getFirstBox":  SEND.embed(message, EGI.targetInfo("machine", "Lame")); await SEND.human(message, result.fulfillmentText); break
+						case "getFirstBox":  SEND.embed(message, await EGI.infoFor("machine", "Lame")); await SEND.human(message, result.fulfillmentText); break
 						case "agent.doReboot": doFakeReboot(message, result.fulfillmentText); break
-						case "getNewBox": SEND.embed(message, EGI.targetInfo("machine", DAT.getNewBoxId(), true)); break
-						case "getMemberInfo": SEND.embed(message, EGI.targetInfo("member", P.username, false, message, DAT.resolveEnt(P.username, "member", false, message) || { type: null })); break
+						case "getNewBox": SEND.embed(message, await EGI.infoFor("machine", DAT.getNewBoxId(), true)); break
+						case "getMemberInfo": SEND.embed(message, await EGI.infoFor("member", P.username, false, message, DAT.resolveEnt(P.username, "member", false, message) || { type: null })); break
 						case "getMemberRank": SEND.embed(message, EGI.memberRank(DAT.resolveEnt(P.username, "member", false, message))); break
-						case "getMemberChart": console.log("GOT HERE..."); sendMemberChartMsg(message, P.username, (P.interval ? P.interval : "1Y")); break
+						case "getMemberChart": sendMemberChartMsg(message, H.sAcc(DAT.resolveEnt(P.username, "member", false, message), "name"), (P.interval ? P.interval : "1Y")); break
 						case "filterMemberOwns": sendActivityMsg(message,	DAT.resolveEnt(P.username, "member", false, message),
 							P.targettype, P.sortby, P.sortorder,	P.limit || 24); break
 						case "filterTargets": SEND.embed(message, EGI.filteredTargets(DAT.filterEnt(message,
@@ -684,7 +696,7 @@ async function handleMessage(message) {
 						case "Default Fallback Intent": {
 							htbItem = await DAT.resolveEnt(message.content.replace(/\s/g,""),null,null,message,true)
 							if (htbItem) {
-								SEND.embed(message, EGI.targetInfo(null,null,null,message,htbItem)); break
+								SEND.embed(message, await EGI.infoFor(null,null,null,message,htbItem)); break
 							} else { await SEND.human(message, result.fulfillmentText) }
 						} break
 						default:
@@ -701,11 +713,10 @@ async function handleMessage(message) {
 				} else {
 					htbItem = await DAT.resolveEnt(message.content.replace(/\s/g,""),null,null,message,true)
 					if (htbItem) {
-						SEND.embed(message, EGI.targetInfo(null,null,null,message,htbItem))
+						SEND.embed(message, await EGI.infoFor(null,null,null,message,htbItem))
 					} else { await SEND.human(message, result.fulfillmentText) }
 				}
 			}
-
 		}
 	}
 }

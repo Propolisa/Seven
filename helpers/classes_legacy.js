@@ -58,6 +58,7 @@ class LegacyHtbMachine {
      * @returns {LegacyHtbMachine}
      */
 	constructor(name, id, thumb, retired, maker, maker2, os, ip, rating, release, retiredate, points, unreleased) {
+		this.type = "machine"
 		this.name = name
 		this.id = id
 		this.thumb = thumb

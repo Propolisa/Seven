@@ -136,7 +136,7 @@ class Helpers {
 	 * @param {*} size 
 	 * @param {*} arr 
 	 */
-	static sp(size, arr) { //size - child_array.length
+	static split(size, arr) { //size - child_array.length
 		var out = [], i = 0, n = Math.ceil((arr.length) / size)
 		while (i < n) { out.push(arr.splice(0, (i == n - 1) && size < arr.length ? arr.length : size)); i++ }
 		return out

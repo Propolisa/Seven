@@ -1,6 +1,12 @@
 const request = require("superagent")
 const Throttle = require("superagent-throttle")
-const superdebug = require("superdebug")
+// const superdebug = require("superdebug")
+require("superagent-retry-delay")(request)
+const {Challenge, Endgame, EndgameEntry,
+	EndgameProfile, Fortress, FortressEntry,
+	FortressProfile, Machine, ProLabEntry,
+	ProLabInfo, ProLabOverview, Team,
+	Track, University, User} = require("../models/api-classes")
 // var logger = require("superagent-logger");
 const { Helpers: H } = require("../helpers/helpers.js")
 
@@ -9,13 +15,34 @@ const setTypeForValues = (type, objectMap) => {
 	return objectMap // Add object type specifier for easier introspection
 }
 
+/**
+ * @typedef {import('../models/api-classes').Challenge} Challenge
+ * @typedef {import('../models/api-classes').Endgame} Endgame
+ * @typedef {import('../models/api-classes').EndgameEntry} EndgameEntry
+ * @typedef {import('../models/api-classes').EndgameProfile} EndgameProfile
+ * @typedef {import('../models/api-classes').Fortress} Fortress
+ * @typedef {import('../models/api-classes').FortressEntry} FortressEntry
+ * @typedef {import('../models/api-classes').FortressProfile} FortressProfile
+ * @typedef {import('../models/api-classes').Machine} Machine
+ * @typedef {import('../models/api-classes').ProLab} ProLab
+ * @typedef {import('../models/api-classes').ProLabEntry} ProLabEntry
+ * @typedef {import('../models/api-classes').ProLabInfo} ProLabInfo
+ * @typedef {import('../models/api-classes').ProLabOverview} ProLabOverview
+ * @typedef {import('../models/api-classes').Team} Team
+ * @typedef {import('../models/api-classes').Track} Track
+ * @typedef {import('../models/api-classes').University} University
+ * @typedef {import('../models/api-classes').User} User
+ * 
+ */
+
 class HtbApiConnector {
 
 	constructor() {
 		this.API_TOKEN = ""
+		this.throttles = {}
 		this.throttle = new Throttle({
 			active: true,  // set false to pause queue
-			rate: 10,       // how many requests can be sent every `ratePer`- 20
+			rate: 25,       // how many requests can be sent every `ratePer`- 20
 			ratePer: 60000, // number of ms in which `rate` requests may be sent - 1 minute / 60,000 ms
 			concurrent: 1, // how many requests can be sent concurrently - 20
 		})
@@ -47,8 +74,29 @@ class HtbApiConnector {
 		})
 	}
 	
+	getThrottle(endpoint){
+		if ( !this.throttles[endpoint] ) {
+			this.throttles[endpoint] = 	new Throttle({
+				active: true,   // set false to pause queue
+				rate: 10,       // how many requests can be sent every `ratePer`- 20
+				ratePer: 60000, // number of ms in which `rate` requests may be sent - 1 minute / 60,000 ms
+				concurrent: 1,  // how many requests can be sent concurrently - 20
+			})
+			console.warn(`SA_THROTTLE::: Added throttling for endpoint ${endpoint}`)
+		}
+		return this.throttles[endpoint]
+	}
+
+	updateThrottle(endpoint, rLimit, rLeft, fullPath){
+		console.info(`${new Date().toLocaleString()} RL [${fullPath}] ⇛ ${"▓".repeat(rLimit - rLeft)}${"░".repeat(rLeft)} ( ${rLimit - rLeft} / ${rLimit} used )` )
+		this.getThrottle(endpoint).rate = Math.floor((Number(rLimit) || 15) * 0.90)
+	}
+
+
+
+
 	async htbApiGet(endpointPath, parseText=false) {
-		// console.count(endpointPath.replace(/[0-9]/g, ""))
+		var endpoint = endpointPath.replace(/\d[^$]*/gm, "").replace(/\/$/, "")
 		if (this.checkTokenExpiring(this.API_TOKEN)){
 			try {
 				this.API_TOKEN = await this.getV4AccessToken(this.AUTH_INFO.email,this.AUTH_INFO.password)
@@ -62,15 +110,18 @@ class HtbApiConnector {
 				.get("https://www.hackthebox.eu/api/v4/" + endpointPath)
 				.set({ Accept: "application/json, */*" })
 				.set({ Authorization: "Bearer " + this.API_TOKEN })
-				.retry(2)
+				.retry(10, [1000, 3000, 60000], [])
 				.timeout({
-					response: 5000,  // Wait 5 seconds for the server to start sending,
-					deadline: 10000, // but allow 1 minute for the file to finish loading.
+					response: 10000,  // Wait 10 seconds for the server to start sending,
+					deadline: 60000, // but allow 1 minute for the file to finish loading.
 				})
-				.use(this.throttle.plugin())
+				.use(this.getThrottle(endpoint).plugin())
 				// .use(logger)
 				.then((response) => {
-					console.log(`${new Date().toLocaleTimeString()} ⇛ ${response.status.toString().padStart(3," ")}: GET "${response.request.url.substring(33)}"` + ( response.headers["x-ratelimit-limit"] ? ` | Remaining limiter credit: ${response.headers["x-ratelimit-remaining"]} / ${response.headers["x-ratelimit-limit"]}`: " | (No rate limiter on this endpoint)" ))
+					var rLimit = H.sAcc(response, "headers", "x-ratelimit-limit") || 60
+					var rLeft = H.sAcc(response, "headers", "x-ratelimit-remaining") || 60
+					this.updateThrottle(endpoint, rLimit, rLeft, endpointPath)
+					// console.log(`${new Date().toLocaleTimeString()} ⇛ ${response.status.toString().padStart(3," ")}: GET "${response.request.url.substring(33)}"` + ( response.headers["x-ratelimit-limit"] ? ` | Remaining limiter credit: ${response.headers["x-ratelimit-remaining"]} / ${response.headers["x-ratelimit-limit"]}`: " | (No rate limiter on this endpoint)" ))
 					if (parseText) {
 						resolve(JSON.parse(response.text))
 					} else {
@@ -78,8 +129,8 @@ class HtbApiConnector {
 					}
 				})
 				.catch((err) => {
-					console.warn("Could not access '" + endpointPath + "':", err.response.status)
-					reject(false)
+					console.warn("Could not access '" + endpointPath + "':", H.sAcc(err))
+					reject(err)
 				})
 		})
 	}
@@ -161,14 +212,17 @@ class HtbApiConnector {
 		return this.htbApiGet(`search/fetch?query=${name}&tags=%5B%22challenges%22%5D`,true).then(res => {console.log((res.challenges? "FOUNDIT! - " + name + " - " : "NOTFOUND! - " + name + " - ")); return (res.challenges? res.challenges : [])})
 	}
 	
+	/** @returns {Challenge[]} */
 	async getCurrentChallenges() {
 		return setTypeForValues("challenge", H.arrToObj((await this.htbApiGet("challenge/list", this.API_TOKEN)).challenges, "id"))
 	}
 	
+	/** @returns {Challenge[]} */
 	async getRetiredChallenges() {
 		return setTypeForValues("challenge", H.arrToObj((await this.htbApiGet("challenge/list/retired", this.API_TOKEN)).challenges, "id"))
 	}
 	
+	/** @returns {Challenge[]} */
 	async getAllChallengesFast() {
 		var retired = await this.getRetiredChallenges()
 		var current = await this.getCurrentChallenges()
@@ -176,16 +230,18 @@ class HtbApiConnector {
 		return all
 	}
 
+	/** @returns {Challenge} */
 	async getCompleteChallengeProfileById(id) {
 		return this.htbApiGet(`challenge/info/${id}`)
 	}
 
-
+	/** @returns {Challenge[]} */
 	getCompleteChallengeProfilesByIds(challengeIds) {
 		return Promise.all(challengeIds.map(id => this.getCompleteChallengeProfileById(id)))
 			.then(challenges => setTypeForValues("challenge", H.arrToObj(challenges.map(e => e.challenge), "id")))
 	}
 	
+	/** @returns {Challenge[]} */
 	async getAllCompleteChallengeProfiles() {
 		var challenges = await this.getAllChallengesFast()
 		const ids = Object.values(challenges).map(challenge => challenge.id)
@@ -198,14 +254,110 @@ class HtbApiConnector {
 	getChallengeCategories() {
 		return this.htbApiGet("challenge/categories/list").then(res => H.arrToObj(res.info, "id"))
 	}
+
+	/**
+	 * FORTRESS DATA GETTERS
+	 */
+
+	/** @returns {FortressEntry[]} */
+	async getAllFortressEntries() {
+		return Object.values((await this.htbApiGet("fortresses", this.API_TOKEN)).data)
+	}
+
+	/** @returns {FortressProfile} */
+	async getFortressProfile(id) {
+		return this.htbApiGet(`fortress/${id}`).then(e => Object.assign(e.data,{type:"fortress"}))
+	}
+
+	/** @returns {Fortress[]} */
+	async getAllFortresses() {
+		let entries = await this.getAllFortressEntries()
+		let profiles = await Promise.all(entries.map(entry => this.getFortressProfile(entry.id)))
+		let fortresses = H.arrToObj(entries.map((e,i) => H.combine([e,profiles[i]])), "id")
+		return fortresses
+	}
+	
+
+	/**
+	 * ENDGAME DATA GETTERS
+	 */
+
+	/** @returns {EndgameEntry[]} */
+	async getAllEndgameEntries() {
+		return Object.values((await this.htbApiGet("endgames")).data)
+	}
+
+	/** @returns {EndgameProfile} */
+	async getEndgameProfile(id) {
+		// console.log(await this.htbApiGet(`endgame/${id}`))
+		return this.htbApiGet(`endgame/${id}`).then(e => Object.assign(e.data,{type:"endgame"}))
+	}
+
+	/** @returns {Flag[]} */
+	async getEndgameFlags(id) {
+		// console.log(await this.htbApiGet(`endgame/${id}`))
+		return this.htbApiGet(`endgame/${id}/flags`).then(e => e.data)
+	}
+
+	/** @returns {Endgame[]} */
+	async getAllEndgames() {
+		let entries = await this.getAllEndgameEntries()
+		let profiles = await Promise.all(entries.map(entry => this.getEndgameProfile(entry.id)))
+		let flags = await Promise.all(entries.map(entry => this.getEndgameFlags(entry.id)
+			.then(flags => ({flags: flags}))
+		))
+		let endgames = H.arrToObj(entries.map((e,i) => H.combine([e,flags[i], profiles[i]])), "id")
+		return endgames
+	}
+	
+
+	/**
+	 * PRO LAB DATA GETTERS
+	 */
+
+	/** @returns {ProLabEntry[]} */
+	async getAllProLabEntries() {
+		return Object.values((await this.htbApiGet("prolabs")).data.labs)
+	}
+
+	/** @returns {Flag[]} */
+	async getProLabFlags(id) {
+		return this.htbApiGet(`prolab/${id}/flags`).then(e => Object.assign(e.data,{type:"prolab"}))
+	}
+
+	/** @returns {ProLabInfo} */
+	async getProLabInfo(id) {
+		return this.htbApiGet(`prolab/${id}/info`).then(e => Object.assign(e.data,{type:"prolab"}))
+	}
+
+	/** @returns {ProLabOverview} */
+	async getProLabOverview(id) {
+		return this.htbApiGet(`prolab/${id}/overview`).then(e => Object.assign(e.data,{type:"prolab"}))
+	}
+
+	/** @returns {ProLab[]} */
+	async getAllProlabs() {
+		let entries = await this.getAllProLabEntries()
+		let flags = await Promise.all(entries.map(entry => this.getEndgameFlags(entry.id)
+			.then(flags => ({flags: flags}))
+		))
+		let infos = await Promise.all(entries.map(entry => this.getProLabInfo(entry.id)))
+		let overviews = await Promise.all(entries.map(entry => this.getProLabOverview(entry.id)))
+		let prolabs = H.arrToObj(entries.map((e,i) => H.combine([e,flags[i], infos[i],overviews[i]])), "id")
+		return prolabs
+	}
+
+
 	/**
 	 * TEAM DATA GETTERS
 	 */
 
+	/** @returns {Team} */
 	getTeamProfile(teamId) {
 		return this.htbApiGet(`team/info/${teamId}`)
 	}
 
+	/** @returns {Team} */
 	getCompleteTeamProfile(teamId) {
 		return Promise.all([this.getTeamProfile(teamId),
 			this.getTeamOwnStats(teamId),
@@ -213,6 +365,7 @@ class HtbApiConnector {
 		).then(res => H.combine([...res,{type:"team"}]))
 	}
 
+	/** @returns {User[]} */
 	getTeamMembers(teamId, excludedIds=[]) {
 		return this.htbApiGet(`team/members/${teamId}`).then(res => res.filter(member => !excludedIds.includes(member.id) && member.role != "pending"))
 	}

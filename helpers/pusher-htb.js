@@ -69,6 +69,7 @@ function parsePusherEvent(data) {
 			let type = machine ? "machine" : challenge ? "challenge" : isLaunch ? "launch" : null 
 			let flag = undefined
 			let target = machine || challenge || launchName
+
 			let lemmas = msg.childNodes[1].textContent.trim().split(" ")
 			let verb = lemmas[0]
 			if (verb == "solved") {
@@ -104,6 +105,8 @@ function parsePusherEvent(data) {
 			return new HtbPusherEvent(data, undefined, undefined, undefined, undefined, md, data.channel || "unknown", isBlood)}
 		}
 	} catch (error) {
+		console.warn("Error encountered for the following incoming Pusher message:")
+		console.error(JSON.stringify(data,null,"\t"))
 		console.error(error)
 		return new HtbPusherEvent(data, undefined, undefined, undefined, undefined, md, data.channel || "unknown")
 	}

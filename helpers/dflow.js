@@ -8,7 +8,7 @@ const zTools = require("../helpers/zip-tools")
  * Loads Google's DialogFlow client library which we will use to make API calls.
  * */
  
-const dialogflow = require("dialogflow")
+const dialogflow = require("@google-cloud/dialogflow").v2beta1
 const { agent } = require("superagent")
 const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS || "{}")
 const entitiesClient = new dialogflow.EntityTypesClient({

@@ -1,3 +1,23 @@
+/**
+ * @typedef {import('../models/api-classes').Challenge} Challenge
+ * @typedef {import('../models/api-classes').Endgame} Endgame
+ * @typedef {import('../models/api-classes').EndgameEntry} EndgameEntry
+ * @typedef {import('../models/api-classes').EndgameProfile} EndgameProfile
+ * @typedef {import('../models/api-classes').Fortress} Fortress
+ * @typedef {import('../models/api-classes').FortressEntry} FortressEntry
+ * @typedef {import('../models/api-classes').FortressProfile} FortressProfile
+ * @typedef {import('../models/api-classes').Machine} Machine
+ * @typedef {import('../models/api-classes').ProLab} ProLab
+ * @typedef {import('../models/api-classes').ProLabEntry} ProLabEntry
+ * @typedef {import('../models/api-classes').ProLabInfo} ProLabInfo
+ * @typedef {import('../models/api-classes').ProLabOverview} ProLabOverview
+ * @typedef {import('../models/api-classes').Team} Team
+ * @typedef {import('../models/api-classes').Track} Track
+ * @typedef {import('../models/api-classes').University} University
+ * @typedef {import('../models/api-classes').User} User
+ * 
+ */
+
 const {
 	Format: F
 } = require("../helpers/format.js")
@@ -13,7 +33,7 @@ const {
 const {	HtbSpecialFlag } = require("../helpers/classes.js")
 const {
 	HtbApiConnector: V4
-} = require("../modules/api.js")
+} = require("../modules/htb-api.js")
 const {
 	HtbLegacyConnector: V3
 } = require("../modules/htb-legacy-connector")
@@ -23,7 +43,7 @@ const {
 } = require("../helpers/helpers.js")
 
 class SevenDatastore {
-
+	
 	constructor() {
 		this.UPDATE_LOCK = false
 		this.LAST_UPDATE = new Date()
@@ -127,6 +147,35 @@ class SevenDatastore {
 		else return dFlowEnt.syncAgentDownstream()
 	}
 
+	async getMachinesComplete(){
+		console.time("Getting machines [V3] took")
+		var MACHINES_V3 = await this.V3API.getMachines()
+		var urmachine = false
+		urmachine = await this.V3API.getUnreleasedMachine()
+		console.warn(urmachine ? "[APIv3]::: Got unreleased machine " + urmachine.name + "..." : "[APIv3]::: There are currently no machines in unreleased section.")
+		if (urmachine) {
+			MACHINES_V3[urmachine.id] = urmachine
+		}
+		var machineSubmissions = await this.V3API.getMachineSubmissions()
+		var mSObj = (machineSubmissions.length ? H.arrToObj(machineSubmissions,"id") : {})
+		console.timeEnd("Getting machines [V3] took")
+		console.time("Getting machines [V4] took")
+		var MACHINES_V4 = await this.V4API.getAllCompleteMachineProfiles()
+		var COMBINED_MACHINES = {}
+		Object.keys(MACHINES_V3).map(e => COMBINED_MACHINES[e] = H.combine([MACHINES_V3[e], MACHINES_V4[e]]) || (Object.assign({}, MACHINES_V3[e], {
+			type: "machine"
+		})) || MACHINES_V4[e])
+		console.timeEnd("Getting machines [V4] took")
+		return Object.assign(COMBINED_MACHINES,mSObj)
+	}
+
+	async getMachineTagsComplete(){
+		console.time("Getting machine tags [V4] took")
+		var mt = await this.V4API.getMachineTags()
+		console.timeEnd("Getting machine tags [V4] took")
+		return mt
+	}
+
 	async update() {
 		if (!this.UPDATE_LOCK) {
 			this.UPDATE_LOCK = true
@@ -137,11 +186,12 @@ class SevenDatastore {
 				await this.V3API.init()
 				var SESH = this.V3API.SESSION
 				if (SESH) console.log("[API CONNECTOR]::: Got a logged in V3 session.")
-				console.time("Getting specials took")
-				this.MISC.SPECIALS = await this.V3API.getSpecials()
-				console.timeEnd("Getting specials took")
-				let specialCounts = Object.keys(this.MISC.SPECIALS).map(e => `${this.MISC.SPECIALS[e].length} ${e}`)
-				console.warn(`[APIv4]::: Got ${F.andifyList(specialCounts)}.`)
+				this.FORTRESSES = await this.V4API.getAllFortresses()
+				this.ENDGAMES = await this.V4API.getAllEndgames()
+				this.PROLABS = await this.V4API.getAllProlabs()
+				let t1 = JSON.stringify(this.FORTRESSES, null, "\t")
+				let t2 = JSON.stringify(this.ENDGAMES, null, "\t")
+				let t3 = JSON.stringify(this.PROLABS, null, "\t")
 				/* API v4 DATA COLLECTION (Who's feeling sexy now..?!) */
 				console.time("Getting machines [V3] took")
 				var MACHINES_V3 = await this.V3API.getMachines()
@@ -188,13 +238,22 @@ class SevenDatastore {
 				} else {
 					console.warn("[API CONNECTOR]::: No ID (Team or University) was specified!! Please add a definition for either 'HTB_UNIVERSITY_ID' or 'HTB_TEAM_ID' in your environment variables.")
 				}
+				
 				console.timeEnd("Getting team / uni data [V4] took")
 				console.warn(`[APIv4]::: Got ${Object.keys(this.TEAM_MEMBERS).length} team member profiles...`)
 				var names = this.vTM.map(e => e.name.toLowerCase())
 				console.time("Getting challenge profiles and tags [V4] took")
 				this.CHALLENGES = await this.V4API.getAllCompleteChallengeProfiles()
 				this.MISC.CHALLENGE_CATEGORIES = await this.V4API.getChallengeCategories()
+				
 				console.timeEnd("Getting challenge profiles and tags [V4] took")
+
+				console.time("Getting specials took")
+				this.MISC.SPECIALS = await this.V3API.getSpecials()
+				console.timeEnd("Getting specials took")
+				let specialCounts = Object.keys(this.MISC.SPECIALS).map(e => `${this.MISC.SPECIALS[e].length} ${e}`)
+				console.warn(`[APIv4]::: Got ${F.andifyList(specialCounts)}.`)
+				
 				console.warn(`[APIv4]::: Got ${this.kC.length} challenges spanning ${Object.keys(this.MISC.CHALLENGE_CATEGORIES).length} categories...`)
 				console.warn(`[APIv4]::: Got team info for "${this.TEAM_STATS.name}"`)
 				dFlowEnt.addMissingFieldsToEntity(Object.values(this.MISC.SPECIALS).flat().map(e => Object.values(e.flags)).flat(), "specialTargetFlagName")
@@ -549,16 +608,43 @@ class SevenDatastore {
 	}
 
 	/**
+	 * Get the Fortress object whose name matches the parameter string.
+	 * @param {string} name - The fortress name.
+	 * @returns {(Fortress|null)}
+	 */
+	getFortressByName(name) {
+		return Object.values(this.FORTRESSES).find(item => [item.name.toLowerCase(),item.company.name.toLowerCase()].includes(name.toLowerCase()))
+	}
+
+	/**
+	 * Get the Endgame object whose name matches the parameter string.
+	 * @param {string} name - The endgame name.
+	 * @returns {(Endgame|null)}
+	 */
+	getEndgameByName(name) {
+		return Object.values(this.ENDGAMES).find(item => item.name.toLowerCase() == name.toLowerCase())
+	}
+
+	/**
+	 * Get the Pro Lab object whose name matches the parameter string.
+	 * @param {string} name - The prolab name.
+	 * @returns {(ProLab|null)}
+	 */
+	getProLabByName(name) {
+		return Object.values(this.PROLABS).find(item => item.name.toLowerCase() == name.toLowerCase())
+	}
+
+	/**
 	 * Get the challenge object whose name matches the parameter string.
-	 * @param {string} name - The challenge name.
+	 * @param {string} name - The special item name.
 	 * @returns {Object}
 	 */
 	getSpecialByName(name=null, type=null) { // Return endgame, fortress or pro lab with name matching parameter string
-		if (name && this.MISC.SPECIALS) {
-			if (!type) {return Object.values(this.MISC.SPECIALS).map(e => e.find(s => (s.name == name || s.company == name))).flat().filter(e => e)[0] || null}
-			else {return Object.values(this.MISC.SPECIALS).map(e => e.find(s => (s.name == name || s.company == name) && s.type == type)).flat()}
-		} else {
-			return null
+		switch (type) {
+		case "fortress": return this.getFortressByName(name)
+		case "endgame": return this.getEndgameByName(name)
+		case "prolab":	return this.getProLabByName(name)
+		default: return this.getFortressByName(name) || this.getEndgameByName(name) || this.getProLabByName(name)
 		}
 	}
 
