@@ -309,8 +309,9 @@ async function main() {
 			switch (message.type) {
 			case "machine": case "challenge": case "endgame": case "fortress": case	"prolab":
 				if (DAT.DISCORD_LINKS[message.uid] || message.blood || DAT.TEAM_MEMBERS[message.uid]) {
-					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherOwn(await DAT.resolveEnt(message.uid,"member",true,null,true), message.target, message.flag || message.type, message.blood))
+					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherOwn(await DAT.resolveEnt(message.uid,"member",true,null,true), message.target, message.type, message.flag || message.type, message.blood))
 					if (message.blood){
+						DAT.integratePusherBlood(await DAT.resolveEnt(message.uid,"member",true,null,true), message.uid, message.time, message.type, message.target, message.flag, true)
 						for (let i = 0; i < 3; i++) {
 							DISCORD_ANNOUNCE_CHAN.send("‼").then(message => message.delete())
 						}
@@ -351,7 +352,7 @@ async function main() {
 
 		/** Test the Pusher owns functionality */
 		// var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
-		//	PUSHER_DUMMY_DATA.slice(0,2).forEach(e => {HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel: null})})
+		// PUSHER_DUMMY_DATA.slice(0,2).forEach(e => {HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel: null})})
 		
 		console.log(`[DISCORD]::: ${Object.values(DAT.DISCORD_LINKS).length} guild members have linked their HTB accounts.`)
 		updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString())

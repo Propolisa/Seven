@@ -42,6 +42,10 @@ class Helpers {
 		return ((new Date(dateString)).getTime() < new Date().getTime())
 	}
 
+	static isOldDate(dateString){ // Is this older than roughly 6 months?
+		return ((new Date(dateString)).getTime() + (1000 * 60 * 60 * 24 * 180)) < new Date().getTime()
+	}
+
 	static sortByZuluDatestring(a,b, comparator, ascending=true){
 		return (a[comparator] < b[comparator]) ? (ascending? -1: 1) : ((a[comparator] > b[comparator]) ? (ascending? 1: -1) : 0)
 	}

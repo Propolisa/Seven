@@ -97,7 +97,7 @@ class HtbEmbeds {
 						+ (!submission ? (roots + users > 0 ? "-  Bloods   : " : `-  Bloods   : ${F.STL("None taken!\n", "bs")}`) : "")
 						+ (userBlood ? "🔹 " + userBlood.user.name : (roots && users == 0 ? "(No [U] blood!)" : "")) + (userBlood ? " " : "")
 						+ (rootBlood ? "🔸 " + rootBlood.user.name : (users && roots == 0 ? "(No [R] blood!)" : "")) + (!submission ? (roots + users > 0 ? "\n" : ""):"")
-						+ `+  ${(H.isPastDate(release) ? "Released" : "Release ")} : ${(submission ? "Unannounced" : `${new Date(release).getUTCFullYear()} (${F.fuzzyAge(new Date(release))})`)}\n`
+						+ `+  ${(H.isPastDate(release) ? "Released" : "Release ")} : ${(submission ? "Unannounced" : `${H.isOldDate(release) ? new Date(release).getUTCFullYear() + " (" : ""}${F.fuzzyAge(new Date(release))}${H.isOldDate(release)?")":""}`)}\n`
 						+ (retired ? `-  Retired  : ${F.timeSince(new Date(retiredate))}\n` : "")
 						+ "```",
 					false)
@@ -130,7 +130,7 @@ class HtbEmbeds {
 
 			const challs = challenge_owns.solved
 			const challenge_bloods = H.sAcc(bloods, "challenges", "length")
-			const machine_bloods = H.sAcc(bloods, "challenges", "length")
+			const machine_bloods = H.sAcc(bloods, "machines", "length")
 			const hasOwns = (roots + users + challs > 0)
 			const hasBloods = ((challenge_bloods || 0) + (machine_bloods || 0) > 0)
 			const hasRespect = Boolean(respects)
@@ -200,7 +200,7 @@ class HtbEmbeds {
 						+ (solves ? `+ Solves   : ${F.STL(solves,"bs")} [G]\n` : "")
 						+ (fbu ? "- Blood    : " : `-  Blood    : ${F.STL("None taken!", "bs")}`)
 						+ `${(fbu ? "🩸 " + fbu : "")} (${fbt})` + "\n"
-						+ `+ ${(H.isPastDate(release) ? "Released" : "Release ")} : ${new Date(release).getUTCFullYear()} (${F.fuzzyAge(new Date(release))})\n`
+						+ `+ ${(H.isPastDate(release) ? "Released" : "Release ")} : ${`${H.isOldDate(release) ? new Date(release).getUTCFullYear() + " (" : ""}${F.fuzzyAge(new Date(release))}${H.isOldDate(release)?")":""}`}\n`
 						+ (retired ? "- Retired  : True" : "")
 						+ "```",
 					false)
@@ -827,7 +827,7 @@ class HtbEmbeds {
 	bloodString(users, roots, challs) {
 		return (users ? "🔺 " + users : "") + (users && roots ? " " : "")
 			+ (roots ? "🩸 " + roots : "") + (roots && challs ? " " : "")
-			+ (challs ? "⭕ " + challs : "") + (roots + users + challs > 0 ? "\n" : "")
+			+ (challs ? "⭕ " + challs : "") + (roots || users || challs ? "\n" : "")
 	}
 
 	socialString(github, linkedin, twitter, website) {
@@ -858,8 +858,8 @@ class HtbEmbeds {
 
 	/** REALTIME PUSHER EVENT NOTIFICATIONS */
 
-	pusherOwn(member, target, sub, blood=false) {
-		target = this.ds.resolveEnt(target)
+	pusherOwn(member, target, type, sub, blood=false) {
+		target = this.ds.resolveEnt(target, type)
 		// console.log(member, target)
 		if (!member || !target){
 			return this.ENTITY_UNFOUND

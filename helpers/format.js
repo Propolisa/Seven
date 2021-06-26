@@ -607,7 +607,7 @@ class Format {
 			isFuture = true
 		}
 		var PRE = (isFuture ? "in " : "")
-		var SUF = (isFuture ? "" : " old")
+		var SUF = (isFuture ? "" : " ago")
 		var interval = ~~(seconds / 31536000)
 		if (interval < 0) {
 			return "[Newly hatched]"
