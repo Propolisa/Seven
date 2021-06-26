@@ -33,7 +33,6 @@ const { SevenDatastore } = require("./models/SevenDatastore.js")
 const { Send } = require("./modules/send.js")
 const { HTBEmoji } = require("./helpers/emoji.js")
 const { BinClock: BC } = require("./helpers/binclock")
-const { send } = require("q")
 
 /*** HANDLE DEVELOPMENT INSTANCE CASE ***/
 
@@ -106,7 +105,7 @@ async function importDbBackup() {
 				// console.log("[SEVEN_DB]::: Data table found.")
 				return true
 			}
-		}).then( res => {
+		}).then( () => {
 			return db.any(`SELECT json FROM ${SEVEN_DB_TABLE_NAME} ORDER BY id ASC;`, [true]).then(
 				rows => {
 					DAT.MACHINES = rows[0].json
@@ -174,14 +173,22 @@ async function updateCache(fields = DB_FIELDNAMES_AUTO) {
 		})
 }
 
-
 /**
  * Returns whether the provided Discord user has admin privileges.
- * @param {Discord.User} author 
+ * @param {Discord.User} discordUser 
  * @returns {boolean}
  */
-function isAdmin(author) {
-	return author.id == process.env.ADMIN_DISCORD_ID
+function isAdmin(discordUser) {
+	return JSON.parse(process.env.ADMIN_DISCORD_IDS).includes(String(discordUser.id))
+}
+
+/**
+ * Returns whether the provided Discord user has captain privileges.
+ * @param {Discord.User} discordUser 
+ * @returns {boolean}
+ */
+function isCaptain(discordUser) {
+	return JSON.parse(process.env.CAPTAIN_DISCORD_IDS).includes(String(discordUser.id))
 }
 
 /**
@@ -356,11 +363,11 @@ async function main() {
 			try {
 				if (SEND.PASSTHRU && message.channel.type != "dm" && !message.author.bot) {
 					SEND.passthru_register(message)
-				} else if (message.author.id == process.env.ADMIN_DISCORD_ID
+				} else if (isAdmin(message.author)
 						&& SEND.PASSTHRU
 						&& message.referencedMessage
 						&& message.channel.type == "dm"
-						&& message.channel.recipient.id == process.env.ADMIN_DISCORD_ID) {
+						&& isAdmin(message.channel.recipient)) {
 					SEND.passthru(message)
 				} else {
 					handleMessage(message)
@@ -379,11 +386,11 @@ async function main() {
 				try {
 					if (SEND.PASSTHRU && message.channel.type != "dm" && !message.author.bot) {
 						SEND.passthru_register(message)
-					} else if (message.author.id == process.env.ADMIN_DISCORD_ID
+					} else if (isAdmin(message.author)
 							&& SEND.PASSTHRU
 							&& message.referencedMessage
 							&& message.channel.type == "dm"
-							&& message.channel.recipient.id == process.env.ADMIN_DISCORD_ID) {
+							&& isAdmin(message.channel.recipient)) {
 						SEND.passthru(message)
 					} else {
 						handleMessage(message)
@@ -574,7 +581,7 @@ async function doFakeReboot(message, note) {
 }
 
 async function admin_setStatus(message, params) {
-	if (message.author.id == process.env.ADMIN_DISCORD_ID) {
+	if (isAdmin(message.author)) {
 		var status = params.discordStatusType.stringValue
 		var activity = params.discordStatusActivity.stringValue
 		var actverb = params.discordStatusVerb.stringValue
@@ -589,8 +596,8 @@ async function admin_setStatus(message, params) {
 	}
 }
 
-async function admin_forceUpdate(message) {
-	if (message.author.id == process.env.ADMIN_DISCORD_ID) {
+async function forceUpdate(message) {
+	if (isCaptain(message.author) || isAdmin(message.author)) {
 		SEND.human(message, H.any("You're the boss!\nupdating the DB 😊",
 			"Ok " + message.author.username + ", you got it!",
 			"you got it, boss! 😁",
@@ -604,12 +611,12 @@ async function admin_forceUpdate(message) {
 			"DB update complete!",
 			"Achivement data has been updated. 😊"), false))
 	} else {
-		SEND.human(message, "You're not my boss! 🤔\nno can do.\nAsk __@Propolis__!")
+		SEND.human(message, `You're not my boss! 🤔\nno can do.\nTry asking <@!${JSON.parse(process.env.ADMIN_DISCORD_IDS)[0]}>!`)
 	}
 }
 
 async function admin_clearCached(message) {
-	if (message.author.id == process.env.ADMIN_DISCORD_ID) {
+	if (isAdmin(message.author)) {
 		SEND.human(message, "Clearing the in-memory HTB data (not including ignored member or discord link settings)", false)
 		DAT.MISC={}
 		DAT.TEAM_MEMBERS = {}
@@ -651,7 +658,7 @@ async function handleMessage(message) {
 					try {
 						switch (job) {
 						case "help": sendHelpMsg(message); break
-						case "admin.forceUpdateData":  admin_forceUpdate(message); break
+						case "admin.forceUpdateData":  forceUpdate(message); break
 						case "admin.passthruOn": if (isAdmin(message.author)) {SEND.human(message, `Parrot mode ${F.STL("ON","bs")}. 🦜`); SEND.passthruOn()} else {SEND.human(message,"Sorry, not for you. 🦜")} break
 						case "admin.passthruOff": if (isAdmin(message.author)) {SEND.human(message,`Parrot mode ${F.STL("OFF","bs")}. 🦜`); SEND.passthruOff()} else {SEND.human(message,"Sorry, not for you. 🦜")} break
 						case "admin.clearCached":  admin_clearCached(message); break
