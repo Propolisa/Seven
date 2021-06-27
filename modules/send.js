@@ -46,7 +46,7 @@ class Send {
 	}
 
 	passthru(message){
-		let originalMessage = this.PASSTHRU[message.referencedMessage.id]
+		let originalMessage = this.PASSTHRU[message.reference.messageID]
 		let s = message.attachments.size
 		console.warn(s)
 		if (!originalMessage) {
@@ -142,7 +142,7 @@ class Send {
 	}
 	
 	async embed(message, content, noMention=true) {
-		// console.log(content)
+		noMention = false
 		return new Promise(resolve => {
 			if (Array.isArray(content)) {
 				// We're looking at multiple embed objects here. Let's send them in order.

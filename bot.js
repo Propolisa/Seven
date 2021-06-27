@@ -389,7 +389,7 @@ async function main() {
 						SEND.passthru_register(message)
 					} else if (isAdmin(message.author)
 							&& SEND.PASSTHRU
-							&& message.referencedMessage
+							&& message.reference
 							&& message.channel.type == "dm"
 							&& isAdmin(message.channel.recipient)) {
 						SEND.passthru(message)
