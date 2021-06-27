@@ -39,7 +39,7 @@ class Send {
 	async passthru_register(ogMsg){
 		if (this.PASSTHRU){
 			if(H.maybe(0.7)) await this.hesitate(ogMsg)
-			let dmId = await ogMsg.client.users.cache.get(`${process.env.ADMIN_DISCORD_ID}`).send(`🦜 [${F.STL(ogMsg.author.username + "@" + ogMsg.channel.name, "bs")}]: \`\`\`fix\n` + (ogMsg.content.replace("`","").slice(0,500) || "(No text content)") + "\n```", Array.from(ogMsg.attachments.values())).then(msg => msg.id)
+			let dmId = await ogMsg.client.users.cache.get(`${JSON.parse(process.env.ADMIN_DISCORD_IDS)[0]}`).send(`🦜 [${F.STL(ogMsg.author.username + "@" + ogMsg.channel.name, "bs")}]: \`\`\`fix\n` + (ogMsg.content.replace("`","").slice(0,500) || "(No text content)") + "\n```", Array.from(ogMsg.attachments.values())).then(msg => msg.id)
 			this.PASSTHRU[dmId] = ogMsg
 			console.warn(`Total registered passthru messages: ${Object.keys(this.PASSTHRU || {}).length}`)
 		}

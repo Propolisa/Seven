@@ -15,7 +15,7 @@
 		"csrf-login": "^1.17.2",
 		"date-fns": "^2.13.0",
 		"debug": "^4.2.0",
-		"discord.js": "github:monbrey/discord.js#inline-replies",
+		"discord.js": "^12.5.3",
 		"dotenv": "^8.2.0",
 		"express": "^4.17.1",
 		"highcharts-export-server": "^2.1.0",

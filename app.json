@@ -35,8 +35,12 @@
 			"description": "The short name / tag that uniquely identifies your DialogFlow project on GCP, e.g. 'seven-huqce'.",
 			"value": ""
 		},
-		"ADMIN_DISCORD_ID": {
-			"description": "The ID of the Discord user who will have administrator access to the bot (probably you!).",
+		"ADMIN_DISCORD_IDS": {
+			"description": "The IDs of the Discord user who will have administrator access to the bot (probably you!). A JSON array of Discord ID strings.",
+			"value": ""
+		},
+		"CAPTAIN_DISCORD_IDS": {
+			"description": "The IDs of the Discord user who will have captain-level access to the bot (probably you!). A JSON array of Discord ID strings.",
 			"value": ""
 		},
 		"DISCORD_GUILD_ID": {
