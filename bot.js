@@ -593,7 +593,7 @@ async function admin_setStatus(message, params) {
 			"ok, on it! 🍉"), false)
 		await setStatus(message.client, (status ? status : "online"), (actverb ? actverb : ""), (activity ? activity : ""))
 	} else {
-		SEND.human(message, "You're not the boss. 👔\nTry asking __@Propolis__!")
+		SEND.human(message, `You're not my boss! 🤔\nno can do.\nTry asking <@!${JSON.parse(process.env.ADMIN_DISCORD_IDS)[0]}>!`)
 	}
 }
 
@@ -626,7 +626,7 @@ async function admin_clearCached(message) {
 		DAT.CHALLENGES = {}
 		updateCache(["MACHINES", "CHALLENGES", "TEAM_MEMBERS", "TEAM_STATS", "MISC"]).then(SEND.human(message, H.any("Done!"), false))
 	} else {
-		SEND.human(message, "You're not my boss! 🤔\nno can do.\nAsk __@Propolis__!")
+		SEND.human(message, `You're not my boss! 🤔\nno can do.\nTry asking <@!${JSON.parse(process.env.ADMIN_DISCORD_IDS)[0]}>!`)
 	}
 }
 
