@@ -116,16 +116,16 @@ class HtbLegacyConnector {
 					var submissionItem = {
 						id: idx+3141592,
 						name: (H.sAcc(tr,"cells",0,"textContent") || "[Unknown Name]").trim() || null,
-						avatar: (H.sAcc(tr,"cells",0,"children",0,"attributes","data-cfsrc","value") || "").substring(25) || null,
+						avatar: (H.sAcc(tr,"cells",0,"children",0,"attributes","data-cfsrc","value") || "").substring(26) || null,
 						maker: {name: (H.sAcc(tr,"cells",1,"children",2,"textContent") || "").trim() || null,
-							id: Number((H.sAcc(tr,"cells",1,"children",2,"href") || "").substring(45)) || null,
-							avatar: (H.sAcc(tr,"cells",1,"children",0,"attributes","data-cfsrc","value") || "").substring(25) || null
+							id: Number((H.sAcc(tr,"cells",1,"children",2,"href") || "").substring(46)) || null,
+							avatar: (H.sAcc(tr,"cells",1,"children",0,"attributes","data-cfsrc","value") || "").substring(26) || null
 						},
 						os: (H.sAcc(tr,"cells",2,"textContent") || "").trim() || null,
 						difficultyText: (H.sAcc(tr,"cells",3,"textContent") || "").trim(),
 						tester: {name: (H.sAcc(tr,"cells",4,"children",2,"textContent") || "").trim() || null,
-							id: Number((H.sAcc(tr,"cells",4,"children",2,"href") || "").substring(45)) || null,
-							avatar: (H.sAcc(tr,"cells",4,"children",0,"attributes","data-cfsrc","value") || "").substring(25) || null
+							id: Number((H.sAcc(tr,"cells",4,"children",2,"href") || "").substring(46)) || null,
+							avatar: (H.sAcc(tr,"cells",4,"children",0,"attributes","data-cfsrc","value") || "").substring(26) || null
 						},
 						status: (H.sAcc(tr,"cells",5,"textContent") || "").trim() || null,
 						submission: true
@@ -144,19 +144,19 @@ class HtbLegacyConnector {
 			var $ = require("jquery")(new JSDOM(response.body).window)
 			if ($("tbody")[0].childElementCount > 0) {
 				var trs = $($(".table tr")[1])
-				var mids = trs.find("a[href^='https://www.hackthebox.eu/home/machines/profile/']")
-				var urmid = mids[0].href.substring(48)
-				var oldmid = mids[1].href.substring(48)
+				var mids = trs.find("a[href^='https://www.hackthebox.com/home/machines/profile/']")
+				var urmid = mids[0].href.substring(49)
+				var oldmid = mids[1].href.substring(49)
 				var name = mids[0].innerHTML
 				var rname = mids[1].innerHTML
-				var thumb = trs.find("img[src^='https://www.hackthebox.eu/storage/avatars']")[0].src
+				var thumb = trs.find("img[src^='https://www.hackthebox.com/storage/avatars']")[0].src
 				var releaseDate = parseSingleDate($($(".table tr")[1]).find(":contains('UTC')")[0].innerHTML)
-				var makers = trs.find("a[href^='https://www.hackthebox.eu/home/users/profile/']")
+				var makers = trs.find("a[href^='https://www.hackthebox.com/home/users/profile/']")
 				var maker = makers[0].innerHTML
-				var makerId = makers[0].href.substring(45)
+				var makerId = makers[0].href.substring(46)
 				var maker2 = null
 				try {
-					maker2 = { "id": makers[1].innerHTML, "name": makers[1].href.substring(45) }
+					maker2 = { "id": makers[1].innerHTML, "name": makers[1].href.substring(46) }
 				} catch (error) {
 					console.log("No 2nd maker ...")
 				}
@@ -194,7 +194,7 @@ class HtbLegacyConnector {
 			var specials = {}
 			var homepage = await this.SESSION.requestAsync("/home")
 			var $ = require("jquery")(new JSDOM(homepage.body).window)
-			specialTypes.forEach(type => { specials[[type]] = []; $("a:contains('" + type + "')").next().find("a").each(function () { specials[[type]].push(this.href.substring(25)) }) })
+			specialTypes.forEach(type => { specials[[type]] = []; $("a:contains('" + type + "')").next().find("a").each(function () { specials[[type]].push(this.href.substring(26)) }) })
 			var keys = Object.keys(specials)
 			// console.log(keys, specials)
 			for (let specialKey of keys) {
@@ -256,7 +256,7 @@ class HtbLegacyConnector {
 	// 	var specials = {}
 	// 	var homepage = await session.requestAsync("/home")
 	// 	var $ = require("jquery")(new JSDOM(homepage.body).window)
-	// 	specialTypes.forEach(type => { specials[[type]] = []; $("a:contains('" + type + "')").next().find("a").each(function () { specials[[type]].push(this.href.substring(25)) }) })
+	// 	specialTypes.forEach(type => { specials[[type]] = []; $("a:contains('" + type + "')").next().find("a").each(function () { specials[[type]].push(this.href.substring(26)) }) })
 	// 	return new Promise(async resolve => {
 	// 		var keys = Object.keys(specials)
 	// 		for await (let specialKey of keys) {
@@ -315,11 +315,11 @@ class HtbLegacyConnector {
 	// 					// console.log("Not Active.")
 	// 					// console.log(spans[0].innerText)
 	// 				}
-	// 				var makers = $(this).find("a[href^='https://www.hackthebox.eu/home/users/profile/']")
-	// 				var maker = { "id": makers[0].href.substring(45), "name": makers[0].innerHTML }
+	// 				var makers = $(this).find("a[href^='https://www.hackthebox.com/home/users/profile/']")
+	// 				var maker = { "id": makers[0].href.substring(46), "name": makers[0].innerHTML }
 	// 				var maker2 = null
 	// 				try {
-	// 					maker2 = { "id": makers[1].href.substring(45), "name": makers[1].innerHTML }
+	// 					maker2 = { "id": makers[1].href.substring(46), "name": makers[1].innerHTML }
 	// 				} catch (error) {
 	// 					//console.log('\nNo 2nd maker ...')
 	// 				}
@@ -360,7 +360,7 @@ class HtbLegacyConnector {
 					$($("#membersTable").children()[1]).children().each(function() {
 						var stats = $(this).children()
 						var userCol = $(stats[1]).children()[0]
-						var uid = Number(userCol.href.substring(45))
+						var uid = Number(userCol.href.substring(46))
 						if (!ignored || !(uid in Object.keys(ignored))) {
 							teamIds.push(uid)
 						}
@@ -405,9 +405,9 @@ class HtbLegacyConnector {
 			session.request(`/home/universities/profile/${Number(universityId)}`, function (error, response, body) {
 				var universityIds = []
 				var $ = require("jquery")(new JSDOM(body).window)
-				var adminId = Number(Array.from($($(".fa-male")[0].parentNode.parentNode.children[1].childNodes[1].children[1]).find("tr"))[0].childNodes[1].children[2].toString().substring(45))
+				var adminId = Number(Array.from($($(".fa-male")[0].parentNode.parentNode.children[1].childNodes[1].children[1]).find("tr"))[0].childNodes[1].children[2].toString().substring(46))
 				try {
-					Array.from($($(".fa-graduation-cap")[0].parentNode.parentNode.children[1].childNodes[1].children[1]).find("tr")).map(e => Number(e.childNodes[1].children[2].toString().substring(45))).forEach(uid => {
+					Array.from($($(".fa-graduation-cap")[0].parentNode.parentNode.children[1].childNodes[1].children[1]).find("tr")).map(e => Number(e.childNodes[1].children[2].toString().substring(46))).forEach(uid => {
 						if (!ignored || !(uid in Object.keys(ignored))) {
 							universityIds.push(uid)
 						}
@@ -509,7 +509,7 @@ class HtbLegacyConnector {
 						}
 						var userCol = $(stats[1]).children()[0]
 						var uName = userCol.innerHTML
-						var uid = userCol.href.substring(45)
+						var uid = userCol.href.substring(46)
 						var user = new LegacyTeamMember(uName, uid, { "user": Number(stats[4].innerHTML), "root": Number(stats[3].innerHTML) }, siterank, userpoints)
 						teamUsers[uid] = user
 						// console.log(user)
@@ -537,7 +537,7 @@ class HtbLegacyConnector {
 	}
 	grabCsrfFromJar(session) {
 		try {
-			return session.jar._jar.store.idx["www.hackthebox.eu"]["/"]["csrftoken"].value
+			return session.jar._jar.store.idx["www.hackthebox.com"]["/"]["csrftoken"].value
 		} catch (error) {
 			console.error(error)
 			return ""
@@ -580,7 +580,7 @@ class HtbLegacyConnector {
 			//console.log("Parsing owns for uid: " + uid)
 			try {
 				var $ = require("jquery")(new JSDOM(body).window)
-				var thumb = $($(".header-icon").find(".image-lg")[0]).attr("data-cfsrc") || "https://www.hackthebox.eu/images/favicon.png"
+				var thumb = $($(".header-icon").find(".image-lg")[0]).attr("data-cfsrc") || "https://www.hackthebox.com/images/favicon.png"
 				var rank = $($(".header-title")[0]).find(".c-white").text() || "Noob"
 				var joinDate = parseSingleDate($("div[title^=\"Joined on\"]").attr("title").substring(10)) || 0
 				var countryName = $(".flag")[0].parentNode.attributes["title"].value || "Pangea"
@@ -623,7 +623,7 @@ class HtbLegacyConnector {
 					var timestamp = parseDate(parsedTime, "MMMM do, yyyy h:mm a", new Date()).getTime() / 1000
 					var machineId = ""
 					var machineLitmus = $(this).find("[href*=\"/machines/\"]")
-					if (machineLitmus.length > 0) { machineId = machineLitmus[0].href.substring(48) }
+					if (machineLitmus.length > 0) { machineId = machineLitmus[0].href.substring(49) }
 					if (t[2].includes("user")) { // It is a machine user own
 						up2DateStats.user++
 						MACHINES_BUFFER[machineId].userOwners.push({ "uid": id, "timestamp": timestamp })

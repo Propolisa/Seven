@@ -124,7 +124,7 @@ async function importDbBackup() {
       TEAM_STATS = JSON.parse(rows[4].json)
       DISCORD_LINKS = JSON.parse(rows[5].json)
       if (TEAM_STATS == {}) {
-        TEAM_STATS = { "globalRanking": 5, "points": 0, "teamFounder": 7383, "topMembers": [], "name": "", "owns": { "users": 0, "roots": 0 }, "thumb": "https://www.hackthebox.eu/storage/teams/8232e119d8f59aa83050a741631803a6.jpg" }
+        TEAM_STATS = { "globalRanking": 5, "points": 0, "teamFounder": 7383, "topMembers": [], "name": "", "owns": { "users": 0, "roots": 0 }, "thumb": "https://www.hackthebox.com/storage/teams/8232e119d8f59aa83050a741631803a6.jpg" }
       }
       updateTeamStats()
       console.log("IMPORT: Restored from DB backup.")
@@ -251,11 +251,11 @@ function getOsImage(osName) {
   switch (osName) {
     case "Linux": return 'https://i.ibb.co/mHXrhyC/linux.png'
     case "Windows": return 'https://i.ibb.co/61JG09j/windark.png'
-    case "Solaris": return 'https://www.hackthebox.eu/images/solaris.png'
-    case "FreeBSD": return 'https://www.hackthebox.eu/images/freebsd.png'
-    case "Android": return 'https://www.hackthebox.eu/images/android.png'
+    case "Solaris": return 'https://www.hackthebox.com/images/solaris.png'
+    case "FreeBSD": return 'https://www.hackthebox.com/images/freebsd.png'
+    case "Android": return 'https://www.hackthebox.com/images/android.png'
     default:
-      return 'https://www.hackthebox.eu/images/favicon.png'
+      return 'https://www.hackthebox.com/images/favicon.png'
   }
 }
 
@@ -394,7 +394,7 @@ function isAdmin(author) {
 
 
 /*** INITIALIZE HACKTHEBOX STATE VARIABLES ***/
-const HTBROOT = "https://www.hackthebox.eu/"
+const HTBROOT = "https://www.hackthebox.com/"
 var LAST_UPDATE = new Date()
 var MACHINES = {}
 var MACHINES_BUFFER
@@ -800,10 +800,10 @@ function getMdLinksForUids(memberIds) { // Get markdown link to a HTB user's pro
     memberIds.forEach(uid => {
       //console.log("UID: " + uid)
       if (uid in TEAM_MEMBERS) {
-        screenNames.push('[' + tryDiscordifyUid(uid) + ']' + '(' + 'https://www.hackthebox.eu/home/users/profile/' + uid + ' ' + "'Goto HTB page for " + TEAM_MEMBERS[uid].name + (uid in DISCORD_LINKS ? " / @" + DISCORD_LINKS[uid].tag : "") + '\')')
+        screenNames.push('[' + tryDiscordifyUid(uid) + ']' + '(' + 'https://www.hackthebox.com/home/users/profile/' + uid + ' ' + "'Goto HTB page for " + TEAM_MEMBERS[uid].name + (uid in DISCORD_LINKS ? " / @" + DISCORD_LINKS[uid].tag : "") + '\')')
       } else {
         console.log("UID opted out of data collection.")
-        screenNames.push('[٩(͡๏̯͡๏)۶](https://www.hackthebox.eu/ \'This user has disabled data collection by Seven.\')')
+        screenNames.push('[٩(͡๏̯͡๏)۶](https://www.hackthebox.com/ \'This user has disabled data collection by Seven.\')')
       }
     });
     if (screenNames.length == 0) {
@@ -823,7 +823,7 @@ function getMdLinksForBoxIds(boxIds) { // Get markdown link to a HTB user's prof
     boxIds.forEach(boxId => {
       if (boxId in MACHINES) {
         var box = MACHINES[boxId]
-        boxLinks.push('**[' + box.name + "](" + 'https://www.hackthebox.eu/home/machines/profile/' + box.id + " 'Goto HTB page')**")
+        boxLinks.push('**[' + box.name + "](" + 'https://www.hackthebox.com/home/machines/profile/' + box.id + " 'Goto HTB page')**")
       }
     });
     // console.log(boxLinks)
@@ -869,10 +869,10 @@ function getMdLinksForOwnList(memberOwnList) { // Get markdown link to a HTB use
         if (memberOwn.uid in DISCORD_LINKS) {
           console.log(DISCORD_LINKS[memberOwn.uid].username + " / " + TEAM_MEMBERS[memberOwn.uid].name)
         }
-        screenNames.push('[' + tryDiscordifyUid(memberOwn.uid) + ']' + '(' + 'https://www.hackthebox.eu/home/users/profile/' + memberOwn.uid + ' ' + "'HTB Profile for " + TEAM_MEMBERS[memberOwn.uid].name + (memberOwn.uid in DISCORD_LINKS ? " / @" + DISCORD_LINKS[memberOwn.uid].tag : "") + "')")
+        screenNames.push('[' + tryDiscordifyUid(memberOwn.uid) + ']' + '(' + 'https://www.hackthebox.com/home/users/profile/' + memberOwn.uid + ' ' + "'HTB Profile for " + TEAM_MEMBERS[memberOwn.uid].name + (memberOwn.uid in DISCORD_LINKS ? " / @" + DISCORD_LINKS[memberOwn.uid].tag : "") + "')")
       } else {
         console.log("UID opted out of data collection.")
-        screenNames.push('[٩(͡๏̯͡๏)۶](https://www.hackthebox.eu/ \'This user has disabled data collection by Seven.\')')
+        screenNames.push('[٩(͡๏̯͡๏)۶](https://www.hackthebox.com/ \'This user has disabled data collection by Seven.\')')
       }
     });
     if (screenNames.length == 0) {
@@ -925,7 +925,7 @@ function parseDateArray(dates) { // Parse array of dates (see parseSingleDate)
 
 function getMachines() {
   return new Promise(resolve => {
-    rp('https://www.hackthebox.eu/api/machines/get/all?api_token=' + process.env.HTB_TOKEN, { json: true })
+    rp('https://www.hackthebox.com/api/machines/get/all?api_token=' + process.env.HTB_TOKEN, { json: true })
       .then(function (machines) {
         machineSet = {}
         console.log('Got', machines.length, 'machines...');
@@ -999,7 +999,7 @@ async function getChallenges(session) {
           // console.log("Not Active.")
           // console.log(spans[0].innerText)
         }
-        var makers = $(this).find("a[href^='https://www.hackthebox.eu/home/users/profile/']")
+        var makers = $(this).find("a[href^='https://www.hackthebox.com/home/users/profile/']")
         maker = { "id": makers[0].href.substring(45), "name": makers[0].innerHTML }
         var maker2 = null
         try {
@@ -1151,14 +1151,14 @@ async function getUnreleasedMachine(session) {
     var $ = require('jquery')(new JSDOM(response.body).window);
     if ($('.table tr').length > 1) {
       var trs = $($('.table tr')[1])
-      var mids = trs.find("a[href^='https://www.hackthebox.eu/home/machines/profile/']")
+      var mids = trs.find("a[href^='https://www.hackthebox.com/home/machines/profile/']")
       var urmid = mids[0].href.substring(48)
       var oldmid = mids[1].href.substring(48)
       var name = mids[0].innerHTML
       var rname = mids[1].innerHTML
-      var thumb = trs.find("img[src^='https://www.hackthebox.eu/storage/avatars']")[0].src
+      var thumb = trs.find("img[src^='https://www.hackthebox.com/storage/avatars']")[0].src
       var releaseDate = parseSingleDate($($('.table tr')[1]).find(":contains('UTC')")[0].innerHTML)
-      var makers = trs.find("a[href^='https://www.hackthebox.eu/home/users/profile/']")
+      var makers = trs.find("a[href^='https://www.hackthebox.com/home/users/profile/']")
       var maker = makers[0].innerHTML
       var makerId = makers[0].href.substring(45)
       var maker2 = null
@@ -1197,7 +1197,7 @@ async function getUnreleasedMachine(session) {
 
 function grabCsrfFromJar(session) {
   try {
-    return session.jar._jar.store.idx['www.hackthebox.eu']['/']['csrftoken'].value
+    return session.jar._jar.store.idx['www.hackthebox.com']['/']['csrftoken'].value
   } catch (error) {
     console.error(error)
     return ""
@@ -1265,7 +1265,7 @@ async function parseUserOwns(body, id) {
     //console.log("Parsing owns for uid: " + uid)
     try {
       var $ = require('jquery')(new JSDOM(body).window);
-      var thumb = $($('.header-icon').find('.image-lg')[0]).attr('data-cfsrc') || "https://www.hackthebox.eu/images/favicon.png"
+      var thumb = $($('.header-icon').find('.image-lg')[0]).attr('data-cfsrc') || "https://www.hackthebox.com/images/favicon.png"
       rank = $($('.header-title')[0]).find('.c-white').text() || "Noob"
       joinDate = parseSingleDate($('div[title^="Joined on"]').attr("title").substring(10)) || 0
       countryName = $('.flag')[0].parentNode.attributes['title'].value || "Pangea"
@@ -1476,7 +1476,7 @@ function sendBoxOwnersMsg(message, machineName) {
           author: {
             name: getMachineByName(machineName).name,
             icon_url: getMachineByName(machineName).thumb,
-            url: 'https://www.hackthebox.eu/home/machines/profile/' + getMachineByName(machineName).id,
+            url: 'https://www.hackthebox.com/home/machines/profile/' + getMachineByName(machineName).id,
           },
           footer: {
             text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
@@ -1492,7 +1492,7 @@ function sendBoxOwnersMsg(message, machineName) {
           author: {
             name: getMachineByName(machineName).name,
             icon_url: getMachineByName(machineName).thumb,
-            url: 'https://www.hackthebox.eu/home/machines/profile/' + getMachineByName(machineName).id,
+            url: 'https://www.hackthebox.com/home/machines/profile/' + getMachineByName(machineName).id,
           },
           footer: {
             text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
@@ -1526,7 +1526,7 @@ function sendUserOwnersMsg(message, machineName) {
           author: {
             name: getMachineByName(machineName).name,
             icon_url: getMachineByName(machineName).thumb,
-            url: 'https://www.hackthebox.eu/home/machines/profile/' + getMachineByName(machineName).id,
+            url: 'https://www.hackthebox.com/home/machines/profile/' + getMachineByName(machineName).id,
           },
           footer: {
             text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
@@ -1542,7 +1542,7 @@ function sendUserOwnersMsg(message, machineName) {
           author: {
             name: getMachineByName(machineName).name,
             icon_url: getMachineByName(machineName).thumb,
-            url: 'https://www.hackthebox.eu/home/machines/profile/' + getMachineByName(machineName).id,
+            url: 'https://www.hackthebox.com/home/machines/profile/' + getMachineByName(machineName).id,
           },
           footer: {
             text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
@@ -1572,7 +1572,7 @@ function sendLastBoxOwnerMsg(message, machineName) {
         author: {
           name: getMachineByName(machineName).name,
           icon_url: getMachineByName(machineName).thumb,
-          url: 'https://www.hackthebox.eu/home/machines/profile/' + getMachineByName(machineName).id,
+          url: 'https://www.hackthebox.com/home/machines/profile/' + getMachineByName(machineName).id,
         },
         footer: {
           text: "ℹ️  Data last updated " + timeSince(LAST_UPDATE)
@@ -1607,7 +1607,7 @@ function sendChallengeOwnersMsg(message, challengeName) {
           author: {
             name: challenge.name,
             icon_url: "https://raw.githubusercontent.com/encharm/Font-Awesome-SVG-PNG/master/white/png/24/cogs.png",
-            url: 'https://www.hackthebox.eu/home/challenges/' + challenge.category,
+            url: 'https://www.hackthebox.com/home/challenges/' + challenge.category,
           },
           footer: {
             text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
@@ -1623,7 +1623,7 @@ function sendChallengeOwnersMsg(message, challengeName) {
           author: {
             name: challenge.name,
             icon_url: "https://raw.githubusercontent.com/encharm/Font-Awesome-SVG-PNG/master/white/png/24/cogs.png",
-            url: 'https://www.hackthebox.eu/home/challenges/' + challenge.category,
+            url: 'https://www.hackthebox.com/home/challenges/' + challenge.category,
           },
           footer: {
             text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
@@ -1653,7 +1653,7 @@ function sendLastChallengeOwnerMsg(message, challengeName) {
         author: {
           name: challenge.name,
           icon_url: "https://raw.githubusercontent.com/encharm/Font-Awesome-SVG-PNG/master/white/png/24/cogs.png",
-          url: 'https://www.hackthebox.eu/home/challenges/' + challenge.category,
+          url: 'https://www.hackthebox.com/home/challenges/' + challenge.category,
         },
         footer: {
           text: "ℹ️  Challenge data last updated " + timeSince(LAST_UPDATE)
@@ -1677,7 +1677,7 @@ async function sendTeamRankingMsg(message, note) {
       color: 3447003,
       author: {
         icon_url: TEAM_STATS.thumb,
-        url: 'https://www.hackthebox.eu/home/teams/profile/2102',
+        url: 'https://www.hackthebox.com/home/teams/profile/2102',
       },
       footer: {
         text: "ℹ️  Accurate as of " + timeSince(LAST_UPDATE)
@@ -1725,7 +1725,7 @@ async function sendFlagboardMsg(message) {
       color: "LUMINOUS_VIVID_PINK",
       author: {
         name: any("🗺️", "🌎", "🌏", "🌍", "🌐", "🚩", "⛳", "🛂", "🛫", "✈️", "🛩️") + " Team Locales",
-        url: 'https://www.hackthebox.eu/home/teams/profile/2102',
+        url: 'https://www.hackthebox.com/home/teams/profile/2102',
       },
       thumbnail: {
         url: TEAM_STATS.thumb,
@@ -1748,7 +1748,7 @@ async function sendTeamLeaderMsg(message, note) {
       author: {
         name: any("💯", "🏆", "🎖️", "🔮", "💠", "💎", "👑") + " Team Leader",
         icon_url: TEAM_STATS.thumb,
-        url: 'https://www.hackthebox.eu/home/teams/profile/2102',
+        url: 'https://www.hackthebox.com/home/teams/profile/2102',
       },
       thumbnail: {
         url: member.thumb,
@@ -1787,7 +1787,7 @@ async function sendMemberRankMsg(message, username) {
         author: {
           name: "Member Rank",
           icon_url: TEAM_STATS.thumb,
-          url: 'https://www.hackthebox.eu/home/teams/profile/2102',
+          url: 'https://www.hackthebox.com/home/teams/profile/2102',
         },
         thumbnail: {
           url: member.thumb,
@@ -1832,7 +1832,7 @@ async function sendCheckMemberOwnedChallengeMsg(message, challengename, username
           author: {
             name: challenge.name,
             icon_url: "https://raw.githubusercontent.com/encharm/Font-Awesome-SVG-PNG/master/white/png/24/cogs.png",
-            url: 'https://www.hackthebox.eu/home/challenges/' + challenge.category,
+            url: 'https://www.hackthebox.com/home/challenges/' + challenge.category,
           },
           thumbnail: {
             url: member.thumb,
@@ -1840,7 +1840,7 @@ async function sendCheckMemberOwnedChallengeMsg(message, challengename, username
           footer: {
             text: "ℹ️  Accurate as of " + timeSince(new Date(Math.max(LAST_UPDATE.getTime(),own.timestamp)))
           },
-          description: "🥳 W00t! " + (checkSelfName(username) ? " **[You](https://www.hackthebox.eu/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + " completed challenge **[" + challenge.name + "](https://www.hackthebox.eu/home/challenges/" + challenge.category + ") " + timeSince(new Date(own.timestamp * 1000)) + "**."
+          description: "🥳 W00t! " + (checkSelfName(username) ? " **[You](https://www.hackthebox.com/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + " completed challenge **[" + challenge.name + "](https://www.hackthebox.com/home/challenges/" + challenge.category + ") " + timeSince(new Date(own.timestamp * 1000)) + "**."
         }
       })
     } else {
@@ -1850,7 +1850,7 @@ async function sendCheckMemberOwnedChallengeMsg(message, challengename, username
           author: {
             name: challenge.name,
             icon_url: "https://raw.githubusercontent.com/encharm/Font-Awesome-SVG-PNG/master/white/png/24/cogs.png",
-            url: 'https://www.hackthebox.eu/home/challenges/' + challenge.category,
+            url: 'https://www.hackthebox.com/home/challenges/' + challenge.category,
           },
           thumbnail: {
             url: member.thumb,
@@ -1858,7 +1858,7 @@ async function sendCheckMemberOwnedChallengeMsg(message, challengename, username
           footer: {
             text: "ℹ️  Accurate as of " + timeSince(new Date(Math.max(LAST_UPDATE.getTime(),own.timestamp)))
           },
-          description: "Looks like " + getMdLinksForUids([member.id]) + " hasn't owned challenge **[" + challenge.name + "](https://www.hackthebox.eu/home/challenges/" + challenge.category + ")** yet. 🐳"
+          description: "Looks like " + getMdLinksForUids([member.id]) + " hasn't owned challenge **[" + challenge.name + "](https://www.hackthebox.com/home/challenges/" + challenge.category + ")** yet. 🐳"
         }
       })
     }
@@ -1902,7 +1902,7 @@ async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
           author: {
             name: machine.name,
             icon_url: machine.thumb,
-            url: 'https://www.hackthebox.eu/home/machines/profile/' + machine.id,
+            url: 'https://www.hackthebox.com/home/machines/profile/' + machine.id,
           },
           thumbnail: {
             url: member.thumb,
@@ -1910,7 +1910,7 @@ async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
           footer: {
             text: "ℹ️  Accurate as of " + timeSince(new Date(Math.max(LAST_UPDATE.getTime(),own.timestamp)))
           },
-          description: (own.userOnly == true ? "🥳 Looks like " : "👑 W00t! ") + (checkSelfName(username) ? " **[You](https://www.hackthebox.eu/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + (own.userOnly == true ? " got " : " owned ") + (own.userOnly == true ? "user" : "root") + " on " + getMdLinksForBoxIds([machine.id]) + (own.userOnly == true ? " **" : " ") + timeSince(new Date(own.timestamp * 1000)) + (own.userOnly == true ? "**." : ".")
+          description: (own.userOnly == true ? "🥳 Looks like " : "👑 W00t! ") + (checkSelfName(username) ? " **[You](https://www.hackthebox.com/home/users/profile/" + member.id + ")**" : getMdLinksForUids([member.id])) + (own.userOnly == true ? " got " : " owned ") + (own.userOnly == true ? "user" : "root") + " on " + getMdLinksForBoxIds([machine.id]) + (own.userOnly == true ? " **" : " ") + timeSince(new Date(own.timestamp * 1000)) + (own.userOnly == true ? "**." : ".")
         }
       })
     } else {
@@ -1920,7 +1920,7 @@ async function sendCheckMemberOwnedBoxMsg(message, boxname, username) {
           author: {
             name: machine.name,
             icon_url: machine.thumb,
-            url: 'https://www.hackthebox.eu/home/machines/profile/' + machine.id,
+            url: 'https://www.hackthebox.com/home/machines/profile/' + machine.id,
           },
           thumbnail: {
             url: member.thumb,
@@ -1950,8 +1950,8 @@ async function sendTeamLeadersMsg(message, note) {
       title: ":bar_chart:⠀Team Leaderboard",
       color: "AQUA",
       author: {
-        icon_url: 'https://www.hackthebox.eu/storage/teams/8232e119d8f59aa83050a741631803a6.jpg',
-        url: 'https://www.hackthebox.eu/home/teams/profile/2102',
+        icon_url: 'https://www.hackthebox.com/storage/teams/8232e119d8f59aa83050a741631803a6.jpg',
+        url: 'https://www.hackthebox.com/home/teams/profile/2102',
       },
       footer: {
         text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
@@ -1971,7 +1971,7 @@ async function sendTeamInfoMsg(message, note) {
       author: {
         name: "Group by " + TEAM_MEMBERS[TEAM_STATS.teamFounder].name,
         icon_url: TEAM_MEMBERS[TEAM_STATS.teamFounder].thumb,
-        url: 'https://www.hackthebox.eu/home/users/profile/7383',
+        url: 'https://www.hackthebox.com/home/users/profile/7383',
       },
       "footer": {
         //"icon_url": "https://cdn.discordapp.com/embed/avatars/0.png",
@@ -2034,15 +2034,15 @@ function sendBoxInfoMsg(message, machineName) {
         author: {
           name: getMachineByName(machineName).name,
           icon_url: getOsImage(box.os),
-          url: 'https://www.hackthebox.eu/home/machines/profile/' + getMachineByName(machineName).id,
+          url: 'https://www.hackthebox.com/home/machines/profile/' + getMachineByName(machineName).id,
         },
         description: ("AEIOU".includes(box.os.charAt(0)) ? 'An ' : 'A ') +
           box.os + ' box by **['
           + box.maker.name
-          + '](https://www.hackthebox.eu/home/users/profile/'
+          + '](https://www.hackthebox.com/home/users/profile/'
           + box.maker.id.toString()
           + ')'
-          + (box.maker2 ? '** &amp; **[' + box.maker2.name + '](https://www.hackthebox.eu/home/users/profile/' + box.maker2.id.toString() + ')' : '')
+          + (box.maker2 ? '** &amp; **[' + box.maker2.name + '](https://www.hackthebox.com/home/users/profile/' + box.maker2.id.toString() + ')' : '')
           + '**.\nIP Address: **' + (box.ip ? '[' + box.ip + '](http://' + box.ip + '/)**' : "Unknown**"),
         thumbnail: {
           url: getMachineByName(machineName).thumb.replace('_thumb', ''),
@@ -2090,7 +2090,7 @@ function sendMemberInfoMsg(message, username) {
         author: {
           name: tryDiscordifyUid(member.id) + (checkSelfName(username) ? "  [You]" : ""),
           icon_url: TEAM_STATS.thumb,
-          url: 'https://www.hackthebox.eu/home/users/profile/' + member.id,
+          url: 'https://www.hackthebox.com/home/users/profile/' + member.id,
         },
         description: getFlag(member.countryCode) + "⠀**[" + member.rank + ".](http://0)** | HTB member since **" + formatRelative(new Date(member.joinDate), new Date()) + "**",
         thumbnail: {
@@ -2134,15 +2134,15 @@ function sendChallengeInfoMsg(message, challengeName) {
           name: challenge.name,
           // icon_url: getChallengeImage(challenge.category),
           icon_url: "",
-          url: 'https://www.hackthebox.eu/home/challenges/' + challenge.category,
+          url: 'https://www.hackthebox.com/home/challenges/' + challenge.category,
         },
         description: ("AEIOU".includes(challenge.category.toUpperCase().charAt(0)) ? 'An ' : 'A ') +
           challenge.category.toLowerCase() + ' challenge by **['
           + challenge.maker.name
-          + '](https://www.hackthebox.eu/home/users/profile/'
+          + '](https://www.hackthebox.com/home/users/profile/'
           + challenge.maker.id.toString()
           + ')'
-          + (challenge.maker2 ? '** &amp; **[' + challenge.maker2.name + '](https://www.hackthebox.eu/home/users/profile/' + challenge.maker2.id.toString() + ')' : '')
+          + (challenge.maker2 ? '** &amp; **[' + challenge.maker2.name + '](https://www.hackthebox.com/home/users/profile/' + challenge.maker2.id.toString() + ')' : '')
           + '**.\n> _' + challenge.description + '_\n',
         thumbnail: {
           url: "",
@@ -2398,7 +2398,7 @@ async function sendIncompleteBoxesByMemberMsg(message, note, username) {
           author: {
             name: (uid in TEAM_MEMBERS ? tryDiscordifyUid(member.id) + ": Incomplete machines" : '٩(͡๏̯͡๏)۶'),
             icon_url: member.thumb,
-            url: 'https://www.hackthebox.eu/home/users/profile/' + uid,
+            url: 'https://www.hackthebox.com/home/users/profile/' + uid,
           },
           footer: {
             text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
@@ -2452,7 +2452,7 @@ async function sendOwnedBoxesByMemberMsg(message, note, username) {
           author: {
             name: (uid in TEAM_MEMBERS ? 'Root ownage for ' + tryDiscordifyUid(member.id) : '٩(͡๏̯͡๏)۶'),
             icon_url: member.thumb,
-            url: 'https://www.hackthebox.eu/home/users/profile/' + uid,
+            url: 'https://www.hackthebox.com/home/users/profile/' + uid,
           },
           footer: {
             text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
@@ -2531,7 +2531,7 @@ async function sendOwnedChallengesByMemberMsg(message, note, username) {
           author: {
             name: 'Challenge ownage for ' + tryDiscordifyUid(member.id),
             icon_url: member.thumb,
-            url: 'https://www.hackthebox.eu/home/users/profile/' + uid,
+            url: 'https://www.hackthebox.com/home/users/profile/' + uid,
           },
           footer: {
             text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)
@@ -2612,7 +2612,7 @@ async function sendIncompleteChallengesByMemberMsg(message, note, username) {
           author: {
             name: tryDiscordifyUid(member.id) + ": Incomplete challenges",
             icon_url: member.thumb,
-            url: 'https://www.hackthebox.eu/home/users/profile/' + uid,
+            url: 'https://www.hackthebox.com/home/users/profile/' + uid,
           },
           footer: {
             text: "ℹ️  Ownage data last updated " + timeSince(LAST_UPDATE)

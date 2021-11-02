@@ -286,7 +286,7 @@ class SevenDatastore {
 							process.env.HTB_UNIVERSITY_ID
 						)) || {},
 						{
-							avatar_url: `https://www.hackthebox.eu/storage/universities/${Number(
+							avatar_url: `https://www.hackthebox.com/storage/universities/${Number(
 								process.env.HTB_UNIVERSITY_ID
 							)}.png`,
 							type: "university",
@@ -1614,7 +1614,7 @@ class SevenDatastore {
 						"**[" +
 						box.name +
 						"](" +
-						"https://app.hackthebox.eu/machines/" +
+						"https://app.hackthebox.com/machines/" +
 						box.id +
 						" 'Goto HTB page')**"
 					)

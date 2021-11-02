@@ -674,7 +674,7 @@ async function handleMessage(message) {
 						case "linkDiscord":  linkDiscord(message, (P.uid ? "uid" : "uname"), (P.uid ? P.uid : P.username)); break
 						case "unforgetMe":  unignoreMember(P.uid); SEND.human(message, result.fulfillmentText, true); break
 						case "getTime": SEND.embed(message, EGI.binClock(await BC.genImg(PHANTOM_POOL))); break
-						case "getTeamBadge":  SEND.human(message,F.noncifyUrl(`https://www.hackthebox.eu/badge/team/image/${DAT.TEAM_STATS.id}`),true).then(() => SEND.human(message, result.fulfillmentText, true)); break
+						case "getTeamBadge":  SEND.human(message,F.noncifyUrl(`https://www.hackthebox.com/badge/team/image/${DAT.TEAM_STATS.id}`),true).then(() => SEND.human(message, result.fulfillmentText, true)); break
 						case "getTeamInfo": SEND.embed(message, EGI.teamInfo()); break
 						case "getTeamLeaders": SEND.embed(message, EGI.teamLeaderboard()); break
 						case "getTeamLeader":  sendTeamLeaderMsg(message, result.fulfillmentText); break

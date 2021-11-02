@@ -162,7 +162,7 @@ class HtbPusherSubscription extends EventEmitter {
 	constructor(apiToken, bindings, csrfToken) {
 		super()
 		this.client = new Pusher(apiToken, {
-			authEndpoint: "https://www.hackthebox.eu/pusher/auth",
+			authEndpoint: "https://www.hackthebox.com/pusher/auth",
 			auth: { "X-CSRF-Token": csrfToken },
 			authTransport: "ajax",
 			cluster: "eu",

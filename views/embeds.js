@@ -269,7 +269,7 @@ class HtbEmbeds {
 			var prolab_avatar = null
 			try {
 				const agent = request.agent()
-				let SVG = await agent.get(`https://app.hackthebox.eu/images/icons/ic-prolabs/ic-${name.toLowerCase()}-overview.svg`)
+				let SVG = await agent.get(`https://app.hackthebox.com/images/icons/ic-prolabs/ic-${name.toLowerCase()}-overview.svg`)
 				prolab_avatar = await sharp(SVG.body).resize(280, 128,{fit:"contain", background:{r:0,g:0,b:0,alpha:0}}).png().toBuffer()
 			} catch (error) {
 				console.error(error)
@@ -327,7 +327,7 @@ class HtbEmbeds {
 			TEAM_EMBED.addField("Ranking","Global: **[#" + rank + "](http://0)**", true)
 				.addField("Points","**[" + points + "](http://0)**", true)
 				.addField("0wnage",`Roots:** [${system_owns}](http://0)\n**Users:** [${user_owns}](http://0)**`, true)
-				.setImage(F.noncifyUrl(`https://hackthebox.eu/badge/team/image/${tid}`))
+				.setImage(F.noncifyUrl(`https://hackthebox.com/badge/team/image/${tid}`))
 				.setFooter("ℹ️  Team info last updated " + F.timeSince(this.ds.LAST_UPDATE))
 			var sections = H.chunk(leaderList.slice(0, 15), 5)
 			sections.forEach((e, i) => {
@@ -678,8 +678,8 @@ class HtbEmbeds {
 		if (imageData){
 			return this.CHART_BASE
 				.setTitle("Gentooman's Fabulous Rasterized Binary Clock")
-				.setDescription(`It isn't every day that you see a clock quite as fantastic as this one, a rasterized binary blockbuster sponsored by **[Gentooman](https://app.hackthebox.eu/profile/27356)**.\nThe current time (here in serverland) is ${(new Date()).toUTCString()}`)
-				.setThumbnail("https://www.hackthebox.eu/storage/avatars/9b4214468e76c630a5c211e0e5dfcb7a.png")
+				.setDescription(`It isn't every day that you see a clock quite as fantastic as this one, a rasterized binary blockbuster sponsored by **[Gentooman](https://app.hackthebox.com/profile/27356)**.\nThe current time (here in serverland) is ${(new Date()).toUTCString()}`)
+				.setThumbnail("https://www.hackthebox.com/storage/avatars/9b4214468e76c630a5c211e0e5dfcb7a.png")
 				.attachFiles([{ name: "chart.png", attachment: imageData }]).setImage("attachment://chart.png")
 		}
 		return this.ENTITY_UNFOUND
@@ -918,13 +918,13 @@ class HtbEmbeds {
 						"It's now or never.",
 						"Watermelon time!",
 						"Ready when you are! 🍉") + (H.maybe(0.5) ? "\n(Real talk, " + H.any(
-						"**[TheATeam](https://www.hackthebox.eu/home/teams/profile/1750 'View on HTB')**",
-						" team **[BirdsArentReal](https://www.hackthebox.eu/home/teams/profile/1709 'View on HTB')**",
-						"**[TheWINRaRs](https://www.hackthebox.eu/home/teams/profile/2710 'View on HTB') team**",
-						"the **[AlphaPwners](https://www.hackthebox.eu/home/teams/profile/673 'View on HTB')** team",
-						"**[xct](https://app.hackthebox.eu/users/13569 'View on HTB')**",
-						"**[snowscan](https://app.hackthebox.eu/users/9267 'View on HTB')**",
-						"**[InfoSecJack ](https://app.hackthebox.eu/users/52045 'View on HTB')**",
+						"**[TheATeam](https://www.hackthebox.com/home/teams/profile/1750 'View on HTB')**",
+						" team **[BirdsArentReal](https://www.hackthebox.com/home/teams/profile/1709 'View on HTB')**",
+						"**[TheWINRaRs](https://www.hackthebox.com/home/teams/profile/2710 'View on HTB') team**",
+						"the **[AlphaPwners](https://www.hackthebox.com/home/teams/profile/673 'View on HTB')** team",
+						"**[xct](https://app.hackthebox.com/users/13569 'View on HTB')**",
+						"**[snowscan](https://app.hackthebox.com/users/9267 'View on HTB')**",
+						"**[InfoSecJack ](https://app.hackthebox.com/users/52045 'View on HTB')**",
 					) + " is probably going to get the glory. But we'll have more fun!) 🍉" : "") : "")
 				)
 			break

@@ -183,34 +183,34 @@ class Format {
 	}
 
 	static avatarFullUrl(item){
-		return `https://hackthebox.eu${item.avatar}`
+		return `https://hackthebox.com${item.avatar}`
 	}
 	static avatar2Url(avatarLink){
-		return (avatarLink ? `https://hackthebox.eu${avatarLink}` : null)
+		return (avatarLink ? `https://hackthebox.com${avatarLink}` : null)
 	}
 
 	static memberTeamAvatarUrl(member){
-		return `https://hackthebox.eu${member.team.avatar}`
+		return `https://hackthebox.com${member.team.avatar}`
 	}
 
 	static teamProfileUrl(team){
-		return `https://hackthebox.eu/home/teams/profile/${team.id}`
+		return `https://hackthebox.com/home/teams/profile/${team.id}`
 	}
 
 	static teamProfileUrlFromId(id){
-		return `https://hackthebox.eu/home/teams/profile/${id}`
+		return `https://hackthebox.com/home/teams/profile/${id}`
 	}
 
 	static memberProfileUrl(member){
-		return `https://app.hackthebox.eu/users/${member.id}`
+		return `https://app.hackthebox.com/users/${member.id}`
 	}
 
 	static machineProfileUrl(machine){
-		return `https://app.hackthebox.eu/machines/${machine.id}`
+		return `https://app.hackthebox.com/machines/${machine.id}`
 	}
 
 	static challengeProfileUrl(challenge){
-		return `https://app.hackthebox.eu/challenges/${challenge.id}`
+		return `https://app.hackthebox.com/challenges/${challenge.id}`
 	}
 
 	static special2Proper(specialName){
@@ -229,10 +229,10 @@ class Format {
 		case "member": kwd = "users";			  	break
 		case "machine":	kwd = "machines";			break
 		case "challenge": kwd = "challenges";	break
-		case "endgame":	case "fortress": case "prolab": return `https://app.hackthebox.eu/${target.type}/${target.id}`
+		case "endgame":	case "fortress": case "prolab": return `https://app.hackthebox.com/${target.type}/${target.id}`
 		default:	break
 		}
-		return `https://app.hackthebox.eu/${kwd}/${target.id}`
+		return `https://app.hackthebox.com/${kwd}/${target.id}`
 	}
 
 	static targetLink(target){
@@ -241,10 +241,10 @@ class Format {
 		case "member": kwd = "users";			  	break
 		case "machine":	kwd = "machines";			break
 		case "challenge": kwd = "challenges";	break
-		case "endgame":	case "fortress": case "prolab": return this.mdLink(target.name, `https://www.hackthebox.eu${target.id}`)
+		case "endgame":	case "fortress": case "prolab": return this.mdLink(target.name, `https://www.hackthebox.com${target.id}`)
 		default:	break
 		}
-		return this.mdLink(target.name, `https://app.hackthebox.eu/${kwd}/${target.id}`)
+		return this.mdLink(target.name, `https://app.hackthebox.com/${kwd}/${target.id}`)
 	}
 
 	static targetPercentRating(target){
@@ -392,7 +392,7 @@ class Format {
 
 	static targetDifficultyToEmojiName(target){
 		switch (target.type) {
-		case "machine": return target.difficultyText.toLowerCase()
+		case "machine": return (target?.difficultyText || "").toLowerCase()
 		case "challenge": return target.difficulty.toLowerCase()
 		case "fortress": return null
 		case "prolab": return null
@@ -725,7 +725,7 @@ class Format {
 	}
 
 	static memberToMdLink(member, bold = true, customText=null) {
-		return (bold ? "**" : "") + `[${customText || H.sAcc(member,"name")}](https://app.hackthebox.eu/users/${member.id} 'View on HTB')` + (bold ? "**" : "")
+		return (bold ? "**" : "") + `[${customText || H.sAcc(member,"name")}](https://app.hackthebox.com/users/${member.id} 'View on HTB')` + (bold ? "**" : "")
 	}
 
 	static shortDate(date){

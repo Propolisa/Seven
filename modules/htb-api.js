@@ -58,7 +58,7 @@ class HtbApiConnector {
 		return new Promise(function(resolve, reject) {
 			const agent = request.agent()
 			agent
-				.post("https://www.hackthebox.eu/api/v4/login")
+				.post("https://www.hackthebox.com/api/v4/login")
 				.set({ "Content-Type": "application/json;charset=utf-8" })
 				.send({ email: email, password: password, remember: true })
 				.then((response) => {
@@ -107,7 +107,7 @@ class HtbApiConnector {
 		return new Promise((resolve, reject) => {
 			const agent = request.agent()
 			agent
-				.get("https://www.hackthebox.eu/api/v4/" + endpointPath)
+				.get("https://www.hackthebox.com/api/v4/" + endpointPath)
 				.set({ Accept: "application/json, */*" })
 				.set({ Authorization: "Bearer " + this.API_TOKEN })
 				.retry(10, [1000, 3000, 60000], [])
