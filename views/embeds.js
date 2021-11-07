@@ -145,7 +145,7 @@ class HtbEmbeds {
 						+ (description ? `\`\`\`fix\n${F.safe(description.trim().slice(0, 200))}\n\`\`\`` : "")
 						+ (uni ? (!process.env.HTB_UNIVERSITY_ID ? "Student at " : F.toTitleCase(target.role) + " for ") + "**" + F.safe(uni) + "**.\n" : ""))
 				.setThumbnail(F.avatar2Url(avatar))
-				.addField("`  " + `( 🌍 ${F.STL(F.nth(ranking), "bs")}${team && team.id == this.ds.TEAM_STATS.id ? ` | 👥 ${F.STL(F.nth(this.ds.getMemberTeamRankById(id)), "bs")}`:""} ) 🍕 [+${F.STL(points.toString(), "bs")}]`
+				.addField("`  " + `( 🌍 ${F.STL(ranking ? F.nth(ranking) : "Unranked", "bs")}${team && team.id == this.ds.TEAM_STATS.id ? ` | 👥 ${F.STL(F.nth(this.ds.getMemberTeamRankById(id)), "bs")}`:""} ) 🍕 [+${F.STL(points.toString(), "bs")}]`
 						+ "  `",
 				"```diff\n"
 						+ (hasRespect ? `  Locale   : ${F.STL(country_name,"bs")}\n` : "")

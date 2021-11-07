@@ -36,7 +36,7 @@ const td = new TD().addRule("boldlink", {
  * @returns {string} - Debug description of the event / achievement.
  */
 
-function parsePusherEvent(data) {
+function parsePusherEvent(data, source={}) {
 	var md = null
 	try {
 		switch (data["channel"]) {
@@ -82,7 +82,7 @@ function parsePusherEvent(data) {
 				flag = lemmas[1]
 				flag = flag == "system" ? "root" : flag
 			}
-			return new HtbPusherEvent(data, uid || undefined, type || undefined, target || undefined, flag || undefined, md, data.text, data.channel, isBlood)}	
+			return new HtbPusherEvent(source.channel || data.channel, source.event, data, uid, type, target, flag, md, isBlood, data.text)}	
 		default:
 		{
 			// console.log("Uncategorized / Other Channel:", data)
@@ -102,31 +102,32 @@ function parsePusherEvent(data) {
 			let nodes = Array.from((msg.lastChild.textContent == "[Tweet]" ? Array.from(msg.childNodes).slice(0, -1) : msg.childNodes))        // MD: Eliminate the "[Tweet]" link
 			let texts = nodes.map(node => node.outerHTML || node.textContent) // MD: Get HTML from each remaining node
 			md = td.turndown(texts.join(""))            // MD: Recombine HTML and convert to Markdown
-			return new HtbPusherEvent(data, undefined, undefined, undefined, undefined, md, data.channel || "unknown", isBlood)}
+			return new HtbPusherEvent(source.channel || data.channel, source.event, data, undefined, undefined, undefined, undefined, md, isBlood, data.text)}
 		}
 	} catch (error) {
-		console.warn("Error encountered for the following incoming Pusher message:")
+		console.warn(`Error encountered for the following incoming Pusher message (CHAN: ${source.channel} | EVT: ${source.event}):`,)
 		console.error(JSON.stringify(data,null,"\t"))
 		console.error(error)
-		return new HtbPusherEvent(data, undefined, undefined, undefined, undefined, md, data.channel || "unknown")
+		return new HtbPusherEvent(source.channel || data.channel, source.event, data, undefined, undefined, undefined, undefined, md, null, data.text)
 	}
 
 }
 
 class HtbPusherEvent {
 	/**
-   * An object containing data parsed from a HTB Pusher event. Contains structured information about the specific achievement, target and users involved, as well as the original text for debugging.
-	 * @param {Object} data  - The original JSON data from Pusher.
-   * @param {number} uid  - The Htb UID of the user involved.
-   * @param {string} type - The type of message this was, e.g. a challenge own, fortress milestone, machine rating etc.
-   * @param {string} target - The string name of the target (thing that was owned), if relevant.
-   * @param {string} flag - The string name of the flag / milestone, if a pro lab or other necessitating challenge.
-   * @param {string} markdown - The bare markdown representation of the original HTML announcement string.
-   * @param {string} debug - The raw HTML string passed in the Pusher event.
-	 * @param {string} channel - The channel name associated with the Pusher event.
-	 * @param {boolean} blood - Whether this is a blood or not.
+ 	* 	An object containing data parsed from a HTB Pusher event. Contains structured information about the specific achievement, target and users involved, as well as the original text for debugging.
+	* @param {string} channel - The channel name associated with the Pusher event.
+	* @param {boolean} event - The event name associated with the Pusher event.
+	* @param {Object} data  - The original JSON data from Pusher.
+	* @param {number} uid  - The Htb UID of the user involved.
+	* @param {string} type - The type of message this was, e.g. a challenge own, fortress milestone, machine rating etc.
+	* @param {string} target - The string name of the target (thing that was owned), if relevant.
+	* @param {string} flag - The string name of the flag / milestone, if a pro lab or other necessitating challenge.
+	* @param {string} markdown - The bare markdown representation of the original HTML announcement string.
+	* @param {boolean} blood - Whether this is a blood or not.
+	* @param {string} debug - The raw HTML string passed in the Pusher event.
    */
-	constructor(data, uid, type, target, flag, markdown, debug, channel, blood=false) {
+	constructor(channel, event, data, uid, type, target, flag, markdown, blood=false, debug) {
 		this.data = data
 		this.uid = uid
 		this.time = new Date().getTime()
@@ -137,6 +138,7 @@ class HtbPusherEvent {
 		this.debug = debug
 		this.channel = channel
 		this.blood = blood
+		this.event = event
 	}
 }
 
@@ -176,7 +178,7 @@ class HtbPusherSubscription extends EventEmitter {
 				(data) => {
 					try {
 						// console.log(data)
-						this.alertSeven(parsePusherEvent(data)) // Pass the parsed message back for processing
+						this.alertSeven(parsePusherEvent(data, {channel:binding.channel, event: binding.event})) // Pass the parsed message back for processing
 					} catch (error) {
 						console.error(error)
 					}

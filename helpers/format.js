@@ -270,7 +270,7 @@ class Format {
 	/** Returns the appropriate ordinal form (concatenated) for a given number.
  * @param {number} n - The number to get the ordinal suffix for.
  */
-	static nth(n) { return n+(["st", "nd", "rd"][((n + 90) % 100 - 10) % 10 - 1] || "th" )}
+	static nth(n) { return n ? n+(["st", "nd", "rd"][((n + 90) % 100 - 10) % 10 - 1] || "th" ) : ""}
 
 	/**
  * Returns the number of days that have elapsed since the provided date.

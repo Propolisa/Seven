@@ -5,7 +5,7 @@
 const { Format: F } = require("./helpers/format")
 
 /*** STARTUP | DECIDE ENV VAR SOURCE ***/
-console.log("%c╔════════════════════╗\n║ seven-server 1.01a ║\n╚════════════════════╝","color:#9FEF00; font-weight:bold; font-size: 50")
+console.log("%c╔════════════════════╗\n║ seven-server 1.01a ║\n╚════════════════════╝", "color:#9FEF00; font-weight:bold; font-size: 50")
 F.logRainbow()
 if (process.env.HEROKU) {
 	console.log("Started at " + new Date().toLocaleTimeString() + " on Heroku. Using cloud-configured env vars")
@@ -29,7 +29,7 @@ const pgp = require("pg-promise")({ capSQL: true })
 const htbCharts = require("./modules/charts/index.js")
 const { HtbEmbeds } = require("./views/embeds.js")
 const { SevenDatastore } = require("./models/SevenDatastore.js")
-// const { SevenApiServer } = require("./modules/seven-api-server.js")
+const { SevenApiServer } = require("./modules/seven-api-server.js")
 const { Send } = require("./modules/send.js")
 const { HTBEmoji } = require("./helpers/emoji.js")
 const { BinClock: BC } = require("./helpers/binclock")
@@ -54,7 +54,7 @@ var PUSHER_MSG_LOG = DEV_MODE_ON ? require("./cache/PUSHER_MSG_LOG.json") : null
 var PHANTOM_POOL = null
 const CHART_RENDERER = htbCharts.newChartRenderer()
 const DAT = new SevenDatastore()    // Open an abstract storage container for HTB / bot data
-// const API = new SevenApiServer(DAT, 666)
+if (DEV_MODE_ON) { const API = new SevenApiServer(DAT, 666) }
 const E = new HTBEmoji(client)
 const EGI = new HtbEmbeds(DAT, E) 			// Give Embed Constructor access to the datastore
 const SEND = new Send()
@@ -100,12 +100,13 @@ async function importDbBackup() {
 												(DEFAULT, 'team_stats', '{}'),
 												(DEFAULT, 'discord_links', '{}'),
 												(DEFAULT, 'misc', '{}');
-												`).then(console.log("Inserted!"))}
+												`).then(console.log("Inserted!"))
+			}
 			else {
 				// console.log("[SEVEN_DB]::: Data table found.")
 				return true
 			}
-		}).then( () => {
+		}).then(() => {
 			return db.any(`SELECT json FROM ${SEVEN_DB_TABLE_NAME} ORDER BY id ASC;`, [true]).then(
 				rows => {
 					DAT.MACHINES = rows[0].json
@@ -120,12 +121,12 @@ async function importDbBackup() {
 					DAT.MISC = rows[9].json
 					console.log("[DB IMPORT]::: Restored from DB backup.")
 					console.info(`Machines   : ${Object.values(DAT.MACHINES).length}\n` +
-								`Challenges : ${Object.values(DAT.CHALLENGES).length}\n` +
-								`Fortresses : ${Object.values(DAT.FORTRESSES).length}\n` +
-								`Endgames : ${Object.values(DAT.ENDGAMES).length}\n` +
-								`Pro Labs : ${Object.values(DAT.PROLABS).length}\n` +
-								`Members    : ${Object.values(DAT.TEAM_MEMBERS).length}${(DAT.kTMI.length ? " tracked, " + DAT.kTMI.length + " untracked":"")}\n` +
-								`Linked DC  : ${Object.values(DAT.DISCORD_LINKS).length}`)
+						`Challenges : ${Object.values(DAT.CHALLENGES).length}\n` +
+						`Fortresses : ${Object.values(DAT.FORTRESSES).length}\n` +
+						`Endgames : ${Object.values(DAT.ENDGAMES).length}\n` +
+						`Pro Labs : ${Object.values(DAT.PROLABS).length}\n` +
+						`Members    : ${Object.values(DAT.TEAM_MEMBERS).length}${(DAT.kTMI.length ? " tracked, " + DAT.kTMI.length + " untracked" : "")}\n` +
+						`Linked DC  : ${Object.values(DAT.DISCORD_LINKS).length}`)
 				}
 			).catch(
 				err => console.error(err)
@@ -268,7 +269,7 @@ async function updateDiscordIds(client, guildIdString) {
 	updateCache(["DISCORD_LINKS"])
 }
 
-async function refresh(){
+async function refresh() {
 	await DAT.update()
 	HTB_PUSHER_OWNS_SUBSCRIPTION.auth = DAT.V3API.CSRF_TOKEN
 }
@@ -281,37 +282,37 @@ async function main() {
 	// await DAT.syncAgent()
 	var HTB_PUSHER_OWNS_SUBSCRIPTION = new HtbPusherSubscription("97608bf7532e6f0fe898",
 		[
-			{channel: "owns-channel", event: "display-info"},
-			{channel: "notifications-channel", event: "display-notifications"},
-			{channel: "infobox-channel", event: "display-info"},
-			{channel: "shoutbox-channel", event: "display-shout"},
-			{channel: "joins-channel", event: "display-info"}
+			{ channel: "owns-channel", event: "display-info" },
+			{ channel: "notifications-channel", event: "display-notifications" },
+			{ channel: "infobox-channel", event: "display-info" },
+			{ channel: "shoutbox-channel", event: "display-shout" },
+			{ channel: "joins-channel", event: "display-info" }
 		], DAT.V3API.CSRF_TOKEN)
 	// refresh().then(console.log("Initial update completed!"))
-	
-	if (!DEV_MODE_ON){
+
+	if (!DEV_MODE_ON) {
 		await DAT.syncAgent()
 		setInterval(async () => {
 			await refresh()
 			console.log("Data refresh completed!")
 			var updated = await updateCache()
-			if (updated) {console.log("Updated the DB...")}
+			if (updated) { console.log("Updated the DB...") }
 		}, 1 * 60 * 60 * 1000) // Lower frequency of update to once every hour after rate limiter issue
 	}
-	
+
 	HTB_PUSHER_OWNS_SUBSCRIPTION.on("pusherevent", async message => {
 		try {
-			if (DEV_MODE_ON){
+			if (DEV_MODE_ON) {
 				PUSHER_MSG_LOG.push(message)
 				let data = JSON.stringify(PUSHER_MSG_LOG, null, 2)
 				fs.writeFileSync("./cache/PUSHER_MSG_LOG.json", data)
 			}
 			switch (message.type) {
-			case "machine": case "challenge": case "endgame": case "fortress": case	"prolab":
+			case "machine": case "challenge": case "endgame": case "fortress": case "prolab":
 				if (DAT.DISCORD_LINKS[message.uid] || message.blood || DAT.TEAM_MEMBERS[message.uid]) {
-					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherOwn(await DAT.resolveEnt(message.uid,"member",true,null,true), message.target, message.type, message.flag || message.type, message.blood))
-					if (message.blood){
-						DAT.integratePusherBlood(await DAT.resolveEnt(message.uid,"member",true,null,true), message.uid, message.time, message.type, message.target, message.flag, true)
+					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherOwn(await DAT.resolveEnt(message.uid, "member", true, null, true), message.target, message.type, message.flag || message.type, message.blood))
+					if (message.blood) {
+						DAT.integratePusherBlood(await DAT.resolveEnt(message.uid, "member", true, null, true), message.uid, message.time, message.type, message.target, message.flag, true)
 						for (let i = 0; i < 3; i++) {
 							DISCORD_ANNOUNCE_CHAN.send("‼").then(message => message.delete())
 						}
@@ -323,6 +324,8 @@ async function main() {
 				}
 				break
 			case "launch":
+				console.log("PUSHER: Got machine launch notification.")
+				console.log(message)
 				DISCORD_ANNOUNCE_CHAN.send(EGI.pusherNotif(message))
 				break
 			default:
@@ -334,7 +337,7 @@ async function main() {
 		} catch (error) {
 			console.error(error)
 		}
-	
+
 	})
 	// updateData()
 
@@ -351,9 +354,13 @@ async function main() {
 		DISCORD_ANNOUNCE_CHAN = await client.channels.fetch(process.env.DISCORD_ANNOUNCE_CHAN_ID.toString())
 
 		/** Test the Pusher owns functionality */
-		// var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
-		// PUSHER_DUMMY_DATA.slice(0,2).forEach(e => {HTB_PUSHER_OWNS_SUBSCRIPTION.channels[0].emit("display-info", {text: e, channel: null})})
-		
+		if (DEV_MODE_ON) {
+			// var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
+			// PUSHER_DUMMY_DATA.forEach(e => {
+			// 	HTB_PUSHER_OWNS_SUBSCRIPTION.channels.find(chan => chan.name == e[0].channel).emit(e[0].event, { text: e[1], channel: e[0].channel })
+			// })
+		}
+
 		console.log(`[DISCORD]::: ${Object.values(DAT.DISCORD_LINKS).length} guild members have linked their HTB accounts.`)
 		updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString())
 		setInterval(() => updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString()), 30 * 60 * 1000)   // UPDATE DISCORD LINKS EVERY 30 MINUTES
@@ -365,10 +372,10 @@ async function main() {
 				if (SEND.PASSTHRU && message.channel.type != "dm" && !message.author.bot) {
 					SEND.passthru_register(message)
 				} else if (isAdmin(message.author)
-						&& SEND.PASSTHRU
-						&& message.referencedMessage
-						&& message.channel.type == "dm"
-						&& isAdmin(message.channel.recipient)) {
+					&& SEND.PASSTHRU
+					&& message.referencedMessage
+					&& message.channel.type == "dm"
+					&& isAdmin(message.channel.recipient)) {
 					SEND.passthru(message)
 				} else {
 					handleMessage(message)
@@ -378,7 +385,7 @@ async function main() {
 				message.channel.stopTyping()
 			}
 		} else if (isAdmin(message.author)) {
-			console.warn("Message content:",message.content)
+			console.warn("Message content:", message.content)
 			console.log("Message is from dev admin, responding...")
 			if (message.content.includes("📤")) {
 				console.log("Sending file msg...")
@@ -388,10 +395,10 @@ async function main() {
 					if (SEND.PASSTHRU && message.channel.type != "dm" && !message.author.bot) {
 						SEND.passthru_register(message)
 					} else if (isAdmin(message.author)
-							&& SEND.PASSTHRU
-							&& message.reference
-							&& message.channel.type == "dm"
-							&& isAdmin(message.channel.recipient)) {
+						&& SEND.PASSTHRU
+						&& message.reference
+						&& message.channel.type == "dm"
+						&& isAdmin(message.channel.recipient)) {
 						SEND.passthru(message)
 					} else {
 						handleMessage(message)
@@ -417,7 +424,7 @@ async function sendFlagboardMsg(message) {
 
 async function sendTeamLeaderMsg(message) {
 	var member = DAT.resolveEnt(DAT.getTopMembers(1), "member", true, message)
-	await SEND.embed(message,EGI.teamLeader(member))
+	await SEND.embed(message, EGI.teamLeader(member))
 	if (H.maybe(0.6)) await SEND.human(message, "Let's give a round of applause!", true)
 	if (H.maybe(0.4)) await SEND.human(message, "Pain is the heart of success. No one knows that like " + member.name + "! 🎉", true)
 }
@@ -432,27 +439,27 @@ async function sendMemberChartMsg(message, username, term) {
 	SEND.embed(message, embed)
 }
 
-async function sendActivityMsg(message, member, targetType=undefined, sortBy=undefined, sortOrder=undefined, limit=40) {
+async function sendActivityMsg(message, member, targetType = undefined, sortBy = undefined, sortOrder = undefined, limit = 40) {
 	var series = []
 	message.channel.startTyping()
-	var owns = await DAT.filterMemberOwns(member.id,targetType,"date","asc",limit)
+	var owns = await DAT.filterMemberOwns(member.id, targetType, "date", "asc", limit)
 	owns.sort((a, b) => Date.parse(b) - Date.parse(a))
 	var orderedDates = owns.map(e => e.date).sort((a, b) => Date.parse(a) - Date.parse(b))
-	if (orderedDates.length < 2){
+	if (orderedDates.length < 2) {
 		orderedDates.unshift((new Date(Date.now() - 604800000).toISOString()))
 		orderedDates.push((new Date()).toISOString())
 	}
-	var dateRange = {oldest:new Date(orderedDates[0]), latest: new Date(), interval: new Date(orderedDates[orderedDates.length - 1])}
-	var types = ["user","root","challenge","endgame","fortress"]
+	var dateRange = { oldest: new Date(orderedDates[0]), latest: new Date(), interval: new Date(orderedDates[orderedDates.length - 1]) }
+	var types = ["user", "root", "challenge", "endgame", "fortress"]
 	types.forEach(thisType => {
-		var filtered = owns.filter(e => e.object_type==thisType || e.type == thisType)
-		series.push(filtered.map((i,idx) => ([Date.parse(i.date),filtered.length-idx])))
+		var filtered = owns.filter(e => e.object_type == thisType || e.type == thisType)
+		series.push(filtered.map((i, idx) => ([Date.parse(i.date), filtered.length - idx])))
 	})
 	series.forEach(e => {
 		e.unshift([Date.parse(orderedDates[orderedDates.length - 1]) || (new Date()).getTime(), e.length || 0])
-		e.push([Date.parse(orderedDates[0]) || (new Date()).getTime(), 0 ])
+		e.push([Date.parse(orderedDates[0]) || (new Date()).getTime(), 0])
 	})
-	
+
 	var chartImageB64 = await CHART_RENDERER.renderChart(member, null, null, "userActivity", series, dateRange)
 	var chartImage = new Buffer.from(chartImageB64, "base64")
 	SEND.embed(message, EGI.memberActivity(member, limit, targetType, sortOrder, sortBy, chartImage))
@@ -500,7 +507,7 @@ async function linkDiscord(message, idType, id) {
 	switch (idType) {
 	case "uid":
 		try {
-			DAT.DISCORD_LINKS[id] = (message.channel.type=="dm" ? message.author : await message.guild.members.fetch(`${message.author.id}`))
+			DAT.DISCORD_LINKS[id] = (message.channel.type == "dm" ? message.author : await message.guild.members.fetch(`${message.author.id}`))
 			await SEND.human(message, H.any("Associated HTB user " + DAT.getMemberById(id).name + " (" + id + ")", "HTB user " + DAT.getMemberById(id).name + " (" + DAT.getMemberById(id).id + ") has been linked") + " to your Discord account (" + message.author.tag + "). Thanks! 🙂", true)
 			updateCache(["DISCORD_LINKS"])
 			//exportData(DISCORD_LINKS, "discord_links.json")
@@ -508,8 +515,8 @@ async function linkDiscord(message, idType, id) {
 		break
 
 	case "uname": try {
-		DAT.DISCORD_LINKS[DAT.getMemberByName(id).id] = (message.channel.type=="dm" ? message.author : await message.guild.members.fetch(`${message.author.id}`))
-		await SEND.human(message, "HTB user " + F.STL(F.toTitleCase(id),"bs") + " (" + DAT.getMemberByName(id).id + ") has been linked to your Discord account (" + F.STL("🌀 "+message.author.tag, "bs") + "). Thanks! 🙂", true)
+		DAT.DISCORD_LINKS[DAT.getMemberByName(id).id] = (message.channel.type == "dm" ? message.author : await message.guild.members.fetch(`${message.author.id}`))
+		await SEND.human(message, "HTB user " + F.STL(F.toTitleCase(id), "bs") + " (" + DAT.getMemberByName(id).id + ") has been linked to your Discord account (" + F.STL("🌀 " + message.author.tag, "bs") + "). Thanks! 🙂", true)
 		updateCache(["discord_links"])
 		// exportData(DISCORD_LINKS, "discord_links.json")
 	} catch (error) { console.log(error) }
@@ -619,7 +626,7 @@ async function forceUpdate(message) {
 async function admin_clearCached(message) {
 	if (isAdmin(message.author)) {
 		SEND.human(message, "Clearing the in-memory HTB data (not including ignored member or discord link settings)", false)
-		DAT.MISC={}
+		DAT.MISC = {}
 		DAT.TEAM_MEMBERS = {}
 		DAT.TEAM_STATS = {}
 		DAT.MACHINES = {}
@@ -639,72 +646,72 @@ async function handleMessage(message) {
 			if (message.content.toLowerCase().match(checkIsSevenMsg)) {
 				message.content = message.content.toLowerCase().replace(checkIsSevenMsg, "")
 			}
-			var htbItem = DAT.resolveEnt(message.content,null,null,message,false)
+			var htbItem = DAT.resolveEnt(message.content, null, null, message, false)
 			if (message.content.toLowerCase().trim() == "help") {
 				try { sendHelpMsg(message) } catch (e) { console.log(e) }
 			} else if (htbItem) {
 				console.log("[SEVEN]::: HTB Entity was resolved.")
-				try { SEND.embed(message, await EGI.infoFor(htbItem.type, htbItem.name, null,message, htbItem)) } catch (e) { console.error(e) }
+				try { SEND.embed(message, await EGI.infoFor(htbItem.type, htbItem.name, null, message, htbItem)) } catch (e) { console.error(e) }
 			} else {
 				var result = await understand(message)
 				var isRipe = result.allRequiredParamsPresent
-				console.log("[DF]::: Detected intent: " + result.intent.displayName + " | " + (isRipe? (result.parameters.length? "All required params present.": "No required parameters") : "Required parameters missing.") )
+				console.log("[DF]::: Detected intent: " + result.intent.displayName + " | " + (isRipe ? (result.parameters.length ? "All required params present." : "No required parameters") : "Required parameters missing."))
 				// console.dir(result)
 				if (result.intent && isRipe) {
 					var job = result.intent.displayName
 					var inf = result.parameters.fields
 					/** (Dialogflow) The returned entity parameters, parsed from user query. */
 					var P = struct.decode(result.parameters)
-					if (Object.keys(P).length) console.log("Extracted:",P)
+					if (Object.keys(P).length) console.log("Extracted:", P)
 					try {
 						switch (job) {
 						case "help": sendHelpMsg(message); break
-						case "admin.forceUpdateData":  forceUpdate(message); break
-						case "admin.passthruOn": if (isAdmin(message.author)) {SEND.human(message, `Parrot mode ${F.STL("ON","bs")}. 🦜`); SEND.passthruOn()} else {SEND.human(message,"Sorry, not for you. 🦜")} break
-						case "admin.passthruOff": if (isAdmin(message.author)) {SEND.human(message,`Parrot mode ${F.STL("OFF","bs")}. 🦜`); SEND.passthruOff()} else {SEND.human(message,"Sorry, not for you. 🦜")} break
-						case "admin.clearCached":  admin_clearCached(message); break
-						case "admin.setStatus":  admin_setStatus(message, inf); break
-						case "admin.clearEmoji":  E.clearCustEmoji(client).then(SEND.human(message, "Successfully purged Seven-related emoji from supporting channel.", false)); break
-						case "admin.setupEmoji":  E.initCustEmoji(client).then(SEND.human(message, "Successfully initialized Seven-related emoji on supporting channel.", false)); break
-						case "agent.getPickled":  if (!SEND.GET_PICKLED) {await SEND.human(message, result.fulfillmentText, true); SEND.human(message,"```css\n[PICKLE MODE ACTIVATED]```",true) ; SEND.pickleOn()} else { SEND.human(message, "` ERROR: circuits already scrambled... `")} break
-						case "agent.getUnpickled":  if (SEND.GET_PICKLED) {SEND.pickleOff(); SEND.human(message,"Fine then...\nThat was kinda fun though. 😏")} else { SEND.human(message, "I'm already talking normally!!!")} break
-						case "forgetMe.htbIgnore.getUserID":  forgetHtbDataFlow(message, "htb", P.uid); break
-						case "forgetMe.discordUnlink.getUserID":  forgetHtbDataFlow(message, "discord", P.uid); break
-						case "forgetMe.all.getUserID":  forgetHtbDataFlow(message, "all", P.uid); break
-						case "linkDiscord":  linkDiscord(message, (P.uid ? "uid" : "uname"), (P.uid ? P.uid : P.username)); break
-						case "unforgetMe":  unignoreMember(P.uid); SEND.human(message, result.fulfillmentText, true); break
+						case "admin.forceUpdateData": forceUpdate(message); break
+						case "admin.passthruOn": if (isAdmin(message.author)) { SEND.human(message, `Parrot mode ${F.STL("ON", "bs")}. 🦜`); SEND.passthruOn() } else { SEND.human(message, "Sorry, not for you. 🦜") } break
+						case "admin.passthruOff": if (isAdmin(message.author)) { SEND.human(message, `Parrot mode ${F.STL("OFF", "bs")}. 🦜`); SEND.passthruOff() } else { SEND.human(message, "Sorry, not for you. 🦜") } break
+						case "admin.clearCached": admin_clearCached(message); break
+						case "admin.setStatus": admin_setStatus(message, inf); break
+						case "admin.clearEmoji": E.clearCustEmoji(client).then(SEND.human(message, "Successfully purged Seven-related emoji from supporting channel.", false)); break
+						case "admin.setupEmoji": E.initCustEmoji(client).then(SEND.human(message, "Successfully initialized Seven-related emoji on supporting channel.", false)); break
+						case "agent.getPickled": if (!SEND.GET_PICKLED) { await SEND.human(message, result.fulfillmentText, true); SEND.human(message, "```css\n[PICKLE MODE ACTIVATED]```", true); SEND.pickleOn() } else { SEND.human(message, "` ERROR: circuits already scrambled... `") } break
+						case "agent.getUnpickled": if (SEND.GET_PICKLED) { SEND.pickleOff(); SEND.human(message, "Fine then...\nThat was kinda fun though. 😏") } else { SEND.human(message, "I'm already talking normally!!!") } break
+						case "forgetMe.htbIgnore.getUserID": forgetHtbDataFlow(message, "htb", P.uid); break
+						case "forgetMe.discordUnlink.getUserID": forgetHtbDataFlow(message, "discord", P.uid); break
+						case "forgetMe.all.getUserID": forgetHtbDataFlow(message, "all", P.uid); break
+						case "linkDiscord": linkDiscord(message, (P.uid ? "uid" : "uname"), (P.uid ? P.uid : P.username)); break
+						case "unforgetMe": unignoreMember(P.uid); SEND.human(message, result.fulfillmentText, true); break
 						case "getTime": SEND.embed(message, EGI.binClock(await BC.genImg(PHANTOM_POOL))); break
-						case "getTeamBadge":  SEND.human(message,F.noncifyUrl(`https://www.hackthebox.com/badge/team/image/${DAT.TEAM_STATS.id}`),true).then(() => SEND.human(message, result.fulfillmentText, true)); break
+						case "getTeamBadge": SEND.human(message, F.noncifyUrl(`https://www.hackthebox.com/badge/team/image/${DAT.TEAM_STATS.id}`), true).then(() => SEND.human(message, result.fulfillmentText, true)); break
 						case "getTeamInfo": SEND.embed(message, EGI.teamInfo()); break
 						case "getTeamLeaders": SEND.embed(message, EGI.teamLeaderboard()); break
-						case "getTeamLeader":  sendTeamLeaderMsg(message, result.fulfillmentText); break
+						case "getTeamLeader": sendTeamLeaderMsg(message, result.fulfillmentText); break
 						case "getTeamRanking": SEND.embed(message, EGI.teamRank()); break
-						case "getFlagboard":  sendFlagboardMsg(message); break
+						case "getFlagboard": sendFlagboardMsg(message); break
 						case "getTargetInfo": SEND.embed(message, await EGI.infoFor(P.targetType, P.targetName)); break
-						case "getTargetOwners": SEND.embed(message, EGI.teamOwnsForTarget(DAT.resolveEnt(P.target,P.htbTargetType),undefined,P.ownType,P.ownFilter)); break
+						case "getTargetOwners": SEND.embed(message, EGI.teamOwnsForTarget(DAT.resolveEnt(P.target, P.htbTargetType), undefined, P.ownType, P.ownFilter)); break
 						case "checkMemberOwnedTarget": SEND.embed(message, EGI.checkMemberOwnedTarget(DAT.resolveEnt(P.username, "member", false, message), DAT.resolveEnt(P.targetname, P.targettype), P.flagNames)); break
-						case "getFirstBox":  SEND.embed(message, await EGI.infoFor("machine", "Lame")); await SEND.human(message, result.fulfillmentText); break
+						case "getFirstBox": SEND.embed(message, await EGI.infoFor("machine", "Lame")); await SEND.human(message, result.fulfillmentText); break
 						case "agent.doReboot": doFakeReboot(message, result.fulfillmentText); break
 						case "getNewBox": SEND.embed(message, await EGI.infoFor("machine", DAT.getNewBoxId(), true)); break
 						case "getMemberInfo": SEND.embed(message, await EGI.infoFor("member", P.username, false, message, DAT.resolveEnt(P.username, "member", false, message) || { type: null })); break
 						case "getMemberRank": SEND.embed(message, EGI.memberRank(DAT.resolveEnt(P.username, "member", false, message))); break
 						case "getMemberChart": sendMemberChartMsg(message, H.sAcc(DAT.resolveEnt(P.username, "member", false, message), "name"), (P.interval ? P.interval : "1Y")); break
-						case "filterMemberOwns": sendActivityMsg(message,	DAT.resolveEnt(P.username, "member", false, message),
-							P.targettype, P.sortby, P.sortorder,	P.limit || 24); break
+						case "filterMemberOwns": sendActivityMsg(message, DAT.resolveEnt(P.username, "member", false, message),
+							P.targettype, P.sortby, P.sortorder, P.limit || 24); break
 						case "filterTargets": SEND.embed(message, EGI.filteredTargets(DAT.filterEnt(message,
-							P.targettype, P.sortby, P.sortorder,	P.limit || 15,	null,	null, P.memberName, P.targetFilterBasis),
+							P.targettype, P.sortby, P.sortorder, P.limit || 15, null, null, P.memberName, P.targetFilterBasis),
 						P.sortby,
 						P, message), true
 						); break
 						case "filterMembers": SEND.embed(message, EGI.filteredTargets(DAT.filterEnt(message,
-							P.targettype, P.sortby, P.sortorder,	P.limit || 15,	null,	null, P.memberName, P.targetFilterBasis),
+							P.targettype, P.sortby, P.sortorder, P.limit || 15, null, null, P.memberName, P.targetFilterBasis),
 						P.sortby,
 						P, message), true
 						); break
 						case "Default Fallback Intent": {
-							htbItem = await DAT.resolveEnt(message.content.replace(/\s/g,""),null,null,message,true)
+							htbItem = await DAT.resolveEnt(message.content.replace(/\s/g, ""), null, null, message, true)
 							if (htbItem) {
-								SEND.embed(message, await EGI.infoFor(null,null,null,message,htbItem)); break
+								SEND.embed(message, await EGI.infoFor(null, null, null, message, htbItem)); break
 							} else { await SEND.human(message, result.fulfillmentText) }
 						} break
 						default:
@@ -719,9 +726,9 @@ async function handleMessage(message) {
 					}
 					message.channel.stopTyping(true)
 				} else {
-					htbItem = await DAT.resolveEnt(message.content.replace(/\s/g,""),null,null,message,true)
+					htbItem = await DAT.resolveEnt(message.content.replace(/\s/g, ""), null, null, message, true)
 					if (htbItem) {
-						SEND.embed(message, await EGI.infoFor(null,null,null,message,htbItem))
+						SEND.embed(message, await EGI.infoFor(null, null, null, message, htbItem))
 					} else { await SEND.human(message, result.fulfillmentText) }
 				}
 			}
