@@ -123,7 +123,14 @@ class HtbApiConnector {
 					this.updateThrottle(endpoint, rLimit, rLeft, endpointPath)
 					// console.log(`${new Date().toLocaleTimeString()} ⇛ ${response.status.toString().padStart(3," ")}: GET "${response.request.url.substring(33)}"` + ( response.headers["x-ratelimit-limit"] ? ` | Remaining limiter credit: ${response.headers["x-ratelimit-remaining"]} / ${response.headers["x-ratelimit-limit"]}`: " | (No rate limiter on this endpoint)" ))
 					if (parseText) {
-						resolve(JSON.parse(response.text))
+						try {
+							let res = JSON.parse(response.text)
+							resolve(res)
+						} catch (error) {
+							console.log(response?.text || response)
+							reject()
+						}
+						
 					} else {
 						resolve(response.body)
 					}

@@ -326,42 +326,42 @@ class SevenDatastore {
 					} categories...`
 				)
 				console.warn(`[APIv4]::: Got team info for "${this.TEAM_STATS.name}"`)
-				dFlowEnt.addMissingFieldsToEntity(
+				dFlowEnt.updateEntity(
 					Object.values(this.MISC.SPECIALS)
 						.flat()
 						.map((e) => Object.values(e.flags))
 						.flat(),
 					"specialTargetFlagName"
 				)
-				dFlowEnt.addMissingFieldsToEntity(
+				dFlowEnt.updateEntity(
 					Object.values(this.MISC.SPECIALS)
 						.map((specialType) => specialType.map((s) => s.name))
 						.flat(),
 					"specialTargetName"
 				)
-				dFlowEnt.addMissingFieldsToEntity(
+				dFlowEnt.updateEntity(
 					Object.values(this.MISC.CHALLENGE_CATEGORIES).map(
 						(category) => category.name
 					),
 					"challengeCategoryName"
 				)
-				dFlowEnt.addMissingFieldsToEntity(
+				dFlowEnt.updateEntity(
 					this.MISC.MACHINE_TAGS["7"].tags.map((attackPath) => attackPath.name),
 					"boxAttackPath"
 				)
-				dFlowEnt.addMissingFieldsToEntity(
+				dFlowEnt.updateEntity(
 					this.MISC.MACHINE_TAGS["11"].tags.map((attackSub) => attackSub.name),
 					"boxAttackSub"
 				)
-				dFlowEnt.addMissingFieldsToEntity(
+				dFlowEnt.updateEntity(
 					this.MISC.MACHINE_TAGS["9"].tags.map((attackLang) => attackLang.name),
 					"boxLanguage"
 				)
-				dFlowEnt.addMissingFieldsToEntity(
+				dFlowEnt.updateEntity(
 					Object.values(this.MACHINES).map((machine) => machine.name),
 					"Machines"
 				)
-				dFlowEnt.addMissingFieldsToEntity(
+				dFlowEnt.updateEntity(
 					Object.values(this.TEAM_MEMBERS).map((member) => ({
 						value: member.name,
 						synonyms: [
@@ -371,11 +371,11 @@ class SevenDatastore {
 					})),
 					"memberName"
 				)
-				dFlowEnt.addMissingFieldsToEntity(
+				dFlowEnt.updateEntity(
 					Object.values(this.CHALLENGES).map((challenge) => challenge.name),
 					"challenge"
 				)
-				dFlowEnt.addMissingFieldsToEntity(
+				dFlowEnt.updateEntity(
 					Object.values(this.TEAM_MEMBERS).map((member) => ({
 						value: member.name,
 						synonyms: [

@@ -54,7 +54,7 @@ var PUSHER_MSG_LOG = DEV_MODE_ON ? require("./cache/PUSHER_MSG_LOG.json") : null
 var PHANTOM_POOL = null
 const CHART_RENDERER = htbCharts.newChartRenderer()
 const DAT = new SevenDatastore()    // Open an abstract storage container for HTB / bot data
-if (DEV_MODE_ON) { const API = new SevenApiServer(DAT, 666) }
+const API = DEV_MODE_ON ? new SevenApiServer(DAT, 666) : null
 const E = new HTBEmoji(client)
 const EGI = new HtbEmbeds(DAT, E) 			// Give Embed Constructor access to the datastore
 const SEND = new Send()
@@ -339,7 +339,6 @@ async function main() {
 		}
 
 	})
-	// updateData()
 
 
 	client.login(process.env.BOT_TOKEN)               // BOT_TOKEN is the Discord client secret

@@ -150,13 +150,11 @@ function addSingleEntity(displayName, newFieldName){
 			// If we couldn't find the expected entity, throw a custom error.
 			throw new EntityNotFoundError()
 		})
-	// Update the city EntityType with a new list of Entities.
+	// Update the EntityType with a new list of Entities.
 		.then((entity) => {
 			//console.log(`Found ${displayName}: `, JSON.stringify(field));
 			var newField = {"value": newFieldName, "synonyms": [newFieldName]}
 			entity.entities.push(newField)
-			// Replace the EntityType's existing Entities with our new list.
-			//city.entities = updatedEntityList;
 
 			const request = {
 				entityType: entity,
@@ -191,7 +189,9 @@ function addSingleEntity(displayName, newFieldName){
  */
 function updateEntity(fields, entityTypeName){
 	var needsUpdate = false
-	class EntityNotFoundError extends Error {} entitiesClient
+	class EntityNotFoundError extends Error {}
+	
+	entitiesClient
 	// Tell client library to call Dialogflow with a request to
 	// list all EntityTypes.
 		.listEntityTypes({parent: agentPath})
@@ -281,7 +281,7 @@ function updateEntity(fields, entityTypeName){
 /** Define a custom error object to help control flow in our Promise chain. */
 module.exports = {
 	addSingleEntity: addSingleEntity,
-	addMissingFieldsToEntity: updateEntity,
+	updateEntity,
 	syncAgentDownstream,
 	syncAgentUpstream
 }
