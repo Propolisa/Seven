@@ -133,6 +133,6 @@ Some features / nice-to-haves that are under consideration:
 - [ ] Offer advice / memory jogs from [RTFM](https://doc.lagout.org/rtfm-red-team-field-manual.pdf) for users LIKE: "stuck on **[STAGE** [*privesc, recon, persistence ...*]**]** with **[TECHNOLOGY** [*linux, nodejs, sql server ...*]**]**
 - [ ] Answer questions invoking possibly long data (while respecting Discord embed limitations):
   - [ ] "[teamname] members" (get member list, can be up into the hundreds depending on team)
-  - [ ] "machine list" (this returns around 250 results at time of writing)
-  - [ ] "all challenges" (same, around 150)
+  - [x] "machine list" (this returns around 250 results at time of writing)
+  - [x] "all challenges" (same, around 150)
   - [x] Give info on self based on Discord association
