@@ -25,7 +25,7 @@ function renderChart(member, chart, term, type, series, dateRange=null) {
 
 function newChartRenderer() {
 	const exporter = require("highcharts-export-server")
-	exporter.logLevel(4)
+	exporter.logLevel(1)
 	exporter.initPool({ initialWorkers: 1, maxWorkers: 4 })
 	exporter.renderChart = renderChart
 	return exporter
