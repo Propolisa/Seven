@@ -146,6 +146,18 @@ class Helpers {
 		return out
 	}
 
+	/**
+	 * Compare two strings for equality, case-insensitive.
+	 * @param {string} a 
+	 * @param {string} b 
+	 * @returns string
+	 */
+	static ciEquals(a, b) {
+		return typeof a === 'string' && typeof b === 'string'
+			? a.localeCompare(b, undefined, { sensitivity: 'accent' }) === 0
+			: a === b;
+	}
+
 }
 
 /**

@@ -1022,7 +1022,7 @@ class SevenDatastore {
 					.filter(
 						(own) =>
 							own.object_type == target.type &&
-								(own.name == target.name || own.name == target.company)
+								(H.ciEquals(own.name, target.name) || H.ciEquals(own.name, target.company.name))
 					)
 					.map((own) => ({ ...own, id: member.id }))
 				break
