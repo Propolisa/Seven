@@ -52,7 +52,7 @@ class HtbEmbeds {
 	}
 
 	get ENTITY_UNFOUND() {
-		return this.ERROR_BASE.setTitle(`Unrecognized Entity. ${H.any("👀", "🚀", "🤷‍♀️", "🤦‍♂️", "🐱‍🐉", "🐱‍💻")}`)
+		return this.ERROR_BASE.setTitle(`${H.any("Couldn't find anything.","Nothing here!","Can't find that.", "Uh oh, unsafe access of null index.", "Whoops, wrong address.", "404 NOT FOUND", "418 I'm a teapot")}  ${H.any("👀", "💩", "🤷‍♀️", "🤦‍♂️", "😿", "💣")}`)
 			.setDescription(`Maybe I haven't ${H.any("parsed it yet",
 				"gotten that one yet",
 				"updated recently enough to catch it",
@@ -179,7 +179,7 @@ class HtbEmbeds {
 			break
 		}
 		case null: {
-			embed = this.ENTITY_UNFOUND
+			embed = this.ENTITY_UNFOUND.setDescription(identifier ? `Sorry, I couldn't find ${type ? `any ${type}` : "anything"} by the identifier '${identifier}'. 🤔` : "Sorry, I couldn't parse any identifier (target / username) from your message.")
 		} break
 		case "challenge": {
 			/** CHALLENGE EMBED CONSTRUCTOR **/
