@@ -431,7 +431,6 @@ async function sendMemberChartMsg(message, username, term) {
 	message.channel.startTyping()
 	var member = DAT.resolveEnt(username, "member", false, message)
 	var chartData = await DAT.V4API.getMemberAchievementChart(member.id, term)
-	console.log(member, chartData, term)
 	var chartImageB64 = await CHART_RENDERER.renderChart(member, chartData, term, "userProgress")
 	var chartImage = chartImageB64 ? new Buffer.from(chartImageB64.data || chartImageB64, "base64") : null
 	var embed = EGI.memberAchievementTimelineChart(member, term, chartImage)
@@ -458,9 +457,9 @@ async function sendActivityMsg(message, member, targetType = undefined, sortBy =
 		e.unshift([Date.parse(orderedDates[orderedDates.length - 1]) || (new Date()).getTime(), e.length || 0])
 		e.push([Date.parse(orderedDates[0]) || (new Date()).getTime(), 0])
 	})
-
+	console.warn(member, series, dateRange)
 	var chartImageB64 = await CHART_RENDERER.renderChart(member, null, null, "userActivity", series, dateRange)
-	var chartImage = new Buffer.from(chartImageB64, "base64")
+	var chartImage = chartImageB64 ? new Buffer.from(chartImageB64.data || chartImageB64, "base64") : null
 	SEND.embed(message, EGI.memberActivity(member, limit, targetType, sortOrder, sortBy, chartImage))
 }
 
