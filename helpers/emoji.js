@@ -57,15 +57,14 @@ var cache = {
 
 class HTBEmoji {
 	/**
-	 * 
-	 * @param {SevenDatastore} ds 
+	 * @param {SevenDatastore} client 
 	 */
 	constructor(client) {
 		this.client = client
 		this.state = {}
 		var fields = ["os", "chall", "specials", "ui"]
-		fields.forEach((fieldName,idx) => {
-			this.state[fieldName] = cache[fieldName].map((e, i) => ({
+		fields.forEach((fieldName) => {
+			this.state[fieldName] = cache[fieldName].map(e => ({
 				id: e[0], names: e
 			}))
 		})
@@ -78,7 +77,7 @@ class HTBEmoji {
 		Object.values(this.state).forEach(cat => {
 			cat.forEach(catItems => {
 				// console.log(catItems)
-				var match = catItems.names.find(e => F.getIcon(e))
+				var match = catItems.names.find(e => !F.getIcon(e).includes("other"))
 				if (match){
 					var iconFileName = F.getIcon(match)
 					var alreadyExisting = [...emojis.cache.values()].find(e => e.name == catItems.id)
@@ -87,6 +86,8 @@ class HTBEmoji {
 						var prom = emojis.create(iconFileName, catItems.id)
 						initPromises.push(prom)
 					}
+				} else {
+					console.warn(`Couldn't find icon for ${catItems.id}`)
 				}
 			})
 		})
