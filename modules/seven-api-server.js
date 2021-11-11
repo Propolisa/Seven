@@ -1,7 +1,7 @@
 const express = require("express")
 const crypto = require("crypto")
 
-const DEV_MODE_ON = false
+let DEV_MODE_ON = false
 if (process.env.IS_DEV_INSTANCE) {
 	DEV_MODE_ON = true
 }
