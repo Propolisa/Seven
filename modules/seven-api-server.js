@@ -35,7 +35,11 @@ function checkAuth(req, res, next) {
 	if (req.isAuthenticated() &&
 		req?.user?.id && process.env.ADMIN_DISCORD_IDS.includes(req?.user?.id)
 	) return next()
-	res.send(req.isAuthenticated() ? "Your powers are insufficient here." : "You are not authenticated.")
+	if (req.isAuthenticated()) {
+		res.status(403).send("Your powers are insufficient here.")
+	} else {
+		res.status(401).send("You are not authenticated.")
+	}
 }
 
 
@@ -62,12 +66,18 @@ class SevenApiServer {
 
 		app.use(passport.initialize())
 		app.use(passport.session())
+		app.use((req, res, next) => {
+			res.header("Access-Control-Allow-Origin", "http://localhost:8080") // only_one_url_here');
+			res.header("Access-Control-Allow-Headers", "Content-Type, POST, GET, OPTIONS, DELETE")
+			res.header("Access-Control-Allow-Credentials", true)
+			next()
+		})
 		app.get("/callback",
 			passport.authenticate("discord", {
 				failureRedirect: "/"
 			}),
 			function (req, res) {
-				res.redirect("/info")
+				res.redirect("http://localhost:8080")
 			} // auth success
 		)
 		app.get("/logout", function (req, res) {
