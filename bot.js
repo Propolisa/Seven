@@ -431,8 +431,9 @@ async function sendMemberChartMsg(message, username, term) {
 	message.channel.startTyping()
 	var member = DAT.resolveEnt(username, "member", false, message)
 	var chartData = await DAT.V4API.getMemberAchievementChart(member.id, term)
+	console.log(member, chartData, term)
 	var chartImageB64 = await CHART_RENDERER.renderChart(member, chartData, term, "userProgress")
-	var chartImage = new Buffer.from(chartImageB64, "base64")
+	var chartImage = chartImageB64 ? new Buffer.from(chartImageB64.data || chartImageB64, "base64") : null
 	var embed = EGI.memberAchievementTimelineChart(member, term, chartImage)
 	SEND.embed(message, embed)
 }
