@@ -1,6 +1,11 @@
 const express = require("express")
 const crypto = require("crypto")
 
+const DEV_MODE_ON = false
+if (process.env.IS_DEV_INSTANCE) {
+	DEV_MODE_ON = true
+}
+
 const {
 	SevenApiConnector: q
 } = require("./seven-api-connector")
@@ -22,7 +27,7 @@ var prompt = "consent"
 passport.use(new Strategy({
 	clientID: process.env.API_SERVER_DISCORD_CLIENT_ID,
 	clientSecret: process.env.API_SERVER_DISCORD_CLIENT_SECRET,
-	callbackURL: "http://localhost:666/callback",
+	callbackURL: DEV_MODE_ON ? "http://localhost:666/callback" : "https://sevenserver.herokuapp.com/callback",
 	scope: scopes,
 	prompt: prompt
 }, function (accessToken, refreshToken, profile, done) {
@@ -77,7 +82,7 @@ class SevenApiServer {
 				failureRedirect: "/"
 			}),
 			function (req, res) {
-				res.redirect("http://localhost:8080")
+				res.redirect(DEV_MODE_ON ? "http://localhost:8080" : "https://sevenserver.herokuapp.com")
 			} // auth success
 		)
 		app.get("/logout", function (req, res) {
