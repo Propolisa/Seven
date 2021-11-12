@@ -3,6 +3,9 @@
 	"description": "A Discord bot for Hack The Box teams.",
 	"version": "1.0.1",
 	"main": "bot.js",
+	"scripts": {
+		"start": "node bot.js"
+	},
 	"dependencies": {
 		"@google-cloud/dialogflow": "^3.3.0",
 		"adm-zip": "^0.4.16",
