@@ -1,5 +1,4 @@
-FROM node:14.4.0-alpine
-
+FROM node:14.4.0
 # Create app directory
 WORKDIR /usr/src/app
 
@@ -9,6 +8,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 ENV ACCEPT_HIGHCHARTS_LICENSE=YES
+
 # RUN npm install
 # If you are building your code for production
 RUN npm ci --only=production
