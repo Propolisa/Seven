@@ -7,8 +7,8 @@ const { Format: F } = require("./helpers/format")
 /*** STARTUP | DECIDE ENV VAR SOURCE ***/
 console.log("%c╔════════════════════╗\n║ seven-server 1.01a ║\n╚════════════════════╝", "color:#9FEF00; font-weight:bold; font-size: 50")
 F.logRainbow()
-if (process.env.HEROKU) {
-	console.log("Started at " + new Date().toLocaleTimeString() + " on Heroku. Using cloud-configured env vars")
+if (!process.env.IS_DEV_INSTANCE) {
+	console.log("Started at " + new Date().toLocaleTimeString() + " in production. Using prod env vars")
 } else {
 	console.log("Started at " + new Date().toLocaleTimeString() + " on dev machine. Scanning ./config/env for vars")
 	require("dotenv").config({ path: "./config/.env" })
