@@ -7,7 +7,7 @@ const { Format: F } = require("./helpers/format")
 /*** STARTUP | DECIDE ENV VAR SOURCE ***/
 console.log("%c╔════════════════════╗\n║ seven-server 1.01a ║\n╚════════════════════╝", "color:#9FEF00; font-weight:bold; font-size: 50")
 F.logRainbow()
-if (!process.env.IS_DEV_INSTANCE) {
+if (!process.env.NODE_ENV == "development") {
 	console.log("Started at " + new Date().toLocaleTimeString() + " in production. Using prod env vars")
 } else {
 	console.log("Started at " + new Date().toLocaleTimeString() + " on dev machine. Scanning ./config/env for vars")
@@ -309,8 +309,10 @@ async function main() {
 			switch (message.type) {
 			case "machine": case "challenge": case "endgame": case "fortress": case "prolab":
 				if (DAT.DISCORD_LINKS[message.uid] || message.blood || DAT.TEAM_MEMBERS[message.uid]) {
+					console.warn("PUSHER OWN::: ", message)
 					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherOwn(await DAT.resolveEnt(message.uid, "member", true, null, true), message.target, message.type, message.flag || message.type, message.blood))
 					if (message.blood) {
+						console.log("This was detected to be a first blood celebration message!")
 						DAT.integratePusherBlood(await DAT.resolveEnt(message.uid, "member", true, null, true), message.uid, message.time, message.type, message.target, message.flag, true)
 						for (let i = 0; i < 3; i++) {
 							DISCORD_ANNOUNCE_CHAN.send("‼").then(message => message.delete())
@@ -353,10 +355,10 @@ async function main() {
 
 		/** Test the Pusher owns functionality */
 		if (DEV_MODE_ON) {
-			// var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
-			// PUSHER_DUMMY_DATA.forEach(e => {
-			// 	HTB_PUSHER_OWNS_SUBSCRIPTION.channels.find(chan => chan.name == e[0].channel).emit(e[0].event, { text: e[1], channel: e[0].channel })
-			// })
+			var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
+			PUSHER_DUMMY_DATA.forEach(e => {
+				HTB_PUSHER_OWNS_SUBSCRIPTION.channels.find(chan => chan.name == e[0].channel).emit(e[0].event, { text: e[1], channel: e[0].channel })
+			})
 		}
 
 		console.log(`[DISCORD]::: ${Object.values(DAT.DISCORD_LINKS).length} guild members have linked their HTB accounts.`)

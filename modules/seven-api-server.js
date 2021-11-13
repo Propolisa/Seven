@@ -55,6 +55,7 @@ class SevenApiServer {
 		this.q = new q(dataStore)
 		let app = express()
 		this.port = servePort
+		this.host = "0.0.0.0"
 
 		app.use(express.json())
 		app.use(
@@ -106,8 +107,8 @@ class SevenApiServer {
 		app.get("/config", checkAuth, this.q.getConfig.bind(this.q))
 		app.get("/datastore", checkAuth, this.q.getDatastore.bind(this.q))
 
-		app.listen(this.port, "localhost", () => {
-			console.info(`Seven API server is running on localhost:${this.port}.`)
+		app.listen(this.port, this.host, () => {
+			console.info(`Seven API server is running on ${this.host}:${this.port}.`)
 		})
 		this.app = app // Store on class instance
 	}
