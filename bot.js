@@ -61,7 +61,7 @@ const SEND = new Send()
 /* SETUP DB IMPORT TO RESTORE LAST GOOD STATE */
 const cn = {
 	connectionString: process.env.DATABASE_URL,
-	ssl: (process.env.DATABASE_URL.includes("localhost") ? false : { rejectUnauthorized: false })
+	ssl: (process.env.DATABASE_URL.includes("localhost") || process.env.DATABASE_URL.includes("captain") ? false : { rejectUnauthorized: false })
 }
 
 const DB_FIELDNAMES_AUTO = ["MACHINES", "CHALLENGES", "FORTRESSES", "ENDGAMES", "PROLABS", "TEAM_MEMBERS", "TEAM_MEMBERS_IGNORED", "TEAM_STATS", "DISCORD_LINKS", "MISC"]
