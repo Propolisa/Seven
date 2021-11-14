@@ -26,8 +26,8 @@ var prompt = "consent"
 
 passport.use(new Strategy({
 	clientID: process.env.API_SERVER_DISCORD_CLIENT_ID,
-	clientSecret: process.env.API_SERVER_DISCORD_CLIENT_SECRET,
-	callbackURL: DEV_MODE_ON ? "http://localhost:666/callback" : "https://sevenserver.herokuapp.com/callback",
+	clientSecret: process.env.API_SERVER_DISCORD_CLIENT_SECRET, // TODO extract the below to environment vars
+	callbackURL: DEV_MODE_ON ? "http://localhost:666/callback" : "http://seven-server.mothership.ml:666/callback",
 	scope: scopes,
 	prompt: prompt
 }, function (accessToken, refreshToken, profile, done) {
