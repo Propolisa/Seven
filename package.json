@@ -23,7 +23,6 @@
 		"express": "^4.17.1",
 		"express-http-proxy": "^1.6.3",
 		"express-session": "^1.17.2",
-		"highcharts-export-server": "^2.1.0",
 		"jquery": "^3.5.1",
 		"jsdom": "^16.2.2",
 		"jsonpath": "^1.1.1",

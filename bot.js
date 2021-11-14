@@ -26,7 +26,7 @@ const strings = require("./static/strings")
 const { Helpers: H } = require("./helpers/helpers.js")
 const { HtbPusherSubscription } = require("./helpers/pusher-htb")
 const pgp = require("pg-promise")({ capSQL: true })
-const htbCharts = require("./modules/charts/index.js")
+const htbCharts = require("./modules/charts/index_new.js")
 const { HtbEmbeds } = require("./views/embeds.js")
 const { SevenDatastore } = require("./models/SevenDatastore.js")
 const { Send } = require("./modules/send.js")
@@ -51,7 +51,7 @@ const SEVEN_DB_TABLE_NAME = "seven_data"
 var PUSHER_MSG_LOG = DEV_MODE_ON ? require("./cache/PUSHER_MSG_LOG.json") : null
 
 var PHANTOM_POOL = null
-const CHART_RENDERER = htbCharts.newChartRenderer()
+const CHART_RENDERER = htbCharts
 const DAT = new SevenDatastore()    // Open an abstract storage container for HTB / bot data
 const API = new (require("./modules/seven-api-server.js").SevenApiServer)(DAT, 666)
 const E = new HTBEmoji(client)
@@ -355,10 +355,10 @@ async function main() {
 
 		/** Test the Pusher owns functionality */
 		if (DEV_MODE_ON) {
-			var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
-			PUSHER_DUMMY_DATA.forEach(e => {
-				HTB_PUSHER_OWNS_SUBSCRIPTION.channels.find(chan => chan.name == e[0].channel).emit(e[0].event, { text: e[1], channel: e[0].channel })
-			})
+			// var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
+			// PUSHER_DUMMY_DATA.forEach(e => {
+			// 	HTB_PUSHER_OWNS_SUBSCRIPTION.channels.find(chan => chan.name == e[0].channel).emit(e[0].event, { text: e[1], channel: e[0].channel })
+			// })
 		}
 
 		console.log(`[DISCORD]::: ${Object.values(DAT.DISCORD_LINKS).length} guild members have linked their HTB accounts.`)

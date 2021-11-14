@@ -316,7 +316,7 @@ function genChart(name, type, term, series=false, dateRange=null){
 			(e, idx) => (options.series[idx].data = e)
 		)
 	}
-	console.log(">> Highcharts: Graph generated successfully")
+	console.log(">> Generated options for a chart...")
 	return options
 }
 
