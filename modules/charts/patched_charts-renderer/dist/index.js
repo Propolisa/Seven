@@ -22,6 +22,7 @@ async function render(exporter, options) {
 }
 async function* iterableRender(exporter, options) {
 	const browser = await puppeteer.launch({
+		executablePath: "/usr/bin/chromium-browser",
 		headless: process.env.NODE_ENV === "chartdev" ? false : true,
 		devtools: process.env.NODE_ENV === "chartdev" ? true : false,
 		args: [
