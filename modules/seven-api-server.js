@@ -83,7 +83,7 @@ class SevenApiServer {
 				failureRedirect: "/"
 			}),
 			function (req, res) {
-				res.redirect(DEV_MODE_ON ? "http://localhost:8080" : "https://sevenserver.herokuapp.com")
+				res.redirect(DEV_MODE_ON ? "http://localhost:8080" : "http://localhost:8080")
 			} // auth success
 		)
 		app.get("/logout", function (req, res) {
