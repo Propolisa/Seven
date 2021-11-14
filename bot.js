@@ -31,7 +31,7 @@ const { HtbEmbeds } = require("./views/embeds.js")
 const { SevenDatastore } = require("./models/SevenDatastore.js")
 const { Send } = require("./modules/send.js")
 const { HTBEmoji } = require("./helpers/emoji.js")
-const { BinClock: BC } = require("./helpers/binclock")
+const { generateBinaryClockImage } = require("./helpers/binclock")
 
 /*** HANDLE DEVELOPMENT INSTANCE CASE ***/
 
@@ -50,7 +50,6 @@ var HTB_PUSHER_OWNS_SUBSCRIPTION = false  // The Pusher Client own channel subsc
 const SEVEN_DB_TABLE_NAME = "seven_data"
 var PUSHER_MSG_LOG = DEV_MODE_ON ? require("./cache/PUSHER_MSG_LOG.json") : null
 
-var PHANTOM_POOL = null
 const CHART_RENDERER = htbCharts
 const DAT = new SevenDatastore()    // Open an abstract storage container for HTB / bot data
 const API = new (require("./modules/seven-api-server.js").SevenApiServer)(DAT, 666)
@@ -274,7 +273,6 @@ async function refresh() {
 }
 
 async function main() {
-	PHANTOM_POOL = await require("phantom-pool")()
 	await importDbBackup()
 	DAT.TEAM_STATS.teamFounder = process.env.FOUNDER_HTB_ID
 	await DAT.init()
@@ -680,7 +678,7 @@ async function handleMessage(message) {
 						case "forgetMe.all.getUserID": forgetHtbDataFlow(message, "all", P.uid); break
 						case "linkDiscord": linkDiscord(message, (P.uid ? "uid" : "uname"), (P.uid ? P.uid : P.username)); break
 						case "unforgetMe": unignoreMember(P.uid); SEND.human(message, result.fulfillmentText, true); break
-						case "getTime": SEND.embed(message, EGI.binClock(await BC.genImg(PHANTOM_POOL))); break
+						case "getTime": SEND.embed(message, EGI.binClock(await generateBinaryClockImage())); break
 						case "getTeamBadge": SEND.human(message, F.noncifyUrl(`https://www.hackthebox.com/badge/team/image/${DAT.TEAM_STATS.id}`), true).then(() => SEND.human(message, result.fulfillmentText, true)); break
 						case "getTeamInfo": SEND.embed(message, EGI.teamInfo()); break
 						case "getTeamLeaders": SEND.embed(message, EGI.teamLeaderboard()); break

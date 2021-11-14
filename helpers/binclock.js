@@ -1,34 +1,44 @@
 /**
  * Class to generate a binary clock with current time
  */
-class BinClock {
 
-	constructor(pool) {this.pool = pool}
+const { readFileSync } = require("fs")
+const puppeteer = require("puppeteer")
+var contentHtml = readFileSync("./helpers/binclock_src/clock.html", "utf8")
 
-	static async genImg(phantomPool){
-		return phantomPool.use(async (instance) => {
-			const page = await instance.createPage()
-			await page.property("viewportSize", {width: 600, height: 300})
-			await page.property("zoomFactor", 1.5)
-			const status = await page.open("helpers/binclock_src/clock.html", { operation: "GET" })
-			if (status !== "success") {
-				
-				throw new Error("cannot open google.com")
-			}
-			const content = await new Promise(function(resolve) { 
-				setTimeout(function () {
-					console.log("waited...")
-					resolve(page.renderBase64("PNG"))
-				}, 0)
-			}
-			)
-			return {content:content, instance:instance}
-		}).then((output) => {
-			output.instance.exit().then(console.log("Phantom instance exited to free resources.."))
-			console.log("Phantom generated a time image. Returning..")
-			return new Buffer.from(output.content, "base64")
+async function generateBinaryClockImage(){
+	const browser = await puppeteer.launch({
+		headless: process.env.NODE_ENV === "chartdev" ? false : true,
+		devtools: process.env.NODE_ENV === "chartdev" ? true : false,
+		args: [
+		// Required for Docker version of Puppeteer
+			"--no-sandbox",
+			"--disable-setuid-sandbox",
+			// This will write shared memory files into /tmp instead of /dev/shm,
+			// because Docker’s default for /dev/shm is 64MB
+			"--disable-dev-shm-usage"
+		],
+	})
+	try {	
+		const page = await browser.newPage()
+		await page.setContent(contentHtml)
+		await page.setViewport({
+			width: 600,
+			height: 300,
+			deviceScaleFactor: 2,
 		})
+		
+		const containerElem = await page.$("#screenshot")
+		if (containerElem === null) {
+			await browser.close()
+			throw new Error("No screenshot element exists")
+		} else {
+			await browser.close()
+			return await containerElem.screenshot({ encoding: "base64" })
+		}
+	} catch (error) {
+		await browser.close()
 	}
 }
 
-module.exports = {BinClock}
+module.exports = {generateBinaryClockImage}

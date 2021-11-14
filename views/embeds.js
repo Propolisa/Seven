@@ -676,11 +676,12 @@ class HtbEmbeds {
 
 	binClock(imageData){
 		if (imageData){
+			let buf = new Buffer.from(imageData, "base64")
 			return this.CHART_BASE
 				.setTitle("Gentooman's Fabulous Rasterized Binary Clock")
 				.setDescription(`It isn't every day that you see a clock quite as fantastic as this one, a rasterized binary blockbuster sponsored by **[Gentooman](https://app.hackthebox.com/profile/27356)**.\nThe current time (here in serverland) is ${(new Date()).toUTCString()}`)
 				.setThumbnail("https://www.hackthebox.com/storage/avatars/9b4214468e76c630a5c211e0e5dfcb7a.png")
-				.attachFiles([{ name: "chart.png", attachment: imageData }]).setImage("attachment://chart.png")
+				.attachFiles([{ name: "chart.png", attachment: buf }]).setImage("attachment://chart.png")
 		}
 		return this.ENTITY_UNFOUND
 	}
