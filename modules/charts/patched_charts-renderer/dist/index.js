@@ -128,54 +128,9 @@ var highcharts = {
 	init,
 }
 
-const modulePath$1 = path.dirname(require.resolve("chart.js"))
-const AsyncFunction$1 = Object.getPrototypeOf(async function () {}).constructor
-// TODO: solve mangle issue more elegantly
-async function init$1(page) {
-	await page.addScriptTag({
-		path: modulePath$1 + "/Chart.min.js",
-	})
-	// create main element
-	await page.setContent("<canvas id=\"container\"></canvas>")
-	// disable features needed for interactive usage
-	await page.evaluate(new AsyncFunction$1(`
-    Object.assign(Chart.defaults.global, {
-      animation: false,
-      responsive: false,
-    });
-  `))
-}
-async function render$2(page, options, init) {
-	const containerElem = await page.$("#container")
-	if (containerElem === null) {
-		throw new Error("No container element exists")
-	}
-	await page.evaluate(new AsyncFunction$1("chart", "width", "height", `
-    const ctx = document.getElementById('container');
-    ctx.width = width;
-    ctx.height = height;
-    new Chart(ctx, chart);
-  `), options.config, options.chartWidth || init.width, options.chartHeight || init.height)
-	if (init.pdf === true) {
-		return await page.pdf({
-			...options.file,
-		})
-	} else {
-		return await containerElem.screenshot({
-			omitBackground: true,
-			...options.file,
-		})
-	}
-}
-var chartjs = {
-	render: render$2,
-	init: init$1,
-}
-
 var index = /*#__PURE__*/ Object.freeze({
 	__proto__: null,
-	highcharts: highcharts,
-	chartjs: chartjs
+	highcharts: highcharts
 })
 
 exports.exporters = index
