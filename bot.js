@@ -52,7 +52,7 @@ var PUSHER_MSG_LOG = DEV_MODE_ON ? require("./cache/PUSHER_MSG_LOG.json") : null
 
 const CHART_RENDERER = htbCharts
 const DAT = new SevenDatastore()    // Open an abstract storage container for HTB / bot data
-const API = new (require("./modules/seven-api-server.js").SevenApiServer)(DAT, 666)
+const API = process.env?.API_SERVER_ENABLED ? new (require("./modules/seven-api-server.js").SevenApiServer)(DAT, 666) : null
 const E = new HTBEmoji(client)
 const EGI = new HtbEmbeds(DAT, E) 			// Give Embed Constructor access to the datastore
 const SEND = new Send()
