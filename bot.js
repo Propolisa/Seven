@@ -299,6 +299,10 @@ async function main() {
 
 	HTB_PUSHER_OWNS_SUBSCRIPTION.on("pusherevent", async message => {
 		try {
+			if (DAT.DISCORD_LINKS[message.uid] || message.blood || DAT.TEAM_MEMBERS[message.uid]) {
+				console.log("Got a relevant pusher own:")
+				console.log(message)
+			}
 			if (DEV_MODE_ON) {
 				PUSHER_MSG_LOG.push(message)
 				let data = JSON.stringify(PUSHER_MSG_LOG, null, 2)
