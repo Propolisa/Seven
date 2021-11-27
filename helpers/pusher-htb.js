@@ -59,7 +59,7 @@ function parsePusherEvent(data, source={}) {
 			let nodes = Array.from((msg.lastChild.textContent == "[Tweet]" ? Array.from(msg.childNodes).slice(0, -1) : msg.childNodes))        // MD: Eliminate the "[Tweet]" link
 			let texts = nodes.map(node => node.outerHTML || node.textContent) // MD: Get HTML from each remaining node
 			md = td.turndown(texts.join(""))            // MD: Recombine HTML and convert to Markdown
-			let uid = (links.length ?  Number(links[0].href.substring(45)) : null)
+			let uid = (links.length ? (~~links[0].href.match(/profile\/(\d+)/)?.[1] || null): null)
 			var isBlood = Array.from(msg.querySelectorAll("span.text-danger")).some(e => e.textContent.includes("1st blood"))
 			var isLaunch = msg.textContent.includes("mass-powering")
 			var launchName

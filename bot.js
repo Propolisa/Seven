@@ -49,6 +49,7 @@ var DISCORD_ANNOUNCE_CHAN = false         // The Discord Channel object intended
 var HTB_PUSHER_OWNS_SUBSCRIPTION = false  // The Pusher Client own channel subscription.
 const SEVEN_DB_TABLE_NAME = "seven_data"
 var PUSHER_MSG_LOG = DEV_MODE_ON ? require("./cache/PUSHER_MSG_LOG.json") : null
+const LAUNCH_TARGETS_DEBOUNCE_CACHE = []
 
 const CHART_RENDERER = htbCharts
 const DAT = new SevenDatastore()    // Open an abstract storage container for HTB / bot data
@@ -299,10 +300,6 @@ async function main() {
 
 	HTB_PUSHER_OWNS_SUBSCRIPTION.on("pusherevent", async message => {
 		try {
-			if (DAT.DISCORD_LINKS[message.uid] || message.blood || DAT.TEAM_MEMBERS[message.uid]) {
-				console.log("Got a relevant pusher own:")
-				console.log(message)
-			}
 			if (DEV_MODE_ON) {
 				PUSHER_MSG_LOG.push(message)
 				let data = JSON.stringify(PUSHER_MSG_LOG, null, 2)
@@ -329,7 +326,12 @@ async function main() {
 			case "launch":
 				console.log("PUSHER: Got machine launch notification.")
 				console.log(message)
-				DISCORD_ANNOUNCE_CHAN.send(EGI.pusherNotif(message))
+				if (message.target && LAUNCH_TARGETS_DEBOUNCE_CACHE.some(e => e == message.target)) {
+					console.info("Debounced a launch message -- take that, entropy!")
+				} else {
+					LAUNCH_TARGETS_DEBOUNCE_CACHE.push(message.target)
+					DISCORD_ANNOUNCE_CHAN.send(EGI.pusherNotif(message))
+				}
 				break
 			default:
 				if (message.uid && DAT.DISCORD_LINKS[message.uid]) {
