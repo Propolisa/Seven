@@ -2,11 +2,6 @@ const request = require("superagent")
 const Throttle = require("superagent-throttle")
 // const superdebug = require("superdebug")
 require("superagent-retry-delay")(request)
-const {Challenge, Endgame, EndgameEntry,
-	EndgameProfile, Fortress, FortressEntry,
-	FortressProfile, Machine, ProLabEntry,
-	ProLabInfo, ProLabOverview, Team,
-	Track, University, User} = require("../models/api-classes")
 // var logger = require("superagent-logger");
 const { Helpers: H } = require("../helpers/helpers.js")
 
@@ -88,7 +83,7 @@ class HtbApiConnector {
 	}
 
 	updateThrottle(endpoint, rLimit, rLeft, fullPath){
-		console.info(`${new Date().toLocaleString()} RL [${fullPath}] ⇛ ${"▓".repeat(rLimit - rLeft)}${"░".repeat(rLeft)} ( ${rLimit - rLeft} / ${rLimit} used )` )
+		// console.info(`${new Date().toLocaleString()} RL [${fullPath}] ⇛ ${"▓".repeat(rLimit - rLeft)}${"░".repeat(rLeft)} ( ${rLimit - rLeft} / ${rLimit} used )` )
 		this.getThrottle(endpoint).rate = Math.floor((Number(rLimit) || 15) * 0.90)
 	}
 
