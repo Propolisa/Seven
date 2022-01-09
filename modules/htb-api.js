@@ -159,6 +159,18 @@ class HtbApiConnector {
 		return setTypeForValues("machine", H.arrToObj((await this.htbApiGet("machine/list/retired")).info, "id"))
 	}
 
+	async getStartingPointMachinesForTier(tierNumber) {
+		return this.htbApiGet(`sp/tier/${tierNumber}`).then(e => e.data)
+	}
+
+	async getAllStartingPointMachines() {
+		var t1 = await this.getStartingPointMachinesForTier(1)
+		var t2 = await this.getStartingPointMachinesForTier(2)
+		var t3 = await this.getStartingPointMachinesForTier(3)
+		let machines = [t1,t2,t3].map(t => t.machines.map(m => Object.assign({tier: {id:t.id,name:t.name,description:t.description}},m))).flat()
+		return setTypeForValues("sp_machine", H.arrToObj(machines, "id"))
+	}
+
 	getRecommendedMachineCards() {
 		return this.htbApiGet("machine/recommended").then(
 			cards => {

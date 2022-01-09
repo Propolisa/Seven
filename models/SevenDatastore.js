@@ -173,7 +173,7 @@ class SevenDatastore {
 				MACHINES_V4[e])
 		)
 		console.timeEnd("Getting machines [V4] took")
-		return Object.assign(COMBINED_MACHINES, mSObj)
+		return Object.assign(COMBINED_MACHINES, mSObj,)
 	}
 
 	async getMachineTagsComplete() {
@@ -195,12 +195,10 @@ class SevenDatastore {
 				await this.V3API.init()
 				var SESH = this.V3API.SESSION
 				if (SESH) console.log("[API CONNECTOR]::: Got a logged in V3 session.")
-				this.FORTRESSES = await this.V4API.getAllFortresses()
-				this.ENDGAMES = await this.V4API.getAllEndgames()
-				this.PROLABS = await this.V4API.getAllProlabs()
-				let t1 = JSON.stringify(this.FORTRESSES, null, "\t")
-				let t2 = JSON.stringify(this.ENDGAMES, null, "\t")
-				let t3 = JSON.stringify(this.PROLABS, null, "\t")
+				this.MISC.FORTRESSES = await this.V4API.getAllFortresses()
+				this.MISC.ENDGAMES = await this.V4API.getAllEndgames()
+				this.MISC.PROLABS = await this.V4API.getAllProlabs()
+				this.MISC.STARTING_POINT_MACHINES = await this.V4API.getAllStartingPointMachines()
 				/* API v4 DATA COLLECTION (Who's feeling sexy now..?!) */
 				console.time("Getting machines [V3] took")
 				var MACHINES_V3 = await this.V3API.getMachines()
@@ -232,7 +230,7 @@ class SevenDatastore {
 						MACHINES_V4[e])
 				)
 
-				this.MACHINES = Object.assign(COMBINED_MACHINES, mSObj)
+				this.MACHINES = Object.assign(COMBINED_MACHINES, mSObj, this.MISC.STARTING_POINT_MACHINES)
 				console.timeEnd("Getting machines [V4] took")
 				console.warn(
 					`[APIv4]::: Got ${Object.keys(this.MACHINES).length
@@ -825,6 +823,7 @@ class SevenDatastore {
 			(machine) => machine.name.toLowerCase() == name.toLowerCase()
 		)
 	}
+	
 
 	/**
 	 * Get the latest box, (or unreleased box, if one is found).
@@ -870,7 +869,7 @@ class SevenDatastore {
 	 * @returns {(Fortress|null)}
 	 */
 	getFortressByName(name) {
-		return Object.values(this.FORTRESSES).find((item) =>
+		return Object.values(this.MISC.FORTRESSES).find((item) =>
 			[item.name.toLowerCase(), item.company.name.toLowerCase()].includes(
 				name.toLowerCase()
 			)
@@ -883,7 +882,7 @@ class SevenDatastore {
 	 * @returns {(Endgame|null)}
 	 */
 	getEndgameByName(name) {
-		return Object.values(this.ENDGAMES).find(
+		return Object.values(this.MISC.ENDGAMES).find(
 			(item) => item.name.toLowerCase() == name.toLowerCase()
 		)
 	}
@@ -894,7 +893,7 @@ class SevenDatastore {
 	 * @returns {(ProLab|null)}
 	 */
 	getProLabByName(name) {
-		return Object.values(this.PROLABS).find(
+		return Object.values(this.MISC.PROLABS).find(
 			(item) => item.name.toLowerCase() == name.toLowerCase()
 		)
 	}

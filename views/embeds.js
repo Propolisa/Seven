@@ -82,8 +82,8 @@ class HtbEmbeds {
 			embed.attachFiles(new Attachment(`./static/img/${F.osNameToIconFile(os)}`, "os.png"))
 				.setAuthor(name, "attachment://os.png", F.machineProfileUrl(target))
 				.setDescription(
-					(os == "Other" ? "A kind of weird" : `${F.aOrAn(os)} ${os}`) + ` box ${(submission ? "submission " : "")}by **${F.memberToMdLink(maker,true,this.ds.tryDiscordifyUid(maker.id))}` +
-						`${(maker2 ? "** & **" + F.memberToMdLink(maker2) : "")}**.` +
+					(os == "Other" ? "A kind of weird" : `${F.aOrAn(os)} ${os}`) + ` box${(submission ? " submission " : "")}${maker || maker2 ? ` by **${F.memberToMdLink(maker,true,this.ds.tryDiscordifyUid(maker.id))}` +
+						`${(maker2 ? "** & **" + F.memberToMdLink(maker2) : "")}**` : ""}.` +
 						`\nIP Address: **[${ip || "Unknown"}](http://${ip || "0"}/)**`)
 				.setThumbnail(F.avatar2Url(avatar))
 				.addField("`  " + `${F.difficultySymbol(difficulty)} ${F.STL(difficulty + " [+" + points + "pt]", "bs")}` + "  `",
@@ -120,6 +120,17 @@ class HtbEmbeds {
 				// console.log(tagDict)
 				Object.keys(tagDict).forEach(key => embed.addField(key, F.STL(tagDict[key].join("\n"), "spoiler_mono"), true))
 			}
+			break
+		}
+		case "sp_machine": {
+			/** STARTING POINT MACHINE EMBED CONSTRUCTOR **/
+			var { id, tier, os, name, avatar, difficultyText: difficulty} = target
+			difficulty = difficulty || target.difficulty
+			embed.attachFiles(new Attachment(`./static/img/${F.osNameToIconFile(os)}`, "os.png"))
+				.setAuthor(name, "attachment://os.png", F.machineProfileUrl(target))
+				.setThumbnail(F.avatar2Url(avatar))
+				.setDescription(`A **Tier ${tier.id - 1}** ${os} **[Starting Point](https://app.hackthebox.com/starting-point)** box with \`${target.tasks?.length}\` tasks.`)
+				.addField("Difficulty","` " + `${F.difficultySymbol(difficulty)} ${F.STL(difficulty, "bs")}` +" `")
 			break
 		}
 		case "member": {
@@ -301,7 +312,8 @@ class HtbEmbeds {
 				.setDescription(`The ${F.nth(idx)} flag from the ${F.targetLink(parent)} ${F.special2Proper(parent.type)} by ${(parent.company? F.mdLink(parent.company, F.profileUrl(target.parent)) : false) || F.andifyList(parent.makers.map(m => F.mdLink(m.username,F.memberProfileUrl({id:m.id}))))}.`)
 		} break
 		
-		default: break
+		default: 
+			embed.setDescription(`No pretty embed available for this thing (\`${target.type}\` ${target.name? ` '${target.name}'` : ""}). Bummer!`)
 		}
 		// console.info(embed)
 		return embed
