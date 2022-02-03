@@ -132,7 +132,9 @@ Seven cares about privacy and allows channel users to:
 ## 🛠️ Installation and Usage
 
 🚧 Check out my Medium article showing [how to deploy Seven for your team / university](https://propolis.medium.com/deploying-seven-a-hack-the-box-discord-bot-for-teams-7ac3a76eaeaa)!
-You can also see some of what's possible with Seven from the introduction article here: [Introducing Seven, a Discord Bot for Hack The Box Teams](https://propolis.medium.com/introducing-seven-a-discord-bot-for-hack-the-box-teams-6a2c035817f6)
+
+ You can also see some of what's possible with Seven from the introduction article here: [Introducing Seven, a Discord Bot for Hack The Box Teams](https://propolis.medium.com/introducing-seven-a-discord-bot-for-hack-the-box-teams-6a2c035817f6).
+ 
 There is decent documentation for the codebase itself here, if you'd like to understand how it works or use some parts in your own project: [Seven Docs](https://propolisa.github.io/Seven/index.html)
 
 ## 📜 Roadmap / TODO:
