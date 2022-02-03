@@ -1,3 +1,12 @@
+
+### <span style="color:red">
+ ```diff
+! All points bulletin!                                                         
+@@   Recently a team captain reached out to me on Discord but I accidentally   @@
+@@   dismissed the message, can't find it again now. Sorry!!                   @@
+```
+Please join [the Seven Discord channel](https://discord.gg/f3v4YuU3rr) and I'd be glad to help there with anything Seven related when time.
+
 👩‍💻️ _If you enjoy Seven, feel free to show some love so I can create more projects like this!_
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F1F61UIUZ)
