@@ -6,6 +6,9 @@
 	"scripts": {
 		"start": "node bot.js"
 	},
+	"engines": {
+		"node": "14.x"
+	},
 	"dependencies": {
 		"@google-cloud/dialogflow": "^3.5.0",
 		"adm-zip": "^0.4.16",
