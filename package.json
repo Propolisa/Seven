@@ -43,7 +43,7 @@
 		"request": "^2.88.2",
 		"request-promise": "^4.2.6",
 		"serialize-javascript": "^6.0.0",
-		"sharp": "^0.28.3",
+		"sharp": "^0.30.5",
 		"superagent": "^5.3.1",
 		"superagent-logger": "^1.1.0",
 		"superagent-retry-delay": "^2.6.5",
