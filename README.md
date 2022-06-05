@@ -1,12 +1,3 @@
-
-### <span style="color:red">
- ```diff
-! All points bulletin!                                                         
-@@   Recently a team captain reached out to me on Discord but I accidentally   @@
-@@   dismissed the message, can't find it again now. Sorry!!                   @@
-```
-Please join [the Seven Discord channel](https://discord.gg/f3v4YuU3rr) and I'd be glad to help there with anything Seven related when time.
-
 👩‍💻️ _If you enjoy Seven, feel free to show some love so I can create more projects like this!_
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F1F61UIUZ)
@@ -129,11 +120,17 @@ Seven cares about privacy and allows channel users to:
 - associate or disassociate their Discord ID to their HTB account ID (enabling this makes achievement information more useful as users may have different handles on each platform.
 - disallow (or re-allow) inclusion of their HTB data in bot responses
 
-## 🛠️ Installation and Usage
+## 🛠️ Installation and Usage / Support
 
-🚧 Check out my Medium article showing [how to deploy Seven for your team / university](https://propolis.medium.com/deploying-seven-a-hack-the-box-discord-bot-for-teams-7ac3a76eaeaa)!
+### Getting up and running
 
- You can also see some of what's possible with Seven from the introduction article here: [Introducing Seven, a Discord Bot for Hack The Box Teams](https://propolis.medium.com/introducing-seven-a-discord-bot-for-hack-the-box-teams-6a2c035817f6).
+Check out my Medium article showing [how to deploy Seven for your team / university](https://propolis.medium.com/deploying-seven-a-hack-the-box-discord-bot-for-teams-7ac3a76eaeaa)!
+
+You can also see some of what's possible with Seven from the introduction article here: [Introducing Seven, a Discord Bot for Hack The Box Teams](https://propolis.medium.com/introducing-seven-a-discord-bot-for-hack-the-box-teams-6a2c035817f6).
+
+### Support
+
+Looking for help deploying or troubleshooting your own Seven instance? Please join [<img src="https://img.shields.io/badge/-Seven%20Support%20Channel-1c1b29?style=for-the-badge&logo=discord" align="top"/>](https://discord.gg/f3v4YuU3rr) and I or another community member can try to help with anything Seven related (when time).
  
 There is decent documentation for the codebase itself here, if you'd like to understand how it works or use some parts in your own project: [Seven Docs](https://propolisa.github.io/Seven/index.html)
 
