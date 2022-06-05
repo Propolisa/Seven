@@ -15,12 +15,20 @@
 			"description": "Your Discord bot credential, acquired from the Developer Portal.",
 			"value": ""
 		},
+		"HTB_TOKEN": {
+			"description": "The legacy (V3) HTB API token (turn on legacy interface to get this)",
+			"value": ""
+		},
 		"HTB_EMAIL": {
 			"description": "Your Hack The Box login email address.",
 			"value": ""
 		},
 		"HTB_PASS": {
 			"description": "Your personal Hack The Box password (consider resetting this to a secure random one, for bot usage)",
+			"value": ""
+		},
+		"HTB_V4_TOKEN": {
+			"description": "The new (V4) App Token (generate one in your profile settings)",
 			"value": ""
 		},
 		"DATABASE_URL": {
