@@ -31,10 +31,6 @@
 			"description": "The new (V4) App Token (generate one in your profile settings)",
 			"value": ""
 		},
-		"DATABASE_URL": {
-			"description": "The postgres database url (auto-provisioned by Heroku addon) in the format: postgres://db_uname:db_pass@host_ip/db_name",
-			"value": ""
-		},
 		"GOOGLE_APPLICATION_CREDENTIALS": {
 			"description": "The JSON credential file from GCP for the DialogFlow project's API user, as a string.",
 			"value": ""
