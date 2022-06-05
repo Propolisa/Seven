@@ -56,7 +56,7 @@ const DAT = new SevenDatastore()    // Open an abstract storage container for HT
 const API = process.env?.API_SERVER_ENABLED ? new (require("./modules/seven-api-server.js").SevenApiServer)(DAT, 666) : null
 const E = new HTBEmoji(client)
 const EGI = new HtbEmbeds(DAT, E) 			// Give Embed Constructor access to the datastore
-const SEND = new Send()
+const SEND = new Send(client, EGI)
 
 /* SETUP DB IMPORT TO RESTORE LAST GOOD STATE */
 const cn = {
@@ -81,6 +81,7 @@ async function importDbBackup() {
 		.then(exists => {
 			if (!exists) {
 				console.warn("[SEVEN_DB]::: Table doesn't exist.")
+				DAT.FIRST_RUN = true
 				return db.any(`CREATE TABLE ${SEVEN_DB_TABLE_NAME}(
 													id SERIAL PRIMARY KEY,
 													name text DEFAULT 'Unknown'::text,
@@ -198,14 +199,14 @@ function isCaptain(discordUser) {
  */
 function ignoreMember(uid) {
 	if (uid in DAT.TEAM_MEMBERS) {
-		console.log(`Before ignoring member #${uid}: ${DAT.kTM.length} already ignored --`)
+		console.log(`Before ignoring member #${uid}: ${DAT.kTMI.length} already ignored --`)
 		console.log(DAT.kTMI.join("\n"))
 		DAT.TEAM_MEMBERS_IGNORED[uid] = DAT.TEAM_MEMBERS[uid]
 		delete DAT.TEAM_MEMBERS[uid]
 		updateCache(["team_members", "team_members_ignored"])
 		// exportData(TEAM_MEMBERS, "team_members.json");
 		// exportData(TEAM_MEMBERS_IGNORED, "team_members_ignored.json")
-		console.log(`After ignoring: ${DAT.kTM.length} ignored.`)
+		console.log(`After ignoring: ${DAT.kTMI.length} ignored.`)
 		return DAT.TEAM_MEMBERS_IGNORED[uid].name
 	} else {
 		return false
@@ -275,6 +276,7 @@ async function refresh() {
 
 async function main() {
 	await importDbBackup()
+	
 	DAT.TEAM_STATS.teamFounder = process.env.FOUNDER_HTB_ID
 	await DAT.init()
 	// await DAT.syncAgent()
@@ -356,17 +358,26 @@ async function main() {
 		console.log("[DISCORD]::: CLIENT READY")
 
 		DISCORD_ANNOUNCE_CHAN = await client.channels.fetch(process.env.DISCORD_ANNOUNCE_CHAN_ID.toString())
-
+	
 		/** Test the Pusher owns functionality */
 		if (DEV_MODE_ON) {
 			// var PUSHER_DUMMY_DATA = require("./cache/PUSHER_DUMMY_DATA.json")
 			// PUSHER_DUMMY_DATA.forEach(e => {
 			// 	HTB_PUSHER_OWNS_SUBSCRIPTION.channels.find(chan => chan.name == e[0].channel).emit(e[0].event, { text: e[1], channel: e[0].channel })
 			// })
+			
 		}
+		
 
 		console.log(`[DISCORD]::: ${Object.values(DAT.DISCORD_LINKS).length} guild members have linked their HTB accounts.`)
-		updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString())
+		await updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString())
+		if (!DAT.FIRST_RUN) {
+			SEND.messagePrimaryDiscordAdmin("Hey there! 👋", "The name's Seven, nice to be of service. 🍉\n" +
+			"Try using 'man seven' to see what I can help you and the team with!\n" +
+			"\nNeed help with something? Feel free to reach out on my [Discord channel](https://discord.gg/f3v4YuU3rr) " + 
+			"or [GitHub repo](https://github.com/Propolisa/Seven) via an issue!" 
+			)
+		}
 		setInterval(() => updateDiscordIds(client, process.env.DISCORD_GUILD_ID.toString()), 30 * 60 * 1000)   // UPDATE DISCORD LINKS EVERY 30 MINUTES
 	})
 	client.on("message", message => {

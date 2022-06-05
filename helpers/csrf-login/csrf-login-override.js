@@ -73,6 +73,7 @@ function csrfLogin (options) {
 					return reject(error)
 				}
 				// console.log('body', body);
+				if (response.statusCode == 429) console.error("Rate limited on the CSRF login form :(")
 				var form = getLoginForm(conf, body)
 				if (!isValidForm(form)) {
 					return reject(new Error("Could not find login form"))

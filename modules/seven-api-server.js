@@ -26,8 +26,8 @@ var prompt = "consent"
 
 passport.use(new Strategy({
 	clientID: process.env.API_SERVER_DISCORD_CLIENT_ID,
-	clientSecret: process.env.API_SERVER_DISCORD_CLIENT_SECRET, // TODO extract the below to environment vars
-	callbackURL: DEV_MODE_ON ? "http://localhost:666/callback" : "http://seven-server.mothership.ml:666/callback",
+	clientSecret: process.env.API_SERVER_DISCORD_CLIENT_SECRET,
+	callbackURL: DEV_MODE_ON ? "http://localhost:666/callback" : `${process.env.API_SERVER_URL}/callback`,
 	scope: scopes,
 	prompt: prompt
 }, function (accessToken, refreshToken, profile, done) {
@@ -83,7 +83,10 @@ class SevenApiServer {
 				failureRedirect: "/"
 			}),
 			function (req, res) {
-				res.redirect(DEV_MODE_ON ? "http://localhost:8080" : "http://localhost:8080")
+				res.redirect(process.env?.SEVEN_CP_ENABLED !== "true" ?												DEV_MODE_ON ?
+					`${process.env.API_SERVER_URL}/info`
+					: process.env.SEVEN_CP_HOST
+					: process.env.SEVEN_CP_HOST)
 			} // auth success
 		)
 		app.get("/logout", function (req, res) {

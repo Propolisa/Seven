@@ -131,7 +131,7 @@ class SevenDatastore {
 	}
 
 	init() {
-		return this.V4API.init(process.env.HTB_EMAIL, process.env.HTB_PASS).then(
+		return this.V4API.init({ api_token: process.env.HTB_V4_TOKEN, email: process.env.HTB_EMAIL, password: process.env.HTB_PASS }).then(
 			this.V3API.init()
 		)
 	}
@@ -165,7 +165,7 @@ class SevenDatastore {
 		var COMBINED_MACHINES = {}
 		Object.keys(MACHINES_V3).map(
 			(e) =>
-				(COMBINED_MACHINES[e] =
+			(COMBINED_MACHINES[e] =
 				H.combine([MACHINES_V3[e], MACHINES_V4[e]]) ||
 				Object.assign({}, MACHINES_V3[e], {
 					type: "machine",
@@ -183,10 +183,19 @@ class SevenDatastore {
 		return mt
 	}
 
+	async informAdminViaDm(title, description) {
+		console.warn("This is a placeholder function. Override it from bot.js with the method from 'Send' module")
+	}
+
+	logUpdateProgress(msg) {
+		console.log(msg)
+		this.informAdminViaDm("[Data Update]", msg)
+	}
+
 	async update() {
 		if (!this.UPDATE_LOCK) {
 			this.UPDATE_LOCK = true
-			console.log(
+			this.logUpdateProgress(
 				"[API CONNECTOR]::: Update lock engaged. Beginning update attempt."
 			)
 			try {
@@ -222,7 +231,7 @@ class SevenDatastore {
 				var COMBINED_MACHINES = {}
 				Object.keys(MACHINES_V3).map(
 					(e) =>
-						(COMBINED_MACHINES[e] =
+					(COMBINED_MACHINES[e] =
 						H.combine([MACHINES_V3[e], MACHINES_V4[e]]) ||
 						Object.assign({}, MACHINES_V3[e], {
 							type: "machine",
@@ -270,7 +279,7 @@ class SevenDatastore {
 					)
 					Object.values(UNI_MEMBERS).forEach(
 						(e) =>
-							(e.role =
+						(e.role =
 							e.id == (UNI_MEMBER_IDS[0] || null) ? "admin" : "student")
 					)
 					this.TEAM_MEMBERS = UNI_MEMBERS
@@ -446,89 +455,89 @@ class SevenDatastore {
 
 		/** GET ALL CACHED TARGETS OF THE SPECIFIED TYPE */
 		switch (targetType) {
-		case "memberActivity":
-			return this.filterMemberOwns(
-				memberId,
-				ownType,
-				sortBy || "date",
-				sortOrder || "desc",
-				limit
-			)
-		case "member":
-			targets = this.vTM
-			break
-		case "machine":
-			targets = this.vM
-			break
-		case "challenge":
-			targets = this.vC
-			break
-		case "endgame":
-			targets = this.MISC.SPECIALS["Endgame"]
-			break
-		case "fortress":
-			targets = this.MISC.SPECIALS["Fortress"]
-			break
-		case "prolab":
-			targets = this.MISC.SPECIALS["Pro Labs"]
-			break
-		default:
-			break
+			case "memberActivity":
+				return this.filterMemberOwns(
+					memberId,
+					ownType,
+					sortBy || "date",
+					sortOrder || "desc",
+					limit
+				)
+			case "member":
+				targets = this.vTM
+				break
+			case "machine":
+				targets = this.vM
+				break
+			case "challenge":
+				targets = this.vC
+				break
+			case "endgame":
+				targets = this.MISC.SPECIALS["Endgame"]
+				break
+			case "fortress":
+				targets = this.MISC.SPECIALS["Fortress"]
+				break
+			case "prolab":
+				targets = this.MISC.SPECIALS["Pro Labs"]
+				break
+			default:
+				break
 		}
 
 		/** SET HOW THE ARRAY WILL BE PRE-SORTED */
 		switch (sortBy[0]) {
-		case "best rated":
-			console.warn("SORTED BY BEST rATED")
-			if (targetType == "machine") {
-				sorter = (a, b) => b.stars - a.stars
-			} else if (targetType == "challenge") {
-				sorter = (a, b) => F.targetPercentRating(b) - F.targetPercentRating(a)
-			}
-			break
-		case "worst rated":
-			if (targetType == "machine") {
-				sorter = (a, b) => a.stars - b.stars
-			} else if (targetType == "challenge") {
-				sorter = (a, b) => F.targetPercentRating(a) - F.targetPercentRating(b)
-			}
-			break
-		case "hardest":
-			if (targetType == "machine") {
-				sorter = (a, b) => b.difficulty - a.difficulty
-			} else if (targetType == "challenge") {
-				sorter = (a, b) => b.avg_difficulty - a.avg_difficulty
-			}
-			break
-		case "easiest":
-			if (targetType == "machine") {
-				sorter = (a, b) => a.difficulty - b.difficulty
-			} else if (targetType == "challenge") {
-				sorter = (a, b) => a.avg_difficulty - b.avg_difficulty
-			}
-			break
-		case "newest":
-			if (targetType == "machine") {
-				sorter = (a, b) =>
-					new Date(b.release).getTime() - new Date(a.release).getTime()
-			} else if (targetType == "challenge") {
-				sorter = (a, b) =>
-					new Date(b.release_date).getTime() -
+			case "best rated":
+				console.warn("SORTED BY BEST rATED")
+				if (targetType == "machine") {
+					sorter = (a, b) => b.stars - a.stars
+				} else if (targetType == "challenge") {
+					sorter = (a, b) => F.targetPercentRating(b) - F.targetPercentRating(a)
+				}
+				break
+			case "worst rated":
+				if (targetType == "machine") {
+					sorter = (a, b) => a.stars - b.stars
+				} else if (targetType == "challenge") {
+					sorter = (a, b) => F.targetPercentRating(a) - F.targetPercentRating(b)
+				}
+				break
+			case "hardest":
+				if (targetType == "machine") {
+					sorter = (a, b) => b.difficulty - a.difficulty
+				} else if (targetType == "challenge") {
+					sorter = (a, b) => b.avg_difficulty - a.avg_difficulty
+				}
+				break
+			case "easiest":
+				if (targetType == "machine") {
+					sorter = (a, b) => a.difficulty - b.difficulty
+				} else if (targetType == "challenge") {
+					sorter = (a, b) => a.avg_difficulty - b.avg_difficulty
+				}
+				break
+			case "newest":
+				if (targetType == "machine") {
+					sorter = (a, b) =>
+						new Date(b.release).getTime() - new Date(a.release).getTime()
+				} else if (targetType == "challenge") {
+					sorter = (a, b) =>
+						new Date(b.release_date).getTime() -
 						new Date(a.release_date).getTime()
-			}
-			break
-		case "oldest":
-			if (targetType == "machine") {
-				sorter = (a, b) =>
-					new Date(a.release).getTime() - new Date(b.release).getTime()
-			} else if (targetType == "challenge") {
-				sorter = (a, b) =>
-					new Date(a.release_date).getTime() -
+				}
+				break
+			case "oldest":
+				if (targetType == "machine") {
+					sorter = (a, b) =>
+						new Date(a.release).getTime() - new Date(b.release).getTime()
+				} else if (targetType == "challenge") {
+					sorter = (a, b) =>
+						new Date(a.release_date).getTime() -
 						new Date(b.release_date).getTime()
-			}
-			break
-		default:
-			break
+				}
+				break
+			default:
+				break
 		}
 
 		/** PRE-FILTER THE TARGET ARRAY BY EXCLUSION / INCLUSION RULES */
@@ -536,69 +545,69 @@ class SevenDatastore {
 			.filter((e) => e.cust)
 			.forEach((filterBasis) => {
 				switch (filterBasis.cust) {
-				case "nolimit":
-					console.warn("[APIv4]::: USER DON'T WANT NO LIMITS")
-					limit = 0
-					break
-				case "incomplete":
-					if (memberNames) {
-						memberNames.forEach((memberName) => {
-							var member = this.resolveEnt(
-								memberName,
-								"member",
-								false,
-								message,
-								false
-							)
+					case "nolimit":
+						console.warn("[APIv4]::: USER DON'T WANT NO LIMITS")
+						limit = 0
+						break
+					case "incomplete":
+						if (memberNames) {
+							memberNames.forEach((memberName) => {
+								var member = this.resolveEnt(
+									memberName,
+									"member",
+									false,
+									message,
+									false
+								)
+								targets = targets.filter(
+									(target) => !this.getMemberOwnsForTarget(member, target)
+								)
+							})
+						}
+						break
+					case "complete":
+						if (memberNames) {
+							memberNames.forEach((memberName) => {
+								var member = this.resolveEnt(
+									memberName,
+									"member",
+									false,
+									message,
+									false
+								)
+								targets = targets.filter((target) =>
+									this.getMemberOwnsForTarget(member, target)
+								)
+								console.log("Checked " + memberName)
+							})
+						}
+						break
+					case "active":
+						targets = targets.filter((target) => !target.retired)
+						break
+					case "inactive":
+						targets = targets.filter((target) => target.retired)
+						break
+					case "well rated":
+						if (targetType == "machine") {
+							targets = targets.filter((target) => target.rating >= 3)
+						} else if (targetType == "challenge") {
 							targets = targets.filter(
-								(target) => !this.getMemberOwnsForTarget(member, target)
+								(target) => target.likes - target.dislikes > 0
 							)
-						})
-					}
-					break
-				case "complete":
-					if (memberNames) {
-						memberNames.forEach((memberName) => {
-							var member = this.resolveEnt(
-								memberName,
-								"member",
-								false,
-								message,
-								false
+						}
+						break
+					case "poorly rated":
+						if (targetType == "machine") {
+							targets = targets.filter((target) => target.rating < 3)
+						} else if (targetType == "challenge") {
+							targets = targets.filter(
+								(target) => target.likes - target.dislikes < 0
 							)
-							targets = targets.filter((target) =>
-								this.getMemberOwnsForTarget(member, target)
-							)
-							console.log("Checked " + memberName)
-						})
-					}
-					break
-				case "active":
-					targets = targets.filter((target) => !target.retired)
-					break
-				case "inactive":
-					targets = targets.filter((target) => target.retired)
-					break
-				case "well rated":
-					if (targetType == "machine") {
-						targets = targets.filter((target) => target.rating >= 3)
-					} else if (targetType == "challenge") {
-						targets = targets.filter(
-							(target) => target.likes - target.dislikes > 0
-						)
-					}
-					break
-				case "poorly rated":
-					if (targetType == "machine") {
-						targets = targets.filter((target) => target.rating < 3)
-					} else if (targetType == "challenge") {
-						targets = targets.filter(
-							(target) => target.likes - target.dislikes < 0
-						)
-					}
-					break
-				default:
-					break
+						}
+						break
+					default:
+						break
 				}
 			})
 
@@ -606,14 +615,14 @@ class SevenDatastore {
 			.filter((e) => e.lvl)
 			.forEach((filterBasis) => {
 				switch (targetType) {
-				case "machine":
-					targets = targets.filter((t) => t.difficultyText == filterBasis.lvl)
-					break
-				case "challenge":
-					targets = targets.filter((t) => t.difficulty == filterBasis.lvl)
-					break
-				default:
-					break
+					case "machine":
+						targets = targets.filter((t) => t.difficultyText == filterBasis.lvl)
+						break
+					case "challenge":
+						targets = targets.filter((t) => t.difficulty == filterBasis.lvl)
+						break
+					default:
+						break
 				}
 			})
 
@@ -709,36 +718,36 @@ class SevenDatastore {
 			// console.log("Resolving '" + kwd + "'...")
 			if (targetType) {
 				switch (targetType) {
-				case "member":
-					return (
-						(isIdLookup
-							? this.getMemberById(kwd, isSelf)
-							: this.getMemberByName(kwd, isSelf)) ||
+					case "member":
+						return (
+							(isIdLookup
+								? this.getMemberById(kwd, isSelf)
+								: this.getMemberByName(kwd, isSelf)) ||
 							(lookup && !/\s/.test(kwd)
 								? this.resolveExternalMember(
 									isIdLookup ? kwd : null,
 									!isIdLookup ? kwd : null
 								)
 								: null)
-					)
-				case "machine":
-					return isIdLookup
-						? this.getMachineById(kwd)
-						: this.getMachineByName(kwd)
-				case "challenge":
-					return isIdLookup
-						? this.getChallengeById(kwd)
-						: this.getChallengeByName(kwd)
-				case "endgame":
-				case "fortress":
-				case "prolab":
-					return this.getSpecialByName(kwd, targetType)
-				default:
-					console.warn(
-						`Resolving datastore entity ${isIdLookup ? "by ID" : ""
-						} from '${kwd}' failed. ${targetType ? "(Target type '" + targetType + " specified.)" : ""
-						}`
-					)
+						)
+					case "machine":
+						return isIdLookup
+							? this.getMachineById(kwd)
+							: this.getMachineByName(kwd)
+					case "challenge":
+						return isIdLookup
+							? this.getChallengeById(kwd)
+							: this.getChallengeByName(kwd)
+					case "endgame":
+					case "fortress":
+					case "prolab":
+						return this.getSpecialByName(kwd, targetType)
+					default:
+						console.warn(
+							`Resolving datastore entity ${isIdLookup ? "by ID" : ""
+							} from '${kwd}' failed. ${targetType ? "(Target type '" + targetType + " specified.)" : ""
+							}`
+						)
 				}
 			}
 			if (isIdLookup && Number(kwd)) {
@@ -823,7 +832,7 @@ class SevenDatastore {
 			(machine) => machine.name.toLowerCase() == name.toLowerCase()
 		)
 	}
-	
+
 
 	/**
 	 * Get the latest box, (or unreleased box, if one is found).
@@ -906,18 +915,18 @@ class SevenDatastore {
 	getSpecialByName(name = null, type = null) {
 		// Return endgame, fortress or pro lab with name matching parameter string
 		switch (type) {
-		case "fortress":
-			return this.getFortressByName(name)
-		case "endgame":
-			return this.getEndgameByName(name)
-		case "prolab":
-			return this.getProLabByName(name)
-		default:
-			return (
-				this.getFortressByName(name) ||
+			case "fortress":
+				return this.getFortressByName(name)
+			case "endgame":
+				return this.getEndgameByName(name)
+			case "prolab":
+				return this.getProLabByName(name)
+			default:
+				return (
+					this.getFortressByName(name) ||
 					this.getEndgameByName(name) ||
 					this.getProLabByName(name)
-			)
+				)
 		}
 	}
 
@@ -1005,44 +1014,44 @@ class SevenDatastore {
 			// console.log(member)
 			var validOwns = []
 			switch (target.type) {
-			case "machine":
-			case "challenge":
-				validOwns = member.activity
-					.filter(
-						(own) =>
-							own.object_type == target.type &&
+				case "machine":
+				case "challenge":
+					validOwns = member.activity
+						.filter(
+							(own) =>
+								own.object_type == target.type &&
 								(own.name == target.name || own.name == target.company)
-					)
-					.map((own) => ({ ...own, id: member.id }))
-				break
-			case "endgame":
-			case "fortress":
-				validOwns = member.activity
-					.filter(
-						(own) =>
-							own.object_type == target.type &&
+						)
+						.map((own) => ({ ...own, id: member.id }))
+					break
+				case "endgame":
+				case "fortress":
+					validOwns = member.activity
+						.filter(
+							(own) =>
+								own.object_type == target.type &&
 								(H.ciEquals(own.name, target.name) || H.ciEquals(own.name, target.company.name))
-					)
-					.map((own) => ({ ...own, id: member.id }))
-				break
-			case "flag":
-				validOwns = member.activity
-					.filter(
-						(own) =>
-							own.object_type == target.parent.type &&
+						)
+						.map((own) => ({ ...own, id: member.id }))
+					break
+				case "flag":
+					validOwns = member.activity
+						.filter(
+							(own) =>
+								own.object_type == target.parent.type &&
 								(own.name == target.parent.name ||
 									own.name == target.parent.company)
-					)
-					.filter(
-						(own) => target.name.toLowerCase() == own.flag_title.toLowerCase()
-					)
-					.map((own) => ({ ...own, id: member.id }))
-				break
-			case "prolab":
-				validOwns = []
-				break
-			default:
-				break
+						)
+						.filter(
+							(own) => target.name.toLowerCase() == own.flag_title.toLowerCase()
+						)
+						.map((own) => ({ ...own, id: member.id }))
+					break
+				case "prolab":
+					validOwns = []
+					break
+				default:
+					break
 			}
 
 			// console.info(`Got ${validOwns.length} valid owns...`)
@@ -1273,7 +1282,7 @@ class SevenDatastore {
 					discordName.toLowerCase() != this.TEAM_MEMBERS[uid].name.toLowerCase()
 				) {
 					return `🌀${F.STL(discordName, "bs")}${showBothNames ? " (" + this.TEAM_MEMBERS[uid].name + ")" : ""
-					}${isSelf ? " [You]" : ""}`
+						}${isSelf ? " [You]" : ""}`
 				} else {
 					return `🌀 ${F.STL(discordName, "bs")}${isSelf ? " [You]" : ""}`
 				}
@@ -1425,90 +1434,90 @@ class SevenDatastore {
 			)
 			try {
 				switch (flag || type) {
-				case "user":
-					var userOwn = member.activity.find(
-						(own) =>
-							own.type == "user" &&
+					case "user":
+						var userOwn = member.activity.find(
+							(own) =>
+								own.type == "user" &&
 								(own.name == target.name || own.id == target.id)
-					)
-					if (!userOwn) {
-						member.activity.push({
-							date: new Date(time).toISOString(),
-							date_diff: F.timeSince(new Date(time)),
-							object_type: target.type,
-							type: "user",
-							id: target.id,
-							name: target.name,
-							points: target.points,
-							machine_avatar: target.avatar,
-						})
-						entriesAffected = true
-						console.log(isPusher ? "Added user own for " + member.name : "")
-					} else {
-						console.warn(
-							`${member.name} already had a '${flag || type
-							}' own registered for ${target.name}...`
 						)
-					}
-					break
+						if (!userOwn) {
+							member.activity.push({
+								date: new Date(time).toISOString(),
+								date_diff: F.timeSince(new Date(time)),
+								object_type: target.type,
+								type: "user",
+								id: target.id,
+								name: target.name,
+								points: target.points,
+								machine_avatar: target.avatar,
+							})
+							entriesAffected = true
+							console.log(isPusher ? "Added user own for " + member.name : "")
+						} else {
+							console.warn(
+								`${member.name} already had a '${flag || type
+								}' own registered for ${target.name}...`
+							)
+						}
+						break
 
-				case "root":
-					var rootOwn = member.activity.find(
-						(own) =>
-							own.type == "root" &&
+					case "root":
+						var rootOwn = member.activity.find(
+							(own) =>
+								own.type == "root" &&
 								(own.name == target.name || own.id == target.id)
-					)
-					if (!rootOwn) {
-						member.activity.push({
-							date: new Date(time).toISOString(),
-							date_diff: F.timeSince(new Date(time)),
-							object_type: target.type,
-							type: "root",
-							id: target.id,
-							name: target.name,
-							points: target.points,
-							machine_avatar: target.avatar,
-						})
-						entriesAffected = true
-						console.log(isPusher ? "Added root own for " + member.name : "")
-					} else {
-						console.warn(
-							`${member.name} already had a '${flag || type
-							}' own registered for ${target.name}...`
 						)
-					}
-					break
+						if (!rootOwn) {
+							member.activity.push({
+								date: new Date(time).toISOString(),
+								date_diff: F.timeSince(new Date(time)),
+								object_type: target.type,
+								type: "root",
+								id: target.id,
+								name: target.name,
+								points: target.points,
+								machine_avatar: target.avatar,
+							})
+							entriesAffected = true
+							console.log(isPusher ? "Added root own for " + member.name : "")
+						} else {
+							console.warn(
+								`${member.name} already had a '${flag || type
+								}' own registered for ${target.name}...`
+							)
+						}
+						break
 
-				case "challenge":
-					var challOwn = member.activity.find(
-						(own) =>
-							own.type == "root" &&
+					case "challenge":
+						var challOwn = member.activity.find(
+							(own) =>
+								own.type == "root" &&
 								(own.name == target.name || own.id == target.id)
-					)
-					if (!challOwn) {
-						member.activity.push({
-							date: new Date(time).toISOString(),
-							date_diff: F.timeSince(new Date(time)),
-							object_type: target.type,
-							type: "challenge",
-							id: target.id,
-							name: target.name,
-							points: target.points,
-							challenge_category: target.category_name,
-						})
-						entriesAffected = true
-						console.log(
-							isPusher ? "Added challenge own for " + member.name : ""
 						)
-					} else {
-						console.warn(
-							`${member.name} already had a '${flag || type
-							}' own registered for ${target.name}...`
-						)
-					}
-					break
-				default:
-					break
+						if (!challOwn) {
+							member.activity.push({
+								date: new Date(time).toISOString(),
+								date_diff: F.timeSince(new Date(time)),
+								object_type: target.type,
+								type: "challenge",
+								id: target.id,
+								name: target.name,
+								points: target.points,
+								challenge_category: target.category_name,
+							})
+							entriesAffected = true
+							console.log(
+								isPusher ? "Added challenge own for " + member.name : ""
+							)
+						} else {
+							console.warn(
+								`${member.name} already had a '${flag || type
+								}' own registered for ${target.name}...`
+							)
+						}
+						break
+					default:
+						break
 				}
 			} catch (error) {
 				console.error(error)
@@ -1544,55 +1553,55 @@ class SevenDatastore {
 			)
 			try {
 				switch (flag || type) {
-				case "user":
-					target.userBlood = {
-						user: {
-							name: user.name,
-							id: user.id,
-							avatar: user.avatar,
-						},
-						created_at: new Date(time).toISOString(),
-						blood_difference: "0̗͖̋ͯ̚1̪͍̘̘ͭ1͎͓̅̔̃0̫̮̲ͣ̎2͕̰̈͋̅2͚̹͕̋ͩ", // 👀
-					}
-					if (member) {
-						member.user_bloods = member.user_bloods
-							? member.user_bloods + 1
-							: 1
-					}
-					entriesAffected = true
-					console.log(isPusher ? "Added user blood for " + user.name : "")
-					break
+					case "user":
+						target.userBlood = {
+							user: {
+								name: user.name,
+								id: user.id,
+								avatar: user.avatar,
+							},
+							created_at: new Date(time).toISOString(),
+							blood_difference: "0̗͖̋ͯ̚1̪͍̘̘ͭ1͎͓̅̔̃0̫̮̲ͣ̎2͕̰̈͋̅2͚̹͕̋ͩ", // 👀
+						}
+						if (member) {
+							member.user_bloods = member.user_bloods
+								? member.user_bloods + 1
+								: 1
+						}
+						entriesAffected = true
+						console.log(isPusher ? "Added user blood for " + user.name : "")
+						break
 
-				case "root":
-					target.rootBlood = {
-						user: {
-							name: user.name,
-							id: user.id,
-							avatar: user.avatar,
-						},
-						created_at: new Date(time).toISOString(),
-						blood_difference: "2̬̖ͧ̊ͧ2̜̫̖̉̔0͔̰͖̍̽1̗̥ͩ̋́1̪͕̀̅̔2̮ͬͩ̇͒", // That'll confuse somebody at some point
-					}
-					if (member) {
-						member.system_bloods = member.system_bloods
-							? member.system_bloods + 1
-							: 1
-					}
-					entriesAffected = true
-					console.log(isPusher ? "Added root blood for " + user.name : "")
-					break
+					case "root":
+						target.rootBlood = {
+							user: {
+								name: user.name,
+								id: user.id,
+								avatar: user.avatar,
+							},
+							created_at: new Date(time).toISOString(),
+							blood_difference: "2̬̖ͧ̊ͧ2̜̫̖̉̔0͔̰͖̍̽1̗̥ͩ̋́1̪͕̀̅̔2̮ͬͩ̇͒", // That'll confuse somebody at some point
+						}
+						if (member) {
+							member.system_bloods = member.system_bloods
+								? member.system_bloods + 1
+								: 1
+						}
+						entriesAffected = true
+						console.log(isPusher ? "Added root blood for " + user.name : "")
+						break
 
-				case "challenge":
-					target.solves = target.solves ? target.solves + 1 : 1
-					target.first_blood_user = user.name
-					target.first_blood_user_id = user.id
-					target.first_blood_time = "2̬̖ͧ̊ͧ2̜̫̉̔0͔̰͖̍̽2̜̫̖̉̔1̗̥ͩ̋́2̮ͬͩ̇͒"
-					target.first_blood_user_avatar = user.avatar
-					entriesAffected = true
-					console.log(isPusher ? "Added challenge blood for " + user.name : "")
-					break
-				default:
-					break
+					case "challenge":
+						target.solves = target.solves ? target.solves + 1 : 1
+						target.first_blood_user = user.name
+						target.first_blood_user_id = user.id
+						target.first_blood_time = "2̬̖ͧ̊ͧ2̜̫̉̔0͔̰͖̍̽2̜̫̖̉̔1̗̥ͩ̋́2̮ͬͩ̇͒"
+						target.first_blood_user_avatar = user.avatar
+						entriesAffected = true
+						console.log(isPusher ? "Added challenge blood for " + user.name : "")
+						break
+					default:
+						break
 				}
 			} catch (error) {
 				console.error(error)

@@ -6,7 +6,7 @@ require("superagent-retry-delay")(request)
 const { Helpers: H } = require("../helpers/helpers.js")
 
 const setTypeForValues = (type, objectMap) => {
-	Object.keys(objectMap).map( key => ( objectMap[key].type = type ))
+	Object.keys(objectMap).map(key => (objectMap[key].type = type))
 	return objectMap // Add object type specifier for easier introspection
 }
 
@@ -43,14 +43,18 @@ class HtbApiConnector {
 		})
 	}
 
-	async init(email, password){
-		this.API_TOKEN = await this.getV4AccessToken(email, password)
-		this.AUTH_INFO = {"email": email, "password": password}
+	async init({ api_token, email, password }) {
+		if (api_token) {
+			this.API_TOKEN = api_token
+		} else {
+			this.API_TOKEN = await this.getV4AccessToken(email, password)
+		}
+
+		this.AUTH_INFO = { api_token, email, password }
 	}
-	
 
 	async getV4AccessToken(email, password) {
-		return new Promise(function(resolve, reject) {
+		return new Promise(function (resolve, reject) {
 			const agent = request.agent()
 			agent
 				.post("https://www.hackthebox.com/api/v4/login")
@@ -68,10 +72,10 @@ class HtbApiConnector {
 				})
 		})
 	}
-	
-	getThrottle(endpoint){
-		if ( !this.throttles[endpoint] ) {
-			this.throttles[endpoint] = 	new Throttle({
+
+	getThrottle(endpoint) {
+		if (!this.throttles[endpoint]) {
+			this.throttles[endpoint] = new Throttle({
 				active: true,   // set false to pause queue
 				rate: 10,       // how many requests can be sent every `ratePer`- 20
 				ratePer: 60000, // number of ms in which `rate` requests may be sent - 1 minute / 60,000 ms
@@ -82,7 +86,7 @@ class HtbApiConnector {
 		return this.throttles[endpoint]
 	}
 
-	updateThrottle(endpoint, rLimit, rLeft, fullPath){
+	updateThrottle(endpoint, rLimit, rLeft, fullPath) {
 		// console.info(`${new Date().toLocaleString()} RL [${fullPath}] ⇛ ${"▓".repeat(rLimit - rLeft)}${"░".repeat(rLeft)} ( ${rLimit - rLeft} / ${rLimit} used )` )
 		this.getThrottle(endpoint).rate = Math.floor((Number(rLimit) || 15) * 0.90)
 	}
@@ -90,11 +94,11 @@ class HtbApiConnector {
 
 
 
-	async htbApiGet(endpointPath, parseText=false) {
+	async htbApiGet(endpointPath, parseText = false) {
 		var endpoint = endpointPath.replace(/\d[^$]*/gm, "").replace(/\/$/, "")
-		if (this.checkTokenExpiring(this.API_TOKEN)){
+		if (this.checkTokenExpiring(this.API_TOKEN)) {
 			try {
-				this.API_TOKEN = await this.getV4AccessToken(this.AUTH_INFO.email,this.AUTH_INFO.password)
+				this.API_TOKEN = await this.getV4AccessToken(this.AUTH_INFO.email, this.AUTH_INFO.password)
 			} catch (error) {
 				console.error(error)
 			}
@@ -125,7 +129,7 @@ class HtbApiConnector {
 							console.log(response?.text || response)
 							reject()
 						}
-						
+
 					} else {
 						resolve(response.body)
 					}
@@ -136,12 +140,12 @@ class HtbApiConnector {
 				})
 		})
 	}
-	
+
 	async getMachineTags() {
 		var tagsArray = (await this.htbApiGet("machine/tags/list", this.API_TOKEN)).info
 		return (H.arrToObj(tagsArray, "id"))
 	}
-	
+
 	/**
 	 * MACHINE DATA GETTERS
 	 */
@@ -149,12 +153,12 @@ class HtbApiConnector {
 		return this.htbApiGet(`machine/profile/${id}`)
 	}
 
-	
+
 
 	async getCurrentMachines() {
 		return setTypeForValues("machine", H.arrToObj((await this.htbApiGet("machine/list")).info, "id"))
 	}
-	
+
 	async getRetiredMachines() {
 		return setTypeForValues("machine", H.arrToObj((await this.htbApiGet("machine/list/retired")).info, "id"))
 	}
@@ -167,7 +171,7 @@ class HtbApiConnector {
 		var t1 = await this.getStartingPointMachinesForTier(1)
 		var t2 = await this.getStartingPointMachinesForTier(2)
 		var t3 = await this.getStartingPointMachinesForTier(3)
-		let machines = [t1,t2,t3].map(t => t.machines.map(m => Object.assign({tier: {id:t.id,name:t.name,description:t.description}},m))).flat()
+		let machines = [t1, t2, t3].map(t => t.machines.map(m => Object.assign({ tier: { id: t.id, name: t.name, description: t.description } }, m))).flat()
 		return setTypeForValues("sp_machine", H.arrToObj(machines, "id"))
 	}
 
@@ -194,12 +198,12 @@ class HtbApiConnector {
 			}
 		)
 	}
-	
+
 	async getAllMachinesFast() {
 		var retired = await this.getRetiredMachines()
 		var current = await this.getCurrentMachines()
 		var coming = await this.getComingMachine()
-		var all = {...retired, ...current, ...coming}
+		var all = { ...retired, ...current, ...coming }
 		return all
 	}
 
@@ -217,30 +221,30 @@ class HtbApiConnector {
 		return Promise.all(machineIds.map(id => this.getCompleteMachineProfileById(id)))
 			.then(machines => setTypeForValues("machine", H.arrToObj(machines.map(e => e.info), "id")))
 	}
-	
+
 	/**
 	 * CHALLENGE DATA GETTERS
 	 */
 
 	searchChallengeByExactName(name) {
-		return this.htbApiGet(`search/fetch?query=${name}&tags=%5B%22challenges%22%5D`,true).then(res => {console.log((res.challenges? "FOUNDIT! - " + name + " - " : "NOTFOUND! - " + name + " - ")); return (res.challenges? res.challenges : [])})
+		return this.htbApiGet(`search/fetch?query=${name}&tags=%5B%22challenges%22%5D`, true).then(res => { console.log((res.challenges ? "FOUNDIT! - " + name + " - " : "NOTFOUND! - " + name + " - ")); return (res.challenges ? res.challenges : []) })
 	}
-	
+
 	/** @returns {Challenge[]} */
 	async getCurrentChallenges() {
 		return setTypeForValues("challenge", H.arrToObj((await this.htbApiGet("challenge/list", this.API_TOKEN)).challenges, "id"))
 	}
-	
+
 	/** @returns {Challenge[]} */
 	async getRetiredChallenges() {
 		return setTypeForValues("challenge", H.arrToObj((await this.htbApiGet("challenge/list/retired", this.API_TOKEN)).challenges, "id"))
 	}
-	
+
 	/** @returns {Challenge[]} */
 	async getAllChallengesFast() {
 		var retired = await this.getRetiredChallenges()
 		var current = await this.getCurrentChallenges()
-		var all = {...retired, ...current}
+		var all = { ...retired, ...current }
 		return all
 	}
 
@@ -254,7 +258,7 @@ class HtbApiConnector {
 		return Promise.all(challengeIds.map(id => this.getCompleteChallengeProfileById(id)))
 			.then(challenges => setTypeForValues("challenge", H.arrToObj(challenges.map(e => e.challenge), "id")))
 	}
-	
+
 	/** @returns {Challenge[]} */
 	async getAllCompleteChallengeProfiles() {
 		var challenges = await this.getAllChallengesFast()
@@ -280,17 +284,17 @@ class HtbApiConnector {
 
 	/** @returns {FortressProfile} */
 	async getFortressProfile(id) {
-		return this.htbApiGet(`fortress/${id}`).then(e => Object.assign(e.data,{type:"fortress"}))
+		return this.htbApiGet(`fortress/${id}`).then(e => Object.assign(e.data, { type: "fortress" }))
 	}
 
 	/** @returns {Fortress[]} */
 	async getAllFortresses() {
 		let entries = await this.getAllFortressEntries()
 		let profiles = await Promise.all(entries.map(entry => this.getFortressProfile(entry.id)))
-		let fortresses = H.arrToObj(entries.map((e,i) => H.combine([e,profiles[i]])), "id")
+		let fortresses = H.arrToObj(entries.map((e, i) => H.combine([e, profiles[i]])), "id")
 		return fortresses
 	}
-	
+
 
 	/**
 	 * ENDGAME DATA GETTERS
@@ -304,7 +308,7 @@ class HtbApiConnector {
 	/** @returns {EndgameProfile} */
 	async getEndgameProfile(id) {
 		// console.log(await this.htbApiGet(`endgame/${id}`))
-		return this.htbApiGet(`endgame/${id}`).then(e => Object.assign(e.data,{type:"endgame"}))
+		return this.htbApiGet(`endgame/${id}`).then(e => Object.assign(e.data, { type: "endgame" }))
 	}
 
 	/** @returns {Flag[]} */
@@ -318,12 +322,12 @@ class HtbApiConnector {
 		let entries = await this.getAllEndgameEntries()
 		let profiles = await Promise.all(entries.map(entry => this.getEndgameProfile(entry.id)))
 		let flags = await Promise.all(entries.map(entry => this.getEndgameFlags(entry.id)
-			.then(flags => ({flags: flags}))
+			.then(flags => ({ flags: flags }))
 		))
-		let endgames = H.arrToObj(entries.map((e,i) => H.combine([e,flags[i], profiles[i]])), "id")
+		let endgames = H.arrToObj(entries.map((e, i) => H.combine([e, flags[i], profiles[i]])), "id")
 		return endgames
 	}
-	
+
 
 	/**
 	 * PRO LAB DATA GETTERS
@@ -336,28 +340,28 @@ class HtbApiConnector {
 
 	/** @returns {Flag[]} */
 	async getProLabFlags(id) {
-		return this.htbApiGet(`prolab/${id}/flags`).then(e => Object.assign(e.data,{type:"prolab"}))
+		return this.htbApiGet(`prolab/${id}/flags`).then(e => Object.assign(e.data, { type: "prolab" }))
 	}
 
 	/** @returns {ProLabInfo} */
 	async getProLabInfo(id) {
-		return this.htbApiGet(`prolab/${id}/info`).then(e => Object.assign(e.data,{type:"prolab"}))
+		return this.htbApiGet(`prolab/${id}/info`).then(e => Object.assign(e.data, { type: "prolab" }))
 	}
 
 	/** @returns {ProLabOverview} */
 	async getProLabOverview(id) {
-		return this.htbApiGet(`prolab/${id}/overview`).then(e => Object.assign(e.data,{type:"prolab"}))
+		return this.htbApiGet(`prolab/${id}/overview`).then(e => Object.assign(e.data, { type: "prolab" }))
 	}
 
 	/** @returns {ProLab[]} */
 	async getAllProlabs() {
 		let entries = await this.getAllProLabEntries()
 		let flags = await Promise.all(entries.map(entry => this.getEndgameFlags(entry.id)
-			.then(flags => ({flags: flags}))
+			.then(flags => ({ flags: flags }))
 		))
 		let infos = await Promise.all(entries.map(entry => this.getProLabInfo(entry.id)))
 		let overviews = await Promise.all(entries.map(entry => this.getProLabOverview(entry.id)))
-		let prolabs = H.arrToObj(entries.map((e,i) => H.combine([e,flags[i], infos[i],overviews[i]])), "id")
+		let prolabs = H.arrToObj(entries.map((e, i) => H.combine([e, flags[i], infos[i], overviews[i]])), "id")
 		return prolabs
 	}
 
@@ -374,13 +378,13 @@ class HtbApiConnector {
 	/** @returns {Team} */
 	getCompleteTeamProfile(teamId) {
 		return Promise.all([this.getTeamProfile(teamId),
-			this.getTeamOwnStats(teamId),
-			this.getTeamStatsGraphForDuration(teamId,"1W").then(res => ({respects: res.respect.pop()}))]
-		).then(res => H.combine([...res,{type:"team"}]))
+		this.getTeamOwnStats(teamId),
+		this.getTeamStatsGraphForDuration(teamId, "1W").then(res => ({ respects: res.respect.pop() }))]
+		).then(res => H.combine([...res, { type: "team" }]))
 	}
 
 	/** @returns {User[]} */
-	getTeamMembers(teamId, excludedIds=[]) {
+	getTeamMembers(teamId, excludedIds = []) {
 		return this.htbApiGet(`team/members/${teamId}`).then(res => res.filter(member => !excludedIds.includes(member.id) && member.role != "pending"))
 	}
 
@@ -400,15 +404,15 @@ class HtbApiConnector {
 		return this.htbApiGet(`team/chart/machines/attack/${teamId}`)
 	}
 
-	getTeamStatsGraphForDuration(teamId, duration="1Y") { // One of ["1Y", "6M", "3M", "1M", "1W"]
+	getTeamStatsGraphForDuration(teamId, duration = "1Y") { // One of ["1Y", "6M", "3M", "1M", "1W"]
 		return this.htbApiGet(`team/graph/${teamId}?duration=${duration}`).then(res => res.data)
 	}
 
-	getSelfTeamRankHistory(period="1Y") { // One of ["1Y", "6M", "3M", "1M", "1W"]
+	getSelfTeamRankHistory(period = "1Y") { // One of ["1Y", "6M", "3M", "1M", "1W"]
 		return this.htbApiGet(`rankings/team/best?period=${period}`).then(res => res.data)
 	}
 
-	getSelfTeamPointsHistory(period="1Y") { // One of ["1Y", "6M", "3M", "1M", "1W"]
+	getSelfTeamPointsHistory(period = "1Y") { // One of ["1Y", "6M", "3M", "1M", "1W"]
 		return this.htbApiGet(`rankings/team/overview?period=${period}`).then(res => res.data)
 	}
 
@@ -433,9 +437,9 @@ class HtbApiConnector {
 	/**
 	 * MEMBER DATA GETTERS
 	 */
-	
-	getMemberIdFromUsername(username="ThisUserCouldNotPossiblyExist") {
-		var val = this.htbApiGet(`search/fetch?query=${username}&tags=[%22users%22]`,true).then(res => (res.users? res.users[0].id : null))
+
+	getMemberIdFromUsername(username = "ThisUserCouldNotPossiblyExist") {
+		var val = this.htbApiGet(`search/fetch?query=${username}&tags=[%22users%22]`, true).then(res => (res.users ? res.users[0].id : null))
 		// console.log(username, val)
 		return val
 	}
@@ -485,61 +489,61 @@ class HtbApiConnector {
 		const combinedData = Promise.all(promises).then(results => setTypeForValues("member", H.arrToObj(results, "id")))
 		return combinedData
 	}
-	
-	getMemberAchievementChart(memberId, term){
+
+	getMemberAchievementChart(memberId, term) {
 		return this.htbApiGet(`user/profile/graph/${term}/${memberId}`)
 	}
 
-	getMemberMachineOsProgress(memberId){
+	getMemberMachineOsProgress(memberId) {
 		return this.htbApiGet(`user/profile/progress/machines/os/${memberId}`)
 	}
 
-	getMemberChallengeProgress(memberId){
+	getMemberChallengeProgress(memberId) {
 		return this.htbApiGet(`user/profile/progress/challenges/${memberId}`)
 	}
 
-	getMemberEndgameProgress(memberId){
+	getMemberEndgameProgress(memberId) {
 		return this.htbApiGet(`user/profile/progress/endgame/${memberId}`)
 	}
 
-	getMemberFortressProgress(memberId){
+	getMemberFortressProgress(memberId) {
 		return this.htbApiGet(`user/profile/progress/fortress/${memberId}`)
 	}
 
-	getMemberProlabProgress(memberId){
+	getMemberProlabProgress(memberId) {
 		return this.htbApiGet(`user/profile/progress/prolab/${memberId}`)
 	}
 
-	getMemberBloods(memberId){
+	getMemberBloods(memberId) {
 		return this.htbApiGet(`user/profile/bloods/${memberId}`)
 	}
-	
-	getMachineAttackDataChart(memberId){
+
+	getMachineAttackDataChart(memberId) {
 		return this.htbApiGet(`user/profile/chart/machines/attack/${memberId}`)
 	}
 
 
-	
+
 	async getMemberProfiles(memberIds) {
 		const uri = "user/profile/basic/"
 		var TEAM_MEMBERS_TEMP = {}
 		var memberPromises = []
-	
+
 		memberIds.forEach((memberId) => {
 			memberPromises.push(this.htbApiGet(uri + memberId, this.API_TOKEN))
 		})
-	
+
 		const results = await Promise.all(memberPromises)
 		results.forEach(
 			(memberProfile) =>
-				(TEAM_MEMBERS_TEMP[Number(memberProfile.profile.id)] =
-					memberProfile.profile)
+			(TEAM_MEMBERS_TEMP[Number(memberProfile.profile.id)] =
+				memberProfile.profile)
 		)
 
 		return setTypeForValues("user", TEAM_MEMBERS_TEMP)
-		
+
 	}
-	
+
 	async getMemberActivities(memberIds) {
 		const uri = "user/profile/activity/"
 		var TEAM_MEMBERS_ACTIVITIES = {}
@@ -550,8 +554,8 @@ class HtbApiConnector {
 		const results = await Promise.all(memberPromises)
 		results.forEach(
 			(memberProfile, idx) =>
-				(TEAM_MEMBERS_ACTIVITIES[Number(memberIds[idx])] =
-					memberProfile.profile.activity)
+			(TEAM_MEMBERS_ACTIVITIES[Number(memberIds[idx])] =
+				memberProfile.profile.activity)
 		)
 		return TEAM_MEMBERS_ACTIVITIES
 	}
@@ -560,7 +564,7 @@ class HtbApiConnector {
 		const uri = "user/profile/activity/"
 		return this.htbApiGet(uri + memberId, this.API_TOKEN)
 	}
-	
+
 	checkTokenExpiring(token) {
 		return parseJwt(token).exp < Math.floor(Date.now() / 1000) - 120
 			? true
@@ -589,5 +593,5 @@ function parseJwt(token) {
 }
 
 module.exports = {
-	HtbApiConnector:HtbApiConnector
+	HtbApiConnector: HtbApiConnector
 }
