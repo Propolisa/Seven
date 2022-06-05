@@ -144,7 +144,7 @@ class HtbPusherEvent {
 
 
 
-/** Class representing a HTB challenge / box creator.
+/** Class representing a HTB Pusher Subscription (legacy).
  * 
  * @typedef HtbPusherSubscription
  * @property {number} client - The Pusher Client instance.
