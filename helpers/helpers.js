@@ -3,10 +3,7 @@
 */
 
 class Helpers {
-
 	constructor(){}
-
-
 	static arrToObj (array, key) {
 		const initialValue = {}
 		return array.reduce((obj, item) => {

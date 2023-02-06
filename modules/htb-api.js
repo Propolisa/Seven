@@ -385,7 +385,8 @@ class HtbApiConnector {
 
 	/** @returns {User[]} */
 	getTeamMembers(teamId, excludedIds = []) {
-		return this.htbApiGet(`team/members/${teamId}`).then(res => res.filter(member => !excludedIds.includes(member.id) && member.role != "pending"))
+		return this.htbApiGet(`team/members/${teamId}`)
+		.then(res => res?.filter(member => !excludedIds.includes(member.id) && member.role != "pending"))
 	}
 
 	getTeamInvitations(teamId) {

@@ -27,11 +27,11 @@ var cache = {
 		["web"]
 	],
 	specials: [
-		["cnetics","cybernetics"],
+		["cnetics", "cybernetics"],
 		["dante"],
 		["rlabs", "rastalabs"],
 		["offsh", "offshore"],
-		["endg","endgame"],
+		["endg", "endgame"],
 		["fort", "fortress"],
 		["jet", "jet.com"],
 		["akrv", "akerva"],
@@ -70,7 +70,7 @@ class HTBEmoji {
 		})
 	}
 
-	initCustEmoji(client){
+	initCustEmoji(client) {
 		var emojis = client.guilds.resolve(process.env.EMOJI_GUILD_ID).emojis
 		// console.log(emojis)
 		var initPromises = []
@@ -78,7 +78,7 @@ class HTBEmoji {
 			cat.forEach(catItems => {
 				// console.log(catItems)
 				var match = catItems.names.find(e => !F.getIcon(e).includes("other"))
-				if (match){
+				if (match) {
 					var iconFileName = F.getIcon(match)
 					var alreadyExisting = [...emojis.cache.values()].find(e => e.name == catItems.id)
 					if (!alreadyExisting) {
@@ -95,14 +95,14 @@ class HTBEmoji {
 		return Promise.all(initPromises)
 	}
 
-	clearCustEmoji(client){
+	clearCustEmoji(client) {
 		var emoji = client.guilds.resolve(process.env.EMOJI_GUILD_ID).emojis
 		// console.log(emoji)
 		var deletionPromises = []
 		Object.values(this.state).forEach(cat => {
 			cat.forEach(catItems => {
 				var deletable = [...emoji.cache.values()].find(e => e.name == catItems.id)
-				if (deletable){
+				if (deletable) {
 					var prom = deletable.delete()
 						.then(emoji => console.log(`Deleted emoji with name ${emoji.name}!`))
 						.catch(console.error)
@@ -113,23 +113,23 @@ class HTBEmoji {
 		return Promise.all(deletionPromises)
 	}
 
-	populateEmoji(){
+	populateEmoji() {
 		this.initCustEmoji(this.client)
 	}
 
-	of(emojiName){
+	of(emojiName) {
 		var eId = this.idOf(emojiName)
 		//console.log("EID:", eId)
-		var resolved = this.client.guilds.resolve(process.env.EMOJI_GUILD_ID).emojis.cache.find(emoji => emoji.name == eId) || ""
+		var resolved = this?.client?.guilds?.resolve(process.env.EMOJI_GUILD_ID)?.emojis?.cache?.find(emoji => emoji.name == eId) || "🟠"
 		//if (resolved) {console.warn(`EMOJI SIGHTED! ${resolved}`)}
 		return resolved
 	}
 
 
 
-	idOf(name){
+	idOf(name) {
 		var res = Object.values(this.state).map(catItems => catItems.find(e => e.names.includes(name.toLowerCase()))).filter(x => x)[0]
-		return (res? res.id : undefined)
+		return (res ? res.id : undefined)
 	}
 
 }

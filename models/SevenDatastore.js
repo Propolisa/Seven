@@ -184,7 +184,7 @@ class SevenDatastore {
 	}
 
 	async informAdminViaDm(title, description) {
-		console.warn("This is a placeholder function. Override it from bot.js with the method from 'Send' module")
+		// console.warn("This is a placeholder function. Override it from bot.js with the method from 'Send' module")
 	}
 
 	logUpdateProgress(msg) {
@@ -1207,7 +1207,6 @@ class SevenDatastore {
 				return true
 			}
 		})
-		return match
 	}
 
 	checkMachineHasTag(machine, tagName) {
