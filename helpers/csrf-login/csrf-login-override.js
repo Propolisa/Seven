@@ -4,11 +4,11 @@ var la = require("lazy-ass")
 var check = require("check-more-types")
 
 var log = require("debug")("csrf")
-log = ()=>{}
+log = () => { }
 var request = require("request")
 var cheerio = require("cheerio")
 
-function getLoginForm (conf, body) {
+function getLoginForm(conf, body) {
 	var LOGIN_FORM_SELECTOR = conf.get("loginFormSelector")
 	if (!LOGIN_FORM_SELECTOR) {
 		var LOGIN_FORM_ID = conf.get("loginFormId")
@@ -22,17 +22,17 @@ function getLoginForm (conf, body) {
 	return form
 }
 
-function isValidForm (form) {
+function isValidForm(form) {
 	return form && form.length === 1
 }
 
-function getCsrfTokenName (conf) {
+function getCsrfTokenName(conf) {
 	var CSRF_TOKEN_NAME = conf.get("tokenFieldName")
 	la(check.unemptyString(CSRF_TOKEN_NAME), "missing token field name")
 	return CSRF_TOKEN_NAME
 }
 
-function getCsrfInput (conf, body) {
+function getCsrfInput(conf, body) {
 	var token = getCsrfTokenName(conf)
 	// console.log('body', body);
 	var $ = cheerio.load(body)
@@ -40,7 +40,7 @@ function getCsrfInput (conf, body) {
 	return csrf
 }
 
-function csrfLogin (options) {
+function csrfLogin(options) {
 	options = options || {}
 
 	var conf = require("./config.js")(options)
@@ -55,7 +55,7 @@ function csrfLogin (options) {
 	var password = options.password || options.PASSWORD
 	if (!password) {
 		return Promise.reject("Missing password for " + username +
-      ", see https://github.com/bahmutov/csrf-login#passing-options")
+			", see https://github.com/bahmutov/csrf-login#passing-options")
 	}
 
 	var jar = request.jar()
@@ -65,7 +65,7 @@ function csrfLogin (options) {
 	})
 	request.__jar = jar
 
-	function getCsrf (url) {
+	function getCsrf(url) {
 		return new Promise(function (resolve, reject) {
 			log("fetching page", url)
 			request(url, function (error, response, body) {
@@ -73,10 +73,12 @@ function csrfLogin (options) {
 					return reject(error)
 				}
 				// console.log('body', body);
-				if (response.statusCode == 429) console.error("Rate limited on the CSRF login form :(")
+				if (response.statusCode == 429) {
+					return reject(new Error("Rate limited on the CSRF login form :("))
+				}
 				var form = getLoginForm(conf, body)
 				if (!isValidForm(form)) {
-					return reject(new Error("Could not find login form"))
+					return new Error("Could not find login form")
 				}
 				var csrf = getCsrfInput(conf, body)
 				if (!csrf) {
@@ -99,7 +101,7 @@ function csrfLogin (options) {
 		})
 	}
 
-	function login (csrfInfo, answers) {
+	function login(csrfInfo, answers) {
 		var username = answers.email || answers.username
 		if (!username) {
 			return Promise.reject("Missing username")
@@ -111,7 +113,7 @@ function csrfLogin (options) {
 
 		var usernameField = conf.get("loginUsernameField") || "email"
 		var passwordField = conf.get("loginPasswordField") || "password"
-    
+
 		// need to set BOTH csrftoken cookie and csrfmiddlewaretoken input fields
 		var loginUrl = csrfInfo.url
 		var form = {}
@@ -130,7 +132,7 @@ function csrfLogin (options) {
 			}
 		}
 
-		function requestAsync (options) {
+		function requestAsync(options) {
 			log("making async request with options", options)
 
 			return new Promise(function (resolve, reject) {
@@ -144,7 +146,7 @@ function csrfLogin (options) {
 		}
 
 		return new Promise(function (resolve, reject) {
-			request.post(options, function onLoggedIn (error, response, body) {
+			request.post(options, function onLoggedIn(error, response, body) {
 				if (error) {
 					console.log("Options that erred: " + options.url)
 					console.error(error)
@@ -200,6 +202,6 @@ function csrfLogin (options) {
 module.exports = csrfLogin
 
 if (!module.parent) {
-	csrfLogin({foo: "bar"})
+	csrfLogin({ foo: "bar" })
 		.catch(console.error)
 }

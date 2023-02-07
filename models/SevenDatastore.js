@@ -132,7 +132,7 @@ class SevenDatastore {
 
 	init() {
 		return this.V4API.init({ api_token: process.env.HTB_V4_TOKEN, email: process.env.HTB_EMAIL, password: process.env.HTB_PASS }).then(
-			this.V3API.init()
+			this.V3API.init().catch(console.error)
 		)
 	}
 
@@ -142,46 +142,37 @@ class SevenDatastore {
 		else return dFlowEnt.syncAgentDownstream()
 	}
 
-	async getMachinesComplete() {
-		console.time("Getting machines [V3] took")
-		var MACHINES_V3 = await this.V3API.getMachines()
-		var urmachine = false
-		urmachine = await this.V3API.getUnreleasedMachine()
-		console.warn(
-			urmachine
-				? "[APIv3]::: Got unreleased machine " + urmachine.name + "..."
-				: "[APIv3]::: There are currently no machines in unreleased section."
-		)
-		if (urmachine) {
-			MACHINES_V3[urmachine.id] = urmachine
-		}
-		var machineSubmissions = await this.V3API.getMachineSubmissions()
-		var mSObj = machineSubmissions.length
-			? H.arrToObj(machineSubmissions, "id")
-			: {}
-		console.timeEnd("Getting machines [V3] took")
-		console.time("Getting machines [V4] took")
-		var MACHINES_V4 = await this.V4API.getAllCompleteMachineProfiles()
-		var COMBINED_MACHINES = {}
-		Object.keys(MACHINES_V3).map(
-			(e) =>
-			(COMBINED_MACHINES[e] =
-				H.combine([MACHINES_V3[e], MACHINES_V4[e]]) ||
-				Object.assign({}, MACHINES_V3[e], {
-					type: "machine",
-				}) ||
-				MACHINES_V4[e])
-		)
-		console.timeEnd("Getting machines [V4] took")
-		return Object.assign(COMBINED_MACHINES, mSObj,)
-	}
+	// async getMachinesComplete() {
+	// 	console.time("Getting machines [V3] took")
+	// 	var MACHINES_V3 = await this.V3API.getMachines()
+	// 	var urmachine = false
+	// 	urmachine = await this.V3API.getUnreleasedMachine()
+	// 	console.warn(
+	// 		urmachine
+	// 			? "[APIv3]::: Got unreleased machine " + urmachine.name + "..."
+	// 			: "[APIv3]::: There are currently no machines in unreleased section."
+	// 	)
+	// 	if (urmachine) {
+	// 		MACHINES_V3[urmachine.id] = urmachine
+	// 	}
+	// 	var machineSubmissions = await this.V3API.getMachineSubmissions()
+	// 	var mSObj = machineSubmissions.length
+	// 		? H.arrToObj(machineSubmissions, "id")
+	// 		: {}
+	// 	console.timeEnd("Getting machines [V3] took")
+	// 	console.time("Getting machines [V4] took")
+	// 	var MACHINES_V4 = await this.V4API.getAllCompleteMachineProfiles()
+	// 	var COMBINED_MACHINES = {}
+	// 	console.timeEnd("Getting machines [V4] took")
+	// 	return Object.assign(COMBINED_MACHINES, mSObj,)
+	// }
 
-	async getMachineTagsComplete() {
-		console.time("Getting machine tags [V4] took")
-		var mt = await this.V4API.getMachineTags()
-		console.timeEnd("Getting machine tags [V4] took")
-		return mt
-	}
+	// async getMachineTagsComplete() {
+	// 	console.time("Getting machine tags [V4] took")
+	// 	var mt = await this.V4API.getMachineTags()
+	// 	console.timeEnd("Getting machine tags [V4] took")
+	// 	return mt
+	// }
 
 	async informAdminViaDm(title, description) {
 		// console.warn("This is a placeholder function. Override it from bot.js with the method from 'Send' module")
@@ -201,46 +192,41 @@ class SevenDatastore {
 			try {
 				console.time("Data update took")
 				/* LEGACY STUFF FOR PARSING / PUSHER CONNECT / DATA ABT TEAMS: */
-				await this.V3API.init()
+				try {
+					await this.V3API.init().catch(console.error)
+				} catch (error) {
+					console.error(error)
+				}
 				var SESH = this.V3API.SESSION
-				if (SESH) console.log("[API CONNECTOR]::: Got a logged in V3 session.")
+				if (Object.keys(SESH).length) console.log("[API CONNECTOR]::: Got a logged in V3 session.")
+
+				/* API v4 DATA COLLECTION (Who's feeling sexy now..?!) */
 				this.MISC.FORTRESSES = await this.V4API.getAllFortresses()
 				this.MISC.ENDGAMES = await this.V4API.getAllEndgames()
 				this.MISC.PROLABS = await this.V4API.getAllProlabs()
-				this.MISC.STARTING_POINT_MACHINES = await this.V4API.getAllStartingPointMachines()
-				/* API v4 DATA COLLECTION (Who's feeling sexy now..?!) */
-				console.time("Getting machines [V3] took")
-				var MACHINES_V3 = await this.V3API.getMachines()
-				var urmachine = false
-				urmachine = await this.V3API.getUnreleasedMachine()
-				console.warn(
-					urmachine
-						? "[APIv3]::: Got unreleased machine " + urmachine.name + "..."
-						: "[APIv3]::: There are currently no machines in unreleased section."
-				)
-				if (urmachine) {
-					MACHINES_V3[urmachine.id] = urmachine
+				// var MACHINES_V3 = await this.V3API.getMachines()
+				var machineSubmissions, mSObj
+
+				try {
+					machineSubmissions = await this.V3API.getMachineSubmissions()
+					mSObj = machineSubmissions.length
+						? H.arrToObj(machineSubmissions, "id")
+						: {}
+				} catch (error) {
+					console.warn(error)
+					mSObj = {}
 				}
-				var machineSubmissions = await this.V3API.getMachineSubmissions()
-				var mSObj = machineSubmissions.length
-					? H.arrToObj(machineSubmissions, "id")
-					: {}
-				console.timeEnd("Getting machines [V3] took")
+
+
+
 				console.time("Getting machines [V4] took")
 				var MACHINES_V4 = await this.V4API.getAllCompleteMachineProfiles()
-				var COMBINED_MACHINES = {}
-				Object.keys(MACHINES_V3).map(
-					(e) =>
-					(COMBINED_MACHINES[e] =
-						H.combine([MACHINES_V3[e], MACHINES_V4[e]]) ||
-						Object.assign({}, MACHINES_V3[e], {
-							type: "machine",
-						}) ||
-						MACHINES_V4[e])
-				)
-
-				this.MACHINES = Object.assign(COMBINED_MACHINES, mSObj, this.MISC.STARTING_POINT_MACHINES)
 				console.timeEnd("Getting machines [V4] took")
+
+				this.MISC.STARTING_POINT_MACHINES = await this.V4API.getAllStartingPointMachines()
+
+				this.MACHINES = Object.assign({}, mSObj, this.MACHINES_V4, this.MISC.STARTING_POINT_MACHINES)
+
 				console.warn(
 					`[APIv4]::: Got ${Object.keys(this.MACHINES).length
 					} machines (Including submissions)...`
@@ -253,6 +239,8 @@ class SevenDatastore {
 					`[APIv4]::: Got ${Object.keys(this.MISC.MACHINE_TAGS).length
 					} machine tag categories...`
 				)
+
+
 
 				console.time("Getting team / uni data [V4] took")
 				if (process.env.HTB_TEAM_ID) {
@@ -320,78 +308,84 @@ class SevenDatastore {
 
 				console.timeEnd("Getting challenge profiles and tags [V4] took")
 
-				console.time("Getting specials took")
-				this.MISC.SPECIALS = await this.V3API.getSpecials()
-				console.timeEnd("Getting specials took")
-				let specialCounts = Object.keys(this.MISC.SPECIALS).map(
-					(e) => `${this.MISC.SPECIALS[e].length} ${e}`
-				)
-				console.warn(`[APIv4]::: Got ${F.andifyList(specialCounts)}.`)
+				// this.MISC.SPECIALS = await this.V3API.getSpecials()
+				// console.timeEnd("Getting specials took")
+				// let specialCounts = Object.keys(this.MISC.SPECIALS).map(
+				// 	(e) => `${this.MISC.SPECIALS[e].length} ${e}`
+				// )
+
 
 				console.warn(
-					`[APIv4]::: Got ${this.kC.length} challenges spanning ${Object.keys(this.MISC.CHALLENGE_CATEGORIES).length
+					`[APIv4]::: Got ${this?.kC?.length} challenges spanning ${Object.keys(this?.MISC?.CHALLENGE_CATEGORIES || {}).length
 					} categories...`
 				)
-				console.warn(`[APIv4]::: Got team info for "${this.TEAM_STATS.name}"`)
-				dFlowEnt.updateEntity(
-					Object.values(this.MISC.SPECIALS)
-						.flat()
-						.map((e) => Object.values(e.flags))
-						.flat(),
-					"specialTargetFlagName"
-				)
-				dFlowEnt.updateEntity(
-					Object.values(this.MISC.SPECIALS)
-						.map((specialType) => specialType.map((s) => s.name))
-						.flat(),
-					"specialTargetName"
-				)
-				dFlowEnt.updateEntity(
-					Object.values(this.MISC.CHALLENGE_CATEGORIES).map(
-						(category) => category.name
-					),
-					"challengeCategoryName"
-				)
-				dFlowEnt.updateEntity(
-					this.MISC.MACHINE_TAGS["7"].tags.map((attackPath) => attackPath.name),
-					"boxAttackPath"
-				)
-				dFlowEnt.updateEntity(
-					this.MISC.MACHINE_TAGS["11"].tags.map((attackSub) => attackSub.name),
-					"boxAttackSub"
-				)
-				dFlowEnt.updateEntity(
-					this.MISC.MACHINE_TAGS["9"].tags.map((attackLang) => attackLang.name),
-					"boxLanguage"
-				)
-				dFlowEnt.updateEntity(
-					Object.values(this.MACHINES).map((machine) => machine.name),
-					"Machines"
-				)
-				dFlowEnt.updateEntity(
-					Object.values(this.TEAM_MEMBERS).map((member) => ({
-						value: member.name,
-						synonyms: [
-							member.name,
-							...this.getDiscordUserSynonymsForUid(member.id, names),
-						],
-					})),
-					"memberName"
-				)
-				dFlowEnt.updateEntity(
-					Object.values(this.CHALLENGES).map((challenge) => challenge.name),
-					"challenge"
-				)
-				dFlowEnt.updateEntity(
-					Object.values(this.TEAM_MEMBERS).map((member) => ({
-						value: member.name,
-						synonyms: [
-							member.name,
-							...this.getDiscordUserSynonymsForUid(member.id, names),
-						],
-					})),
-					"memberName"
-				)
+				console.warn(`[APIv4]::: Got team info for "${this?.TEAM_STATS?.name}"`)
+				try {
+					dFlowEnt.updateEntity(
+						Object.values(this.MISC.PROLABS)
+							.flat()
+							.map((e) => Object.values(e.flags))
+							.flat(),
+						"specialTargetFlagName"
+					)
+					dFlowEnt.updateEntity(
+						[...new Set([this.MISC.FORTRESSES, this.MISC.ENDGAMES, this.MISC.PROLABS].map(e => Object.values(e)).flat().map(e => e?.name).filter(Boolean))],
+						"specialTargetName"
+					)
+					dFlowEnt.updateEntity(
+						Object.values(this.MISC.CHALLENGE_CATEGORIES).map(
+							(category) => category.name
+						),
+						"challengeCategoryName"
+					)
+	
+					/**
+					 * TODO: UPDATE THIS, NOW HTB USES DIFFERENT TAG NUMBERING (e.g. no programming language tag)
+					 */
+					// dFlowEnt.updateEntity(
+					// 	this.MISC.MACHINE_TAGS["7"].tags.map((attackPath) => attackPath.name),
+					// 	"boxAttackPath"
+					// )
+					// dFlowEnt.updateEntity(
+					// 	this.MISC.MACHINE_TAGS["11"].tags.map((attackSub) => attackSub.name),
+					// 	"boxAttackSub"
+					// )
+					// dFlowEnt.updateEntity(
+					// 	this.MISC.MACHINE_TAGS["9"].tags.map((attackLang) => attackLang.name),
+					// 	"boxLanguage"
+					// )
+					dFlowEnt.updateEntity(
+						Object.values(this.MACHINES).map((machine) => machine.name),
+						"Machines"
+					)
+					dFlowEnt.updateEntity(
+						Object.values(this.TEAM_MEMBERS).map((member) => ({
+							value: member.name,
+							synonyms: [
+								member.name,
+								...this.getDiscordUserSynonymsForUid(member.id, names),
+							],
+						})),
+						"memberName"
+					)
+					dFlowEnt.updateEntity(
+						Object.values(this.CHALLENGES).map((challenge) => challenge.name),
+						"challenge"
+					)
+					dFlowEnt.updateEntity(
+						Object.values(this.TEAM_MEMBERS).map((member) => ({
+							value: member.name,
+							synonyms: [
+								member.name,
+								...this.getDiscordUserSynonymsForUid(member.id, names),
+							],
+						})),
+						"memberName"
+					)
+				} catch (error) {
+					console.warn("Had an issue processing DialogFlow entities.\n", error)
+				}
+				
 				/* TO HANDLE EXPORTS WITHOUT DB (USING LOCAL JSON FILES ( useful for dev )):::
 							|  exportData(MACHINES, "machines.json")
 							|  exportData(CHALLENGES, "challenges.json")

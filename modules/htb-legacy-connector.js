@@ -107,7 +107,7 @@ class HtbLegacyConnector {
 
 
 	getMachineSubmissions() {
-		return this.SESSION.requestAsync("/home/machines/submissions").then(response => {
+		return this.SESSION?.requestAsync("/home/machines/submissions").then(response => {
 			var $ = require("jquery")(new JSDOM(response.body).window)
 			var trs = Array.from($($(".table-responsive")[0]).find("table tr")).slice(1)
 			var submissionItems = []
@@ -144,19 +144,19 @@ class HtbLegacyConnector {
 			var $ = require("jquery")(new JSDOM(response.body).window)
 			if ($("tbody")[0].childElementCount > 0) {
 				var trs = $($(".table tr")[1])
-				var mids = trs.find("a[href^='https://www.hackthebox.com/home/machines/profile/']")
-				var urmid = mids[0].href.substring(49)
-				var oldmid = mids[1].href.substring(49)
-				var name = mids[0].innerHTML
-				var rname = mids[1].innerHTML
-				var thumb = trs.find("img[src^='https://www.hackthebox.com/storage/avatars']")[0].src
-				var releaseDate = parseSingleDate($($(".table tr")[1]).find(":contains('UTC')")[0].innerHTML)
+				var mids = trs?.find("a[href^='https://www.hackthebox.com/home/machines/profile/']")
+				var urmid = mids[0]?.href?.substring(49)
+				var oldmid = mids[1]?.href?.substring(49)
+				var name = mids[0]?.innerHTML
+				var rname = mids[1]?.innerHTML
+				var thumb = trs.find("img[src^='https://www.hackthebox.com/storage/avatars']")[0]?.src
+				var releaseDate = parseSingleDate($($(".table tr")[1]).find(":contains('UTC')")[0]?.innerHTML)
 				var makers = trs.find("a[href^='https://www.hackthebox.com/home/users/profile/']")
-				var maker = makers[0].innerHTML
-				var makerId = makers[0].href.substring(46)
+				var maker = makers[0]?.innerHTML
+				var makerId = makers[0]?.href?.substring(46)
 				var maker2 = null
 				try {
-					maker2 = { "id": makers[1].innerHTML, "name": makers[1].href.substring(46) }
+					maker2 = { "id": makers[1]?.innerHTML, "name": makers[1]?.href?.substring(46) }
 				} catch (error) {
 					console.log("No 2nd maker ...")
 				}

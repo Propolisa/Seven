@@ -120,7 +120,7 @@ class HtbApiConnector {
 					var rLimit = H.sAcc(response, "headers", "x-ratelimit-limit") || 60
 					var rLeft = H.sAcc(response, "headers", "x-ratelimit-remaining") || 60
 					this.updateThrottle(endpoint, rLimit, rLeft, endpointPath)
-					// console.log(`${new Date().toLocaleTimeString()} ⇛ ${response.status.toString().padStart(3," ")}: GET "${response.request.url.substring(33)}"` + ( response.headers["x-ratelimit-limit"] ? ` | Remaining limiter credit: ${response.headers["x-ratelimit-remaining"]} / ${response.headers["x-ratelimit-limit"]}`: " | (No rate limiter on this endpoint)" ))
+					console.log(`${new Date().toLocaleTimeString()} ⇛ ${response.status.toString().padStart(3," ")}: GET "${response.request.url.substring(33)}"` + ( response.headers["x-ratelimit-limit"] ? ` | Remaining limiter credit: ${response.headers["x-ratelimit-remaining"]} / ${response.headers["x-ratelimit-limit"]}`: " | (No rate limiter on this endpoint)" ))
 					if (parseText) {
 						try {
 							let res = JSON.parse(response.text)
@@ -199,10 +199,15 @@ class HtbApiConnector {
 		)
 	}
 
+	getUnreleasedMachines() {
+		return this.htbApiGet(`machine/unreleased/`).then(e => H.arrToObj(e?.data || [], "id"))
+	}
+
+
 	async getAllMachinesFast() {
 		var retired = await this.getRetiredMachines()
 		var current = await this.getCurrentMachines()
-		var coming = await this.getComingMachine()
+		var coming = await this.getUnreleasedMachines()
 		var all = { ...retired, ...current, ...coming }
 		return all
 	}
@@ -386,7 +391,7 @@ class HtbApiConnector {
 	/** @returns {User[]} */
 	getTeamMembers(teamId, excludedIds = []) {
 		return this.htbApiGet(`team/members/${teamId}`)
-		.then(res => res?.filter(member => !excludedIds.includes(member.id) && member.role != "pending"))
+			.then(res => res?.filter(member => !excludedIds.includes(member.id) && member.role != "pending"))
 	}
 
 	getTeamInvitations(teamId) {
