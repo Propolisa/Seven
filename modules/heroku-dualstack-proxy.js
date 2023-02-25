@@ -11,7 +11,7 @@ if (!process.env.HEROKU) {
 var proxy = require("express-http-proxy")
 var app = require("express")()
 
-app.use("/", proxy("http://localhost:666"), (req, res)=> console.log(req))
+app.use("/", proxy(`http://localhost:${process.env.API_SERVER_PORT}`), (req, res)=> console.log(req))
 
 app.listen(process.env.PORT, "0.0.0.0", () => {
 	console.info(`[HEROKU]::: Web worker facing proxy server is running on 0.0.0.0:${process.env.PORT}.`)

@@ -53,7 +53,7 @@ const LAUNCH_TARGETS_DEBOUNCE_CACHE = []
 
 const CHART_RENDERER = htbCharts
 const DAT = new SevenDatastore()    // Open an abstract storage container for HTB / bot data
-const API = process.env?.API_SERVER_ENABLED ? new (require("./modules/seven-api-server.js").SevenApiServer)(DAT, 666) : null
+const API = process.env?.API_SERVER_ENABLED ? new (require("./modules/seven-api-server.js").SevenApiServer)(DAT, process.env.API_SERVER_PORT) : null
 const E = new HTBEmoji(client)
 const EGI = new HtbEmbeds(DAT, E) 			// Give Embed Constructor access to the datastore
 const SEND = new Send(client, EGI)

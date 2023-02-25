@@ -27,7 +27,7 @@ var prompt = "consent"
 passport.use(new Strategy({
 	clientID: process.env.API_SERVER_DISCORD_CLIENT_ID,
 	clientSecret: process.env.API_SERVER_DISCORD_CLIENT_SECRET,
-	callbackURL: DEV_MODE_ON ? "http://localhost:666/callback" : `${process.env.API_SERVER_URL}/callback`,
+	callbackURL: DEV_MODE_ON ? `http://localhost:${process.env.API_SERVER_PORT}/callback` : `${process.env.API_SERVER_URL}/callback`,
 	scope: scopes,
 	prompt: prompt
 }, function (accessToken, refreshToken, profile, done) {
