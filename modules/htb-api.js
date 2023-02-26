@@ -120,7 +120,7 @@ class HtbApiConnector {
 					var rLimit = H.sAcc(response, "headers", "x-ratelimit-limit") || 60
 					var rLeft = H.sAcc(response, "headers", "x-ratelimit-remaining") || 60
 					this.updateThrottle(endpoint, rLimit, rLeft, endpointPath)
-					console.log(`${new Date().toLocaleTimeString()} ⇛ ${response.status.toString().padStart(3," ")}: GET "${response.request.url.substring(33)}"` + ( response.headers["x-ratelimit-limit"] ? ` | Remaining limiter credit: ${response.headers["x-ratelimit-remaining"]} / ${response.headers["x-ratelimit-limit"]}`: " | (No rate limiter on this endpoint)" ))
+					console.log(`${new Date().toLocaleTimeString()} ⇛ ${response.status.toString().padStart(3, " ")}: GET "${response.request.url.substring(33)}"` + (response.headers["x-ratelimit-limit"] ? ` | Remaining limiter credit: ${response.headers["x-ratelimit-remaining"]} / ${response.headers["x-ratelimit-limit"]}` : " | (No rate limiter on this endpoint)"))
 					if (parseText) {
 						try {
 							let res = JSON.parse(response.text)

@@ -3,8 +3,8 @@
 */
 
 class Helpers {
-	constructor(){}
-	static arrToObj (array, key) {
+	constructor() { }
+	static arrToObj(array, key) {
 		const initialValue = {}
 		return array.reduce((obj, item) => {
 			return {
@@ -19,52 +19,52 @@ class Helpers {
 	 * The object must be passed as the first argument.
 	 * Returns undefined or the resolved item.
 	 */
-	static sAcc(){
+	static sAcc() {
 		var args = Array.from(arguments)
-		return args.reduce((previous, next) => (previous && previous[next]? previous[next] : undefined))
+		return args.reduce((previous, next) => (previous && previous[next] ? previous[next] : undefined))
 	}
 
 	static chunk(arr, chunkSize) {
 		var R = []
-		for (var i=0,len=arr.length; i<len; i+=chunkSize)
-			R.push(arr.slice(i,i+chunkSize))
+		for (var i = 0, len = arr.length; i < len; i += chunkSize)
+			R.push(arr.slice(i, i + chunkSize))
 		return R
 	}
 
 	static combine(list) {
-		return Object.assign({},...list)
+		return Object.assign({}, ...list)
 	}
 
-	static isPastDate(dateString){
+	static isPastDate(dateString) {
 		return ((new Date(dateString)).getTime() < new Date().getTime())
 	}
 
-	static isOldDate(dateString){ // Is this older than roughly 6 months?
+	static isOldDate(dateString) { // Is this older than roughly 6 months?
 		return ((new Date(dateString)).getTime() + (1000 * 60 * 60 * 24 * 180)) < new Date().getTime()
 	}
 
-	static sortByZuluDatestring(a,b, comparator, ascending=true){
-		return (a[comparator] < b[comparator]) ? (ascending? -1: 1) : ((a[comparator] > b[comparator]) ? (ascending? 1: -1) : 0)
+	static sortByZuluDatestring(a, b, comparator, ascending = true) {
+		return (a[comparator] < b[comparator]) ? (ascending ? -1 : 1) : ((a[comparator] > b[comparator]) ? (ascending ? 1 : -1) : 0)
 	}
 
-	static last(arr){
-		return arr[arr.length-1]
+	static last(arr) {
+		return arr[arr.length - 1]
 	}
-	static addSubMetrics(){
-		new Array(...arguments).forEach(arr => arr.forEach((typeArray,i)=> {
-			typeArray.subIndex = i+1
+	static addSubMetrics() {
+		new Array(...arguments).forEach(arr => arr.forEach((typeArray, i) => {
+			typeArray.subIndex = i + 1
 			typeArray.subCount = arr.length
 		}))
 		console.log(arguments)
 	}
 
-	static deduplicateMachineOwns (ownList = []){
-		var owns = {user:{},root:{},both:{}}
+	static deduplicateMachineOwns(ownList = []) {
+		var owns = { user: {}, root: {}, both: {} }
 		ownList.forEach(own => {
-			if (["root", "user"].includes(own.type)){
+			if (["root", "user"].includes(own.type)) {
 				owns[own.type][own.uid] = own
-				if (owns["user"][own.uid] && owns["root"][own.uid]){
-					owns["both"][own.uid] = Object.assign(owns["user"][own.uid],owns["root"][own.uid],{type:"both"})
+				if (owns["user"][own.uid] && owns["root"][own.uid]) {
+					owns["both"][own.uid] = Object.assign(owns["user"][own.uid], owns["root"][own.uid], { type: "both" })
 					delete owns["user"][own.uid]
 					delete owns["root"][own.uid]
 				}
@@ -80,15 +80,15 @@ class Helpers {
 		})
 	}
 
-	static deduplicateSpecialOwns (ownList = [], target = null){
-		var owns = {partial:[],total:[]}
+	static deduplicateSpecialOwns(ownList = [], target = null) {
+		var owns = { partial: [], total: [] }
 		var buffer = this.removeDuplicates(ownList, "uid")
 		var counts = {}
 		var totalFlagCount = Object.keys(target.flags).length
-		ownList.forEach(uOwn => {counts[uOwn.uid] = (counts[uOwn.uid]? counts[uOwn.uid] + 1 : 1)})
+		ownList.forEach(uOwn => { counts[uOwn.uid] = (counts[uOwn.uid] ? counts[uOwn.uid] + 1 : 1) })
 		buffer.forEach(own => {
-			own.progress = {captured:counts[own.uid],total:totalFlagCount}
-			if (counts[own.uid] < totalFlagCount){
+			own.progress = { captured: counts[own.uid], total: totalFlagCount }
+			if (counts[own.uid] < totalFlagCount) {
 				own.type = "partial"
 				owns.partial.push(own)
 			} else {
@@ -112,7 +112,7 @@ class Helpers {
  * Arrow function to generate a random hexadecimal nonce so images always get re-downloaded in Discord client.
  * @param {*} size - The length of the desired hex nonce.
  */
-	static genRanHex(size) {return [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join("")}
+	static genRanHex(size) { return [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join("") }
 
 
 	/**

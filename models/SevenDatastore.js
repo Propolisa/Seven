@@ -200,10 +200,6 @@ class SevenDatastore {
 				var SESH = this.V3API.SESSION
 				if (Object.keys(SESH).length) console.log("[API CONNECTOR]::: Got a logged in V3 session.")
 
-				/* API v4 DATA COLLECTION (Who's feeling sexy now..?!) */
-				this.MISC.FORTRESSES = await this.V4API.getAllFortresses()
-				this.MISC.ENDGAMES = await this.V4API.getAllEndgames()
-				this.MISC.PROLABS = await this.V4API.getAllProlabs()
 				// var MACHINES_V3 = await this.V3API.getMachines()
 				var machineSubmissions, mSObj
 
@@ -225,12 +221,20 @@ class SevenDatastore {
 
 				this.MISC.STARTING_POINT_MACHINES = await this.V4API.getAllStartingPointMachines()
 
-				this.MACHINES = Object.assign({}, mSObj, this.MACHINES_V4, this.MISC.STARTING_POINT_MACHINES)
+				this.MACHINES = Object.assign({}, mSObj, MACHINES_V4, this.MISC.STARTING_POINT_MACHINES)
 
 				console.warn(
 					`[APIv4]::: Got ${Object.keys(this.MACHINES).length
 					} machines (Including submissions)...`
 				)
+
+
+				/* API v4 DATA COLLECTION (Who's feeling sexy now..?!) */
+				this.MISC.FORTRESSES = await this.V4API.getAllFortresses()
+				this.MISC.ENDGAMES = await this.V4API.getAllEndgames()
+				this.MISC.PROLABS = await this.V4API.getAllProlabs()
+
+
 				console.time("Getting machine tags [V4] took")
 				var mt = await this.V4API.getMachineTags()
 				this.MISC.MACHINE_TAGS = mt
@@ -338,7 +342,7 @@ class SevenDatastore {
 						),
 						"challengeCategoryName"
 					)
-	
+
 					/**
 					 * TODO: UPDATE THIS, NOW HTB USES DIFFERENT TAG NUMBERING (e.g. no programming language tag)
 					 */
@@ -385,7 +389,7 @@ class SevenDatastore {
 				} catch (error) {
 					console.warn("Had an issue processing DialogFlow entities.\n", error)
 				}
-				
+
 				/* TO HANDLE EXPORTS WITHOUT DB (USING LOCAL JSON FILES ( useful for dev )):::
 							|  exportData(MACHINES, "machines.json")
 							|  exportData(CHALLENGES, "challenges.json")
@@ -577,7 +581,7 @@ class SevenDatastore {
 						}
 						break
 					case "active":
-						targets = targets.filter((target) => !target.retired)
+						targets = targets.filter((target) => !target.retired || H.isPastDate(target?.release))
 						break
 					case "inactive":
 						targets = targets.filter((target) => target.retired)
