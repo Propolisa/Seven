@@ -705,7 +705,7 @@ class SevenDatastore {
 					console.warn(JSON.stringify(discordMessage, null, "  "))
 					var idByDid = this.getIdFromDiscordId(discordMessage.author.id)
 					var idByDname = this.getIdFromDiscordName(
-						discordMessage.author.username
+						discordMessage.author
 					)
 					kwd =
 						H.sAcc(this.getMemberById(idByDid), "name") ||
