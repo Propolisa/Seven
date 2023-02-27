@@ -109,6 +109,7 @@ class SevenApiServer {
 
 		app.get("/config", checkAuth, this.q.getConfig.bind(this.q))
 		app.get("/datastore", checkAuth, this.q.getDatastore.bind(this.q))
+		app.post("/datastore", checkAuth, this.q.setDatastore.bind(this.q))
 
 		app.listen(this.port, this.host, () => {
 			console.info(`Seven API server is running on ${this.host}:${this.port}.`)

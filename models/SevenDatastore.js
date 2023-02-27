@@ -701,6 +701,7 @@ class SevenDatastore {
 			const isSelf = checkSelfName(kwd)
 			if (isSelf) {
 				try {
+					console.log(`Got selfname '${kwd}' and 'discordMessage.author.id' val of '${discordMessage.author.id}'`)
 					var idByDid = this.getIdFromDiscordId(discordMessage.author.id)
 					var idByDname = this.getIdFromDiscordName(
 						discordMessage.author.username

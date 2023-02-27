@@ -24,6 +24,19 @@ class Helpers {
 		return args.reduce((previous, next) => (previous && previous[next] ? previous[next] : undefined))
 	}
 
+	/**
+	 * [Safe Set] - this actually isn't safe. At all. It is literally like operating with a scalpel on the brain of Seven.
+	 * Do not use it. Comment it out. Delete this whole file. Burn your server.
+	 * This is a horrible addition. Definitely introduces vulnerability.
+	 * What am I thinking...
+	 */
+	static sSet() {
+		var args = Array.from(arguments)
+		let lastKey = args.pop()
+		let target = args.reduce((previous, next) => (previous && previous[next] ? previous[next] : undefined))
+		if (typeof target == "object") target[lastKey] = value
+	}
+
 	static chunk(arr, chunkSize) {
 		var R = []
 		for (var i = 0, len = arr.length; i < len; i += chunkSize)
