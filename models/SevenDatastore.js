@@ -1316,7 +1316,7 @@ class SevenDatastore {
 	getIdFromDiscordId(dId) {
 		var id = Object.keys(this.D_STATIC).find(
 			(link) =>
-				H.sAcc(this.D_STATIC[link], "id") ||
+				H.sAcc(this.D_STATIC[link], "id") == dId ||
 				H.sAcc(this.D_STATIC[link], "userID") == dId
 		)
 		return id || false
